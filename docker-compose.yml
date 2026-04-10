@@ -17,7 +17,8 @@ services:
       DB_PORT: 3306
       DB_DATABASE: constitution
       DB_USERNAME: constitution
-      DB_PASSWORD: constitution
+      # From repository-root .env (see compose.env.example); not committed
+      DB_PASSWORD: ${DB_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
     volumes:
@@ -45,8 +46,8 @@ services:
     environment:
       MYSQL_DATABASE: constitution
       MYSQL_USER: constitution
-      MYSQL_PASSWORD: constitution
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:

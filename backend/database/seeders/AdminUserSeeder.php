@@ -10,23 +10,33 @@ class AdminUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * Requires ADMIN_SEED_PASSWORD in .env (plain text; stored hashed via User cast).
+     * Never commit real passwords; omit the variable to skip seeding the admin user.
      */
     public function run(): void
     {
-        $admin = User::firstOrCreate(
+        $adminPlainSecret = env('ADMIN_SEED_PASSWORD');
+
+        if (! is_string($adminPlainSecret) || $adminPlainSecret === '') {
+            if ($this->command !== null) {
+                $this->command->warn('AdminUserSeeder skipped: set ADMIN_SEED_PASSWORD in .env to create or update the seed admin user.');
+            }
+
+            return;
+        }
+
+        $admin = User::updateOrCreate(
             ['email' => 'admin@zanupf.org'],
             [
                 'name' => 'System',
                 'surname' => 'Administrator',
-                'password' => 'Admin@2025!',
+                'password' => $adminPlainSecret,
             ]
         );
 
-        $admin->password = 'Admin@2025!';
-        $admin->save();
-
         $systemAdminRole = Role::where('slug', 'system_admin')->first();
-        if ($systemAdminRole && !$admin->hasRole('system_admin')) {
+        if ($systemAdminRole && ! $admin->hasRole('system_admin')) {
             $admin->roles()->attach($systemAdminRole->id);
         }
     }

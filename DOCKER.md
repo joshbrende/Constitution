@@ -18,14 +18,15 @@ The main files are:
 ### 2. One‑time setup
 
 1. Ensure Docker and `docker-compose` (or Docker Desktop) are installed.
-2. From the project root (`c:\wamp64\www\constitution`), use the Docker-specific env:
+2. **Compose secrets (required):** In the **repository root** (same folder as `docker-compose.yml`), copy `compose.env.example` to `.env`. Docker Compose reads this file for `${DB_PASSWORD}`, `${MYSQL_PASSWORD}`, and `${MYSQL_ROOT_PASSWORD}` in `docker-compose.yml`. Adjust values for production; the example matches local dev defaults documented below.
+3. From the project root (`c:\wamp64\www\constitution`), use the Docker-specific env for Laravel:
 
 ```bash
 cd backend
 copy .env.docker .env   # or cp on Linux/macOS
 ```
 
-3. Verify `backend/.env` for Docker matches `docker-compose.yml`:
+4. Verify `backend/.env` for Docker matches the database credentials (especially `DB_PASSWORD` must match the root `.env` value used by Compose for the app container).
 
 - Set:
 
@@ -48,7 +49,9 @@ REDIS_PORT=6379
 
 - Recommended for Docker: set `SESSION_DRIVER=redis`, `CACHE_STORE=redis`, and `QUEUE_CONNECTION=redis`.
 
-4. Generate the app key (first run only):
+5. **Optional — seeded admin user:** If you run `php artisan db:seed`, set `ADMIN_SEED_PASSWORD` in `backend/.env` (see `backend/.env.example`). Never commit real passwords.
+
+6. Generate the app key (first run only):
 
 ```bash
 docker-compose run --rm app php artisan key:generate
@@ -79,6 +82,8 @@ After the containers are up (first time on a new database):
 ```bash
 docker-compose exec app php artisan migrate --seed
 ```
+
+To seed the default admin user (`admin@zanupf.org`), set `ADMIN_SEED_PASSWORD` in `backend/.env` before `--seed`. If it is unset, `AdminUserSeeder` skips that user (other seeders still run).
 
 You can re‑run migrations or seeders the same way whenever needed.
 
