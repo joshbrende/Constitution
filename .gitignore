@@ -10,9 +10,11 @@
 node_modules/
 **/node_modules/
 
-# Laravel (backend + examples)
+# Laravel (backend)
 backend/vendor/
-lms-example/vendor/
+
+# Local reference copy only — not part of this repo
+lms-example/
 backend/public/build/
 backend/public/hot/
 backend/storage/*.key
