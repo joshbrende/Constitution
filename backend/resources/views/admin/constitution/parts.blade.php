@@ -24,16 +24,16 @@
             <form method="POST" action="{{ route('admin.constitution.parts.store') }}" style="display:grid;grid-template-columns:1fr 2fr 80px auto;gap:0.5rem;align-items:end;margin-bottom:1rem;">
                 @csrf
                 <div>
-                    <label style="font-size:0.75rem;color:var(--text-muted);display:block;">Number</label>
-                    <input type="number" name="number" min="1" required style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                    <label for="part_number" style="font-size:0.75rem;color:var(--text-muted);display:block;">Number</label>
+                    <input id="part_number" type="number" name="number" min="1" required style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
                 </div>
                 <div>
-                    <label style="font-size:0.75rem;color:var(--text-muted);display:block;">Title</label>
-                    <input type="text" name="title" required style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                    <label for="part_title" style="font-size:0.75rem;color:var(--text-muted);display:block;">Title</label>
+                    <input id="part_title" type="text" name="title" required style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
                 </div>
                 <div>
-                    <label style="font-size:0.75rem;color:var(--text-muted);display:block;">Order</label>
-                    <input type="number" name="order" min="0" style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                    <label for="part_order" style="font-size:0.75rem;color:var(--text-muted);display:block;">Order</label>
+                    <input id="part_order" type="number" name="order" min="0" style="width:100%;padding:0.4rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
                 </div>
                 <button type="submit" style="padding:0.4rem 0.75rem;background:var(--zanupf-green);color:#fff;border:none;border-radius:0.4rem;cursor:pointer;font-weight:600;">Add</button>
             </form>

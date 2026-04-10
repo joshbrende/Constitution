@@ -39,36 +39,36 @@
 
                 <div class="form-grid">
                     <div class="form-grid-main">
-                        <label class="form-label">Full name</label>
-                        <input type="text" name="name" class="form-input"
+                        <label class="form-label" for="presidium_member_name">Full name</label>
+                        <input id="presidium_member_name" type="text" name="name" class="form-input"
                                value="{{ old('name', $member->name ?? '') }}" required>
 
-                        <label class="form-label" style="margin-top:1rem;">Title</label>
-                        <input type="text" name="title" class="form-input"
+                        <label class="form-label" for="presidium_member_title" style="margin-top:1rem;">Title</label>
+                        <input id="presidium_member_title" type="text" name="title" class="form-input"
                                value="{{ old('title', $member->title ?? '') }}" required>
 
-                        <label class="form-label" style="margin-top:1rem;">Bio (optional)</label>
-                        <textarea name="bio" rows="5" class="form-input"
+                        <label class="form-label" for="presidium_member_bio" style="margin-top:1rem;">Bio (optional)</label>
+                        <textarea id="presidium_member_bio" name="bio" rows="5" class="form-input"
                                   placeholder="Short description for the Presidium member.">{{ old('bio', $member->bio ?? '') }}</textarea>
                     </div>
 
                     <div class="form-grid-side">
-                        <label class="form-label">Role key (slug)</label>
-                        <input type="text" name="role_slug" class="form-input"
+                        <label class="form-label" for="presidium_member_role_slug">Role key (slug)</label>
+                        <input id="presidium_member_role_slug" type="text" name="role_slug" class="form-input"
                                value="{{ old('role_slug', $member->role_slug ?? '') }}"
                                placeholder="president, vice_president_1, secretary_general…" required>
 
-                        <label class="form-label" style="margin-top:1rem;">Order</label>
-                        <input type="number" name="order" class="form-input"
+                        <label class="form-label" for="presidium_member_order" style="margin-top:1rem;">Order</label>
+                        <input id="presidium_member_order" type="number" name="order" class="form-input"
                                value="{{ old('order', $member->order ?? 1) }}" min="1">
 
-                        <label class="form-label" style="margin-top:1rem;">Photo URL (optional)</label>
-                        <input type="text" name="photo_url" class="form-input"
+                        <label class="form-label" for="presidium_member_photo_url" style="margin-top:1rem;">Photo URL (optional)</label>
+                        <input id="presidium_member_photo_url" type="text" name="photo_url" class="form-input"
                                value="{{ old('photo_url', $member->photo_url ?? '') }}"
                                placeholder="https://…">
 
-                        <label class="form-label" style="margin-top:1rem;">ZANU PF article</label>
-                        <select name="zanupf_section_id" class="form-input">
+                        <label class="form-label" for="presidium_member_zanupf_section_id" style="margin-top:1rem;">ZANU PF article</label>
+                        <select id="presidium_member_zanupf_section_id" name="zanupf_section_id" class="form-input">
                             <option value="">None</option>
                             @foreach($sections as $section)
                                 <option value="{{ $section->id }}"
@@ -78,8 +78,8 @@
                             @endforeach
                         </select>
 
-                        <label class="form-label" style="margin-top:1rem;">Zimbabwe Constitution article</label>
-                        <select name="zimbabwe_section_id" class="form-input">
+                        <label class="form-label" for="presidium_member_zimbabwe_section_id" style="margin-top:1rem;">Zimbabwe Constitution article</label>
+                        <select id="presidium_member_zimbabwe_section_id" name="zimbabwe_section_id" class="form-input">
                             <option value="">None</option>
                             @foreach($sections as $section)
                                 <option value="{{ $section->id }}"

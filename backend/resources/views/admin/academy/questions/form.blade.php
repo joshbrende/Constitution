@@ -61,8 +61,8 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.5rem;">Options (select the correct answer)</label>
+                    <fieldset style="border:none;padding:0;margin:0;">
+                        <legend style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.5rem;padding:0;">Options (select the correct answer)</legend>
                         <div id="options-container" style="display:flex;flex-direction:column;gap:0.5rem;">
                             @if ($question && $question->options->isNotEmpty())
                                 @foreach ($question->options as $idx => $opt)
@@ -91,7 +91,7 @@
                             @endif
                         </div>
                         <button type="button" id="add-option" style="margin-top:0.5rem;padding:0.35rem 0.75rem;background:var(--border-subtle);color:var(--text-main);border:none;border-radius:0.4rem;cursor:pointer;font-size:0.85rem;">+ Add option</button>
-                    </div>
+                    </fieldset>
 
                     <div style="display:flex;gap:0.75rem;">
                         <button type="submit" style="padding:0.5rem 1rem;background:var(--zanupf-green);color:#fff;border:none;border-radius:0.4rem;cursor:pointer;font-weight:600;">{{ $question ? 'Save question' : 'Add question' }}</button>

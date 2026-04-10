@@ -120,11 +120,11 @@
         @if ($thread->status === 'open')
             <form method="POST" action="{{ route('admin.dialogue.messages.store', $thread) }}" enctype="multipart/form-data" style="margin-top:0.75rem;">
                 @csrf
-                <label class="form-label">Post as admin/editor</label>
-                <textarea name="body" rows="3" class="form-input" placeholder="Type a message into this thread…" required></textarea>
+                <label class="form-label" for="admin_dialogue_message_body">Post as admin/editor</label>
+                <textarea id="admin_dialogue_message_body" name="body" rows="3" class="form-input" placeholder="Type a message into this thread…" required></textarea>
                 <div style="margin-top:0.5rem;">
-                    <label class="form-label" style="font-size:0.85rem;">Attach media (images, PDF, audio, video) — max 50MB each</label>
-                    <input type="file" name="attachments[]" multiple class="form-input" />
+                    <label class="form-label" for="admin_dialogue_message_attachments" style="font-size:0.85rem;">Attach media (images, PDF, audio, video) — max 50MB each</label>
+                    <input id="admin_dialogue_message_attachments" type="file" name="attachments[]" multiple class="form-input" />
                     @error('attachments.*')
                         <div style="color:var(--zanupf-red);font-size:0.8rem;margin-top:0.25rem;">{{ $message }}</div>
                     @enderror

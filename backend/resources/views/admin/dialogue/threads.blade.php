@@ -20,8 +20,8 @@
             @csrf
             <div style="display:flex;gap:0.5rem;align-items:flex-end;max-width:32rem;">
                 <div style="flex:1;">
-                    <label class="form-label">Start new topic</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g. Application of Article 1 in districts" required>
+                    <label class="form-label" for="dialogue_new_thread_title">Start new topic</label>
+                    <input id="dialogue_new_thread_title" type="text" name="title" class="form-input" placeholder="e.g. Application of Article 1 in districts" required>
                 </div>
                 <button type="submit" class="form-btn-primary" style="padding:0.45rem 1rem;">Create</button>
             </div>

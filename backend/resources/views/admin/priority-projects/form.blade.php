@@ -39,27 +39,27 @@
 
                 <div class="form-grid">
                     <div class="form-grid-main">
-                        <label class="form-label">Title</label>
-                        <input type="text" name="title" class="form-input"
+                        <label class="form-label" for="priority_project_title">Title</label>
+                        <input id="priority_project_title" type="text" name="title" class="form-input"
                                value="{{ old('title', $project->title ?? '') }}" required>
 
-                        <label class="form-label" style="margin-top:1rem;">Short summary</label>
-                        <textarea name="summary" rows="2" class="form-input"
+                        <label class="form-label" for="priority_project_summary" style="margin-top:1rem;">Short summary</label>
+                        <textarea id="priority_project_summary" name="summary" rows="2" class="form-input"
                                   placeholder="One or two sentences explaining the project.">{{ old('summary', $project->summary ?? '') }}</textarea>
 
-                        <label class="form-label" style="margin-top:1rem;">Detail</label>
-                        <textarea name="body" rows="8" class="form-input"
+                        <label class="form-label" for="priority_project_body" style="margin-top:1rem;">Detail</label>
+                        <textarea id="priority_project_body" name="body" rows="8" class="form-input"
                                   placeholder="Background, objectives, benefits, and key milestones.">{{ old('body', $project->body ?? '') }}</textarea>
                     </div>
 
                     <div class="form-grid-side">
-                        <label class="form-label">Image URL (optional)</label>
-                        <input type="text" name="image_url" class="form-input"
+                        <label class="form-label" for="priority_project_image_url">Image URL (optional)</label>
+                        <input id="priority_project_image_url" type="text" name="image_url" class="form-input"
                                value="{{ old('image_url', $project->image_url ?? '') }}"
                                placeholder="https://…">
 
-                        <label class="form-label" style="margin-top:1rem;">ZANU PF article</label>
-                        <select name="zanupf_section_id" class="form-input">
+                        <label class="form-label" for="priority_project_zanupf_section_id" style="margin-top:1rem;">ZANU PF article</label>
+                        <select id="priority_project_zanupf_section_id" name="zanupf_section_id" class="form-input">
                             <option value="">None</option>
                             @foreach($sections as $section)
                                 <option value="{{ $section->id }}"
@@ -69,8 +69,8 @@
                             @endforeach
                         </select>
 
-                        <label class="form-label" style="margin-top:1rem;">Zimbabwe Constitution article</label>
-                        <select name="zimbabwe_section_id" class="form-input">
+                        <label class="form-label" for="priority_project_zimbabwe_section_id" style="margin-top:1rem;">Zimbabwe Constitution article</label>
+                        <select id="priority_project_zimbabwe_section_id" name="zimbabwe_section_id" class="form-input">
                             <option value="">None</option>
                             @foreach($sections as $section)
                                 <option value="{{ $section->id }}"
@@ -80,8 +80,8 @@
                             @endforeach
                         </select>
 
-                        <label class="form-label" style="margin-top:1rem;">Slug (optional)</label>
-                        <input type="text" name="slug" class="form-input"
+                        <label class="form-label" for="priority_project_slug" style="margin-top:1rem;">Slug (optional)</label>
+                        <input id="priority_project_slug" type="text" name="slug" class="form-input"
                                value="{{ old('slug', $project->slug ?? '') }}"
                                placeholder="priority-project-name">
 

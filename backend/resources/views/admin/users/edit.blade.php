@@ -37,8 +37,8 @@
                 @csrf
                 @method('PUT')
                 <div style="display:grid;gap:1rem;max-width:40rem;">
-                    <div>
-                        <label class="form-label">Roles</label>
+                    <fieldset style="border:none;padding:0;margin:0;">
+                        <legend class="form-label" style="padding:0;">Roles</legend>
                         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.5rem;">
                             @foreach ($roles as $role)
                                 <label style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem;border-radius:0.3rem;background:rgba(15,23,42,0.5);">
@@ -54,7 +54,7 @@
                             @endforeach
                         </div>
                         <p class="form-help">See the instruction box above for the complete flow.</p>
-                    </div>
+                    </fieldset>
                     <div style="display:flex;gap:0.75rem;">
                         <button type="submit" class="form-btn-primary">Update roles</button>
                         <a href="{{ route('admin.users.index') }}" class="dash-btn-ghost" style="text-decoration:none;padding:0.5rem 1rem;">Cancel</a>

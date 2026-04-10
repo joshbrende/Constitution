@@ -25,57 +25,57 @@
                 @endif
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Title</label>
-                    <input class="dash-input" name="title" value="{{ old('title', $publication->title) }}" required />
+                    <label class="dash-label" for="publication_title">Title</label>
+                    <input id="publication_title" class="dash-input" name="title" value="{{ old('title', $publication->title) }}" required />
                     @error('title') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Author</label>
-                    <input class="dash-input" name="author" value="{{ old('author', $publication->author) }}" />
+                    <label class="dash-label" for="publication_author">Author</label>
+                    <input id="publication_author" class="dash-input" name="author" value="{{ old('author', $publication->author) }}" />
                     @error('author') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Summary</label>
-                    <textarea class="dash-input" rows="4" name="summary">{{ old('summary', $publication->summary) }}</textarea>
+                    <label class="dash-label" for="publication_summary">Summary</label>
+                    <textarea id="publication_summary" class="dash-input" rows="4" name="summary">{{ old('summary', $publication->summary) }}</textarea>
                     @error('summary') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 180px;gap:0.75rem;">
                     <div class="dash-form-row">
-                        <label class="dash-label">Slug</label>
-                        <input class="dash-input" name="slug" value="{{ old('slug', $publication->slug) }}" required />
+                        <label class="dash-label" for="publication_slug">Slug</label>
+                        <input id="publication_slug" class="dash-input" name="slug" value="{{ old('slug', $publication->slug) }}" required />
                         @error('slug') <div class="dash-error">{{ $message }}</div> @enderror
                     </div>
                     <div class="dash-form-row">
-                        <label class="dash-label">Order</label>
-                        <input class="dash-input" type="number" min="0" name="order" value="{{ old('order', $publication->order ?? 0) }}" />
+                        <label class="dash-label" for="publication_order">Order</label>
+                        <input id="publication_order" class="dash-input" type="number" min="0" name="order" value="{{ old('order', $publication->order ?? 0) }}" />
                         @error('order') <div class="dash-error">{{ $message }}</div> @enderror
                     </div>
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Cover URL (relative or absolute)</label>
-                    <input class="dash-input" name="cover_url" value="{{ old('cover_url', $publication->cover_url) }}" placeholder="/icon-1.png" />
+                    <label class="dash-label" for="publication_cover_url">Cover URL (relative or absolute)</label>
+                    <input id="publication_cover_url" class="dash-input" name="cover_url" value="{{ old('cover_url', $publication->cover_url) }}" placeholder="/icon-1.png" />
                     @error('cover_url') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Article URL</label>
-                    <input class="dash-input" name="article_url" value="{{ old('article_url', $publication->article_url) }}" />
+                    <label class="dash-label" for="publication_article_url">Article URL</label>
+                    <input id="publication_article_url" class="dash-input" name="article_url" value="{{ old('article_url', $publication->article_url) }}" />
                     @error('article_url') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Purchase URL</label>
-                    <input class="dash-input" name="purchase_url" value="{{ old('purchase_url', $publication->purchase_url) }}" />
+                    <label class="dash-label" for="publication_purchase_url">Purchase URL</label>
+                    <input id="publication_purchase_url" class="dash-input" name="purchase_url" value="{{ old('purchase_url', $publication->purchase_url) }}" />
                     @error('purchase_url') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="dash-form-row">
-                    <label class="dash-label">Online copy URL</label>
-                    <input class="dash-input" name="online_copy_url" value="{{ old('online_copy_url', $publication->online_copy_url) }}" />
+                    <label class="dash-label" for="publication_online_copy_url">Online copy URL</label>
+                    <input id="publication_online_copy_url" class="dash-input" name="online_copy_url" value="{{ old('online_copy_url', $publication->online_copy_url) }}" />
                     @error('online_copy_url') <div class="dash-error">{{ $message }}</div> @enderror
                 </div>
 

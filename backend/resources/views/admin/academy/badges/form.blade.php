@@ -36,29 +36,29 @@
 
                 <div style="display:grid;gap:1rem;max-width:44rem;">
                     <div>
-                        <label class="form-label">Icon (optional)</label>
-                        <input type="text" name="icon" class="form-input" value="{{ old('icon', $badge->icon ?? '') }}" placeholder="e.g. 🏆 or medal">
+                        <label class="form-label" for="badge_icon">Icon (optional)</label>
+                        <input id="badge_icon" type="text" name="icon" class="form-input" value="{{ old('icon', $badge->icon ?? '') }}" placeholder="e.g. 🏆 or medal">
                     </div>
 
                     <div>
-                        <label class="form-label">Slug</label>
-                        <input type="text" name="slug" class="form-input" value="{{ old('slug', $badge->slug ?? '') }}" required>
+                        <label class="form-label" for="badge_slug">Slug</label>
+                        <input id="badge_slug" type="text" name="slug" class="form-input" value="{{ old('slug', $badge->slug ?? '') }}" required>
                         <p class="form-help">Unique identifier for this badge.</p>
                     </div>
 
                     <div>
-                        <label class="form-label">Title</label>
-                        <input type="text" name="title" class="form-input" value="{{ old('title', $badge->title ?? '') }}" required>
+                        <label class="form-label" for="badge_title">Title</label>
+                        <input id="badge_title" type="text" name="title" class="form-input" value="{{ old('title', $badge->title ?? '') }}" required>
                     </div>
 
                     <div>
-                        <label class="form-label">Description</label>
-                        <textarea name="description" rows="3" class="form-input">{{ old('description', $badge->description ?? '') }}</textarea>
+                        <label class="form-label" for="badge_description">Description</label>
+                        <textarea id="badge_description" name="description" rows="3" class="form-input">{{ old('description', $badge->description ?? '') }}</textarea>
                     </div>
 
                     <div>
-                        <label class="form-label">Rule type</label>
-                        <select name="rule_type" class="form-input" required>
+                        <label class="form-label" for="badge_rule_type">Rule type</label>
+                        <select id="badge_rule_type" name="rule_type" class="form-input" required>
                             @php
                                 $currentRule = old('rule_type', $badge->rule_type ?? 'enrolled_n');
                                 $targetRequired = in_array($currentRule, ['enrolled_n','completed_n','pass_score_at_least','assessment_started_n','assessment_submitted_n'], true);
@@ -75,8 +75,8 @@
                     </div>
 
                     <div>
-                        <label class="form-label">Target value</label>
-                        <input type="number" name="target_value" class="form-input" min="0"
+                        <label class="form-label" for="badge_target_value">Target value</label>
+                        <input id="badge_target_value" type="number" name="target_value" class="form-input" min="0"
                                value="{{ old('target_value', $badge->target_value ?? 1) }}" {{ $targetRequired ? 'required' : '' }}>
                         <p class="form-help">
                             For <code>enrolled_n</code>/<code>completed_n</code>: N.
