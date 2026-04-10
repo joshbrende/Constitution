@@ -1,0 +1,41 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/public/*.key
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Laravel (backend + examples)
+backend/vendor/
+lms-example/vendor/
+backend/public/build/
+backend/public/hot/
+backend/storage/*.key
+backend/.phpunit.result.cache
+
+# Expo / mobile
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+
+# GitNexus — regenerate locally with npm run gitnexus:analyze
+.gitnexus/
+
+# IDE & OS
+.idea/
+.vscode/
+.fleet/
+.DS_Store
+Thumbs.db
+*.log
+
+# Large binaries (GitHub max 100 MB per file)
+COVER.psd
+
+# Misc
+.phpactor.json

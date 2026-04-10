@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "constitution",
+  "private": true,
+  "scripts": {
+    "gitnexus:analyze": "gitnexus analyze . --skills",
+    "gitnexus:analyze:force": "gitnexus analyze . --force --skills",
+    "gitnexus:analyze:no-git": "gitnexus analyze . --skip-git --skills"
+  },
+  "devDependencies": {
+    "gitnexus": "^1.5.3"
+  }
+}

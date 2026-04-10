@@ -1,0 +1,102 @@
+# Scheduled and on-demand security checks across the repo.
+# Fails the workflow on high/critical dependency advisories (validated CVEs from Composer + npm).
+# Enable alerts: GitHub repo Settings → Notifications → Actions → enable failed workflow notifications,
+# or add this workflow to a ruleset / branch protection required check.
+name: Security scan
+
+on:
+  schedule:
+    # Weekly Monday 06:00 UTC — full repository dependency review
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'backend/composer.lock'
+      - 'backend/package.json'
+      - 'backend/package-lock.json'
+      - 'mobile/package.json'
+      - 'mobile/package-lock.json'
+      - '.github/workflows/security-scan.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-scan-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-composer:
+    name: Backend (Composer)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, openssl, curl, intl, zip
+          coverage: none
+
+      - uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # Only fail on high + critical (ignore low/medium noise for ops alerting)
+      - name: Composer audit (high/critical)
+        run: composer audit --no-interaction --ignore-severity=low --ignore-severity=medium
+
+  backend-npm:
+    name: Backend (npm / Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: npm audit (high/critical)
+        run: npm audit --audit-level=high
+
+  mobile-npm:
+    name: Mobile (npm / Expo)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: npm audit (high/critical)
+        run: npm audit --audit-level=high

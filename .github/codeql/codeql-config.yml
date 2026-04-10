@@ -1,0 +1,10 @@
+# CodeQL does not support PHP/Laravel; PHP is covered by Semgrep (.github/workflows/semgrep.yml).
+name: Constitution monorepo
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/vendor/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - 'lms-example/**'
+  - 'backend/storage/**'
+  - 'backend/bootstrap/cache/**'

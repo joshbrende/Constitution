@@ -1,0 +1,55 @@
+# PHPUnit via PHP 8.4 on Ubuntu (matches composer.json ^8.2; phpunit.xml uses sqlite :memory:).
+# Same checks as `php artisan test` locally; Docker Sail is optional parity on Windows (see backend/README.md).
+name: Backend tests
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite, mysql, pdo_mysql, redis, intl, gd, zip, curl, xml, bcmath, ctype, tokenizer
+          coverage: none
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare application environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Run PHPUnit
+        run: php artisan test
