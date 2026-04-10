@@ -23,7 +23,7 @@ class AuthController extends Controller
 
     private function issueAccessToken(User $user): string
     {
-        $minutes = (int) env('ACCESS_TOKEN_EXPIRY_MINUTES', 15);
+        $minutes = (int) config('api_tokens.access_token_expiry_minutes');
         $expiresAt = now()->addMinutes($minutes);
 
         return $user->createToken('access_token', ['*'], $expiresAt)->plainTextToken;
@@ -31,7 +31,7 @@ class AuthController extends Controller
 
     private function issueRefreshToken(User $user): string
     {
-        $days = (int) env('REFRESH_TOKEN_EXPIRY_DAYS', 7);
+        $days = (int) config('api_tokens.refresh_token_expiry_days');
         $token = Str::random(64);
         $tokenHash = hash('sha256', $token);
 
