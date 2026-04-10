@@ -29,9 +29,9 @@ Route::prefix('v1')->group(function () {
     // Official constitution documents (e.g. gazetted PDF for Amendment Bill — used by mobile)
     Route::get('constitution/official/amendment3', [ConstitutionOfficialController::class, 'amendment3']);
 
-    Route::post('auth/register', [AuthController::class, 'register']);
-    Route::post('auth/login', [AuthController::class, 'login']);
-        Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,60');
+    Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
+    Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,60');
     Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:10,60');
 
     Route::middleware('auth:sanctum')->group(function () {

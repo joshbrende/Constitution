@@ -101,6 +101,21 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(10)->by($request->ip() . '|' . $combo),
             ];
         });
+
+        // Stricter than default `api` limiter: credential stuffing / signup abuse
+        RateLimiter::for('auth-register', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('auth-login', function (Request $request) {
+            $email = strtolower(trim((string) $request->input('email', '')));
+            $emailKey = $email !== '' ? $email : '_';
+
+            return [
+                Limit::perMinute(15)->by($request->ip()),
+                Limit::perMinute(8)->by($request->ip() . '|' . $emailKey),
+            ];
+        });
     }
 
     protected function registerDashboardComposers(): void
