@@ -16,6 +16,24 @@
                     background: #000;
                     color: #f9fafb;
                 }
+                .skip-to-main {
+                    position: absolute;
+                    left: -9999px;
+                    top: 0.75rem;
+                    z-index: 10000;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.375rem;
+                    background: #facc15;
+                    color: #020617;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    text-decoration: none;
+                }
+                .skip-to-main:focus {
+                    left: 0.75rem;
+                    outline: 2px solid #facc15;
+                    outline-offset: 2px;
+                }
                 .auth-shell {
                     min-height: 100vh;
                     display: flex;
@@ -218,19 +236,22 @@
         @endif
     </head>
     <body>
+        <a href="#main-content" class="skip-to-main">Skip to main content</a>
         <div class="auth-shell">
-            <div class="auth-card">
+            <main id="main-content" tabindex="-1" class="auth-card">
                 <div class="badge-flag">
-                    <span class="badge-dot"></span>
+                    <span class="badge-dot" aria-hidden="true"></span>
                     <span>Secure access</span>
                 </div>
                 @yield('content')
-            </div>
+            </main>
         </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
+                    btn.setAttribute('aria-label', 'Show or hide password');
+                    btn.setAttribute('aria-pressed', 'false');
                     btn.addEventListener('click', function () {
                         const targetId = this.getAttribute('data-toggle-password');
                         const input = document.getElementById(targetId);
@@ -238,9 +259,11 @@
                         if (input.type === 'password') {
                             input.type = 'text';
                             this.textContent = 'Hide';
+                            this.setAttribute('aria-pressed', 'true');
                         } else {
                             input.type = 'password';
                             this.textContent = 'Show';
+                            this.setAttribute('aria-pressed', 'false');
                         }
                     });
                 });

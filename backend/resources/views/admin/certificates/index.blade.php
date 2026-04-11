@@ -27,31 +27,51 @@
                 </a>
             </div>
 
-            <form method="GET" action="{{ route('admin.certificates.index') }}" style="margin-bottom:1rem;">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.5rem;max-width:36rem;">
-                    <input type="text" name="number" value="{{ request('number') }}" placeholder="Certificate number (optional)"
-                        style="padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+            <form method="GET" action="{{ route('admin.certificates.index') }}" style="margin-bottom:1rem;" role="search" aria-label="Filter certificates">
+                <fieldset style="border:0;margin:0;padding:0;min-width:0;">
+                    <legend style="font-size:0.8rem;font-weight:600;color:var(--text-main);margin-bottom:0.5rem;padding:0;">Search and filters</legend>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.5rem;max-width:36rem;">
+                        <div>
+                            <label for="cert_filter_number" style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;">Certificate number</label>
+                            <input id="cert_filter_number" type="text" name="number" value="{{ request('number') }}" placeholder="Optional"
+                                style="width:100%;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        </div>
 
-                    <select name="search_mode"
-                            style="padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
-                        <option value="member_name" {{ request('search_mode') === 'member_name' ? 'selected' : '' }}>Member name</option>
-                        <option value="certificate_number" {{ request('search_mode') === 'certificate_number' ? 'selected' : '' }}>Certificate #</option>
-                        <option value="verification_code" {{ request('search_mode') === 'verification_code' ? 'selected' : '' }}>Verification code</option>
-                    </select>
+                        <div>
+                            <label for="cert_filter_search_mode" style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;">Match field</label>
+                            <select id="cert_filter_search_mode" name="search_mode"
+                                    style="width:100%;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                                <option value="member_name" {{ request('search_mode') === 'member_name' ? 'selected' : '' }}>Member name</option>
+                                <option value="certificate_number" {{ request('search_mode') === 'certificate_number' ? 'selected' : '' }}>Certificate #</option>
+                                <option value="verification_code" {{ request('search_mode') === 'verification_code' ? 'selected' : '' }}>Verification code</option>
+                            </select>
+                        </div>
 
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search value (optional)"
-                        style="padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        <div>
+                            <label for="cert_filter_q" style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;">Search text</label>
+                            <input id="cert_filter_q" type="search" name="q" value="{{ request('q') }}" placeholder="Optional" autocomplete="off"
+                                style="width:100%;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        </div>
 
-                    <input type="date" name="from" value="{{ request('from') }}"
-                        style="padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        <div>
+                            <label for="cert_filter_from" style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;">Issued from</label>
+                            <input id="cert_filter_from" type="date" name="from" value="{{ request('from') }}"
+                                style="width:100%;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        </div>
 
-                    <input type="date" name="to" value="{{ request('to') }}"
-                        style="padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        <div>
+                            <label for="cert_filter_to" style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;">Issued to</label>
+                            <input id="cert_filter_to" type="date" name="to" value="{{ request('to') }}"
+                                style="width:100%;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);">
+                        </div>
 
-                    <button type="submit" style="padding:0.5rem 1rem;background:var(--zanupf-green);color:#fff;border:none;border-radius:0.4rem;cursor:pointer;font-weight:600;">
-                        Search
-                    </button>
-                </div>
+                        <div style="display:flex;align-items:flex-end;">
+                            <button type="submit" style="padding:0.5rem 1rem;background:var(--zanupf-green);color:#fff;border:none;border-radius:0.4rem;cursor:pointer;font-weight:600;">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </fieldset>
             </form>
 
             <table class="dash-table">
@@ -98,7 +118,8 @@
                                 @else
                                     <form method="POST" action="{{ route('admin.certificates.revoke', $c) }}" onsubmit="return confirm('Revoke this certificate?');">
                                         @csrf
-                                        <input type="text" name="reason" placeholder="Reason (optional)"
+                                        <label for="cert_revoke_reason_{{ $c->id }}" style="display:block;font-size:0.68rem;color:var(--text-muted);margin-bottom:0.2rem;">Reason (optional)</label>
+                                        <input id="cert_revoke_reason_{{ $c->id }}" type="text" name="reason" placeholder="Reason"
                                                style="margin-bottom:0.35rem;width:170px;padding:0.3rem 0.4rem;border:1px solid var(--border-subtle);border-radius:0.35rem;background:rgba(15,23,42,0.9);color:var(--text-main);font-size:0.75rem;">
                                         <button type="submit" style="padding:0.35rem 0.6rem;background:#7f1d1d;color:#fee2e2;border:1px solid #b91c1c;border-radius:0.35rem;cursor:pointer;font-size:0.78rem;font-weight:700;">
                                             Revoke

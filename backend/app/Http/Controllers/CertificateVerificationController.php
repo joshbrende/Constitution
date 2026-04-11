@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Certificate;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class CertificateVerificationController extends Controller
 {
@@ -14,54 +15,110 @@ class CertificateVerificationController extends Controller
      * If a signed token is provided (from QR), it is validated server-side.
      * Result cached to smooth demand on viral shares.
      */
-    public function show()
+    public function show(): View
     {
-        $publicId = substr(trim((string) request('id', '')), 0, 36);
-        $number = substr(trim((string) request('number', '')), 0, 50);
-        $code = strtoupper(substr(trim((string) request('code', '')), 0, 12));
-        $token = strtolower(substr(trim((string) request('token', '')), 0, 64));
-        $certificate = null;
-        $invalid = false;
-        $status = null;
+        $query = $this->readVerificationInputs();
+
+        return view('certificate-verify', $this->buildVerifyPayload($query));
+    }
+
+    /**
+     * @return array{publicId: string, number: string, code: string, token: string}
+     */
+    private function readVerificationInputs(): array
+    {
+        return [
+            'publicId' => substr(trim((string) request('id', '')), 0, 36),
+            'number' => substr(trim((string) request('number', '')), 0, 50),
+            'code' => strtoupper(substr(trim((string) request('code', '')), 0, 12)),
+            'token' => strtolower(substr(trim((string) request('token', '')), 0, 64)),
+        ];
+    }
+
+    /**
+     * @param  array{publicId: string, number: string, code: string, token: string}  $query
+     * @return array<string, mixed>
+     */
+    private function buildVerifyPayload(array $query): array
+    {
+        $emptyState = $this->emptyVerifyState($query);
+
+        if ($query['number'] === '' && $query['publicId'] === '') {
+            return $emptyState;
+        }
+
+        if ($query['code'] === '') {
+            return array_merge($emptyState, ['invalid' => true]);
+        }
+
+        $certificate = $this->resolveCertificateFromCache($query);
+
+        if (! $certificate) {
+            return array_merge($emptyState, ['invalid' => true]);
+        }
+
+        $status = $certificate->verificationStatus();
+        $isActive = $status === 'active';
         $tokenValid = null;
-        $isActive = false;
 
-        if ($number !== '' || $publicId !== '') {
-            if ($code === '') {
-                $invalid = true;
-                return view('certificate-verify', compact('certificate', 'invalid', 'number', 'code', 'publicId', 'token', 'status', 'tokenValid', 'isActive'));
-            }
-
-            $cacheKey = 'certificate.verify:' . $publicId . ':' . $number . ':' . $code . ':' . $token;
-            $certificate = Cache::remember($cacheKey, self::VERIFY_CACHE_TTL_SECONDS, function () use ($publicId, $number, $code) {
-                $query = Certificate::query()
-                    ->with(['user', 'course']);
-                if ($publicId !== '') {
-                    $query->where('public_id', $publicId);
-                } else {
-                    $query->where('certificate_number', $number);
-                }
-                $query->where('verification_code', $code);
-                return $query->first();
-            });
-
-            if (! $certificate) {
-                $invalid = true;
-            } else {
-                $status = $certificate->verificationStatus();
-                $isActive = $status === 'active';
-                if ($token !== '') {
-                    $tokenValid = $certificate->hasValidVerificationToken($token);
-                    if (! $tokenValid) {
-                        $invalid = true;
-                        $certificate = null;
-                        $status = null;
-                        $isActive = false;
-                    }
-                }
+        if ($query['token'] !== '') {
+            $tokenValid = $certificate->hasValidVerificationToken($query['token']);
+            if (! $tokenValid) {
+                return array_merge($emptyState, [
+                    'invalid' => true,
+                    'certificate' => null,
+                    'status' => null,
+                    'tokenValid' => false,
+                    'isActive' => false,
+                ]);
             }
         }
 
-        return view('certificate-verify', compact('certificate', 'invalid', 'number', 'code', 'publicId', 'token', 'status', 'tokenValid', 'isActive'));
+        return array_merge($emptyState, [
+            'certificate' => $certificate,
+            'invalid' => false,
+            'status' => $status,
+            'tokenValid' => $tokenValid,
+            'isActive' => $isActive,
+        ]);
+    }
+
+    /**
+     * @param  array{publicId: string, number: string, code: string, token: string}  $query
+     * @return array<string, mixed>
+     */
+    private function emptyVerifyState(array $query): array
+    {
+        return [
+            'certificate' => null,
+            'invalid' => false,
+            'number' => $query['number'],
+            'code' => $query['code'],
+            'publicId' => $query['publicId'],
+            'token' => $query['token'],
+            'status' => null,
+            'tokenValid' => null,
+            'isActive' => false,
+        ];
+    }
+
+    /**
+     * @param  array{publicId: string, number: string, code: string, token: string}  $query
+     */
+    private function resolveCertificateFromCache(array $query): ?Certificate
+    {
+        $cacheKey = 'certificate.verify:' . $query['publicId'] . ':' . $query['number'] . ':' . $query['code'] . ':' . $query['token'];
+
+        return Cache::remember($cacheKey, self::VERIFY_CACHE_TTL_SECONDS, function () use ($query) {
+            $q = Certificate::query()->with(['user', 'course']);
+
+            if ($query['publicId'] !== '') {
+                $q->where('public_id', $query['publicId']);
+            } else {
+                $q->where('certificate_number', $query['number']);
+            }
+
+            return $q->where('verification_code', $query['code'])->first();
+        });
     }
 }

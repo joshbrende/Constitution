@@ -121,84 +121,98 @@ class AppServiceProvider extends ServiceProvider
     protected function registerDashboardComposers(): void
     {
         View::composer('layouts.dashboard', function ($view) {
-            $actions = [
-                'academy.enrolled',
-                'dialogue.message_sent',
-                'membership.granted',
-                'auth.api.registered',
-            ];
-
-            $lastSeen = (int) (auth()->id()
-                ? (AdminActivityRead::where('user_id', auth()->id())->value('last_seen_audit_log_id') ?? 0)
-                : 0);
-
-            $items = AuditLog::query()
-                ->with(['actor:id,name,surname,email'])
-                ->whereIn('action', $actions)
-                ->orderByDesc('created_at')
-                ->take(8)
-                ->get();
-
-            $latestId = (int) ($items->max('id') ?? 0);
-            $unreadCount = $latestId > 0
-                ? (int) AuditLog::query()
-                    ->whereIn('action', $actions)
-                    ->where('id', '>', $lastSeen)
-                    ->count()
-                : 0;
-
-            $feed = $items->map(function (AuditLog $log) {
-                $meta = is_array($log->metadata) ? $log->metadata : [];
-
-                $who = $log->actor
-                    ? trim(($log->actor->name ?? '') . ' ' . ($log->actor->surname ?? ''))
-                    : null;
-
-                $when = $log->created_at?->diffForHumans();
-
-                $title = 'Activity';
-                $subtitle = $who ? $who : 'System';
-                $url = route('dashboard');
-
-                switch ($log->action) {
-                    case 'academy.enrolled':
-                        $title = 'Academy enrolment';
-                        $subtitle = ($who ? "{$who} enrolled" : 'New enrolment') . (isset($meta['course_title']) ? " • {$meta['course_title']}" : '');
-                        $url = route('admin.academy.index');
-                        break;
-                    case 'dialogue.message_sent':
-                        $title = 'Dialogue message';
-                        $subtitle = ($who ? "{$who} sent a message" : 'New message') . (isset($meta['thread_title']) ? " • {$meta['thread_title']}" : '');
-                        if (isset($meta['thread_id'])) {
-                            $url = route('admin.dialogue.threads.show', ['thread' => (int) $meta['thread_id']]);
-                        } else {
-                            $url = route('admin.dialogue.index');
-                        }
-                        break;
-                    case 'membership.granted':
-                        $title = 'Membership granted';
-                        $subtitle = ($who ? "{$who} passed" : 'Membership granted') . (isset($meta['course_title']) ? " • {$meta['course_title']}" : '');
-                        $url = route('admin.certificates.index');
-                        break;
-                    case 'auth.api.registered':
-                        $title = 'New user registered';
-                        $subtitle = isset($meta['email']) ? (string) $meta['email'] : ($who ?: 'New registration');
-                        $url = route('admin.users.index');
-                        break;
-                }
-
-                return [
-                    'id' => $log->id,
-                    'title' => $title,
-                    'subtitle' => $subtitle,
-                    'when' => $when,
-                    'url' => $url,
-                ];
-            })->values()->all();
-
-            $view->with('dashBellActivities', $feed);
-            $view->with('dashBellUnreadCount', $unreadCount);
-            $view->with('dashBellLatestAuditId', $latestId);
+            $this->composeDashboardBell($view);
         });
+    }
+
+    private function composeDashboardBell(\Illuminate\Contracts\View\View $view): void
+    {
+        $actions = [
+            'academy.enrolled',
+            'dialogue.message_sent',
+            'membership.granted',
+            'auth.api.registered',
+        ];
+
+        $userId = auth()->id();
+        $lastSeen = 0;
+        if ($userId) {
+            $lastSeen = (int) (AdminActivityRead::where('user_id', $userId)->value('last_seen_audit_log_id') ?? 0);
+        }
+
+        $items = AuditLog::query()
+            ->with(['actor:id,name,surname,email'])
+            ->whereIn('action', $actions)
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
+
+        $latestId = (int) ($items->max('id') ?? 0);
+        $unreadCount = 0;
+        if ($latestId > 0) {
+            $unreadCount = (int) AuditLog::query()
+                ->whereIn('action', $actions)
+                ->where('id', '>', $lastSeen)
+                ->count();
+        }
+
+        $feed = $items->map(fn (AuditLog $log) => $this->mapAuditLogToBellFeedItem($log))->values()->all();
+
+        $view->with('dashBellActivities', $feed);
+        $view->with('dashBellUnreadCount', $unreadCount);
+        $view->with('dashBellLatestAuditId', $latestId);
+    }
+
+    /**
+     * @return array{id: int, title: string, subtitle: string, when: ?string, url: string}
+     */
+    private function mapAuditLogToBellFeedItem(AuditLog $log): array
+    {
+        $meta = is_array($log->metadata) ? $log->metadata : [];
+
+        $who = $log->actor
+            ? trim(($log->actor->name ?? '') . ' ' . ($log->actor->surname ?? ''))
+            : null;
+
+        $when = $log->created_at?->diffForHumans();
+
+        $title = 'Activity';
+        $subtitle = $who ? $who : 'System';
+        $url = route('dashboard');
+
+        switch ($log->action) {
+            case 'academy.enrolled':
+                $title = 'Academy enrolment';
+                $subtitle = ($who ? "{$who} enrolled" : 'New enrolment') . (isset($meta['course_title']) ? " • {$meta['course_title']}" : '');
+                $url = route('admin.academy.index');
+                break;
+            case 'dialogue.message_sent':
+                $title = 'Dialogue message';
+                $subtitle = ($who ? "{$who} sent a message" : 'New message') . (isset($meta['thread_title']) ? " • {$meta['thread_title']}" : '');
+                $url = isset($meta['thread_id'])
+                    ? route('admin.dialogue.threads.show', ['thread' => (int) $meta['thread_id']])
+                    : route('admin.dialogue.index');
+                break;
+            case 'membership.granted':
+                $title = 'Membership granted';
+                $subtitle = ($who ? "{$who} passed" : 'Membership granted') . (isset($meta['course_title']) ? " • {$meta['course_title']}" : '');
+                $url = route('admin.certificates.index');
+                break;
+            case 'auth.api.registered':
+                $title = 'New user registered';
+                $subtitle = isset($meta['email']) ? (string) $meta['email'] : ($who ?: 'New registration');
+                $url = route('admin.users.index');
+                break;
+            default:
+                break;
+        }
+
+        return [
+            'id' => $log->id,
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'when' => $when,
+            'url' => $url,
+        ];
     }
 }

@@ -9,13 +9,13 @@
     </p>
 
     @if (session('status'))
-        <div class="helper-text" style="color:#bbf7d0;margin-bottom:0.75rem;">
+        <div class="helper-text" role="status" style="color:#bbf7d0;margin-bottom:0.75rem;">
             {{ session('status') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="helper-text" style="color:#fecaca;margin-bottom:0.75rem;">
+        <div class="helper-text" role="alert" style="color:#fecaca;margin-bottom:0.75rem;">
             The credentials do not match our records. Please try again.
         </div>
     @endif

@@ -153,58 +153,81 @@ class ImportZimbabweConstitution extends Command
         }
 
         $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", $raw));
-        $current = null;
-        $bodyBuffer = [];
+        $ctx = [
+            'current' => null,
+            'bodyBuffer' => [],
+            'inContent' => false,
+            'pastPreamble' => false,
+            'lastSectionNum' => 0,
+        ];
 
-        $flush = function () use (&$current, &$bodyBuffer, &$sections) {
-            if ($current !== null) {
-                $body = $this->cleanBody(implode("\n", $bodyBuffer));
-                if (strlen($body) > 5) {
-                    $current['body'] = $body;
-                    $sections[] = $current;
-                }
-            }
-        };
-
-        $inContent = false;
-        $pastPreamble = false;
-        $lastSectionNum = 0;
         foreach ($lines as $line) {
-            $line = rtrim($line);
-            if (!$pastPreamble && stripos($line, 'fundamental law of our beloved land') !== false) {
-                $pastPreamble = true;
-            }
-            if (!$inContent && $pastPreamble && (stripos($line, 'CHAPTER 1') !== false || preg_match('/^1\.\s+The Republic/', $line))) {
-                $inContent = true;
-            }
-            if (!$inContent) {
-                continue;
-            }
-            if (preg_match('/^Notes\s*$/i', $line)) {
+            if ($this->processSectionParserLine(rtrim($line), $ctx, $sections)) {
                 break;
             }
-            if (preg_match('/^(\d+)\.\s+(.+)$/', $line, $m)) {
-                $num = (int) $m[1];
-                if ($lastSectionNum >= 332) {
-                    $flush();
-                    break;
-                }
-                $nextExpected = $lastSectionNum + 1;
-                if ($num <= 332 && $num >= $nextExpected) {
-                    $flush();
-                    $current = ['num' => (string) $num, 'title' => trim($m[2])];
-                    $bodyBuffer = [];
-                    $lastSectionNum = $num;
-                    continue;
-                }
-            }
-            if ($current !== null && !preg_match('/^CHAPTER\s+\d+/i', $line) && !preg_match('/^PART\s+\d+\./i', $line)) {
-                $bodyBuffer[] = $line;
-            }
         }
-        $flush();
+        $this->flushSectionBuffer($ctx, $sections);
 
         return $sections;
+    }
+
+    /**
+     * @param  array{current: ?array{num: string, title: string}, bodyBuffer: array<int, string>, inContent: bool, pastPreamble: bool, lastSectionNum: int}  $ctx
+     * @param  array<int, array{num: string, title: string, body: string}>  $sections
+     */
+    private function flushSectionBuffer(array &$ctx, array &$sections): void
+    {
+        if ($ctx['current'] === null) {
+            return;
+        }
+        $body = $this->cleanBody(implode("\n", $ctx['bodyBuffer']));
+        if (strlen($body) > 5) {
+            $ctx['current']['body'] = $body;
+            $sections[] = $ctx['current'];
+        }
+    }
+
+    /**
+     * @param  array{current: ?array{num: string, title: string}, bodyBuffer: array<int, string>, inContent: bool, pastPreamble: bool, lastSectionNum: int}  $ctx
+     * @param  array<int, array{num: string, title: string, body: string}>  $sections
+     * @return bool true when the outer parse loop should stop
+     */
+    private function processSectionParserLine(string $line, array &$ctx, array &$sections): bool
+    {
+        if (! $ctx['pastPreamble'] && stripos($line, 'fundamental law of our beloved land') !== false) {
+            $ctx['pastPreamble'] = true;
+        }
+        if (! $ctx['inContent'] && $ctx['pastPreamble'] && (stripos($line, 'CHAPTER 1') !== false || preg_match('/^1\.\s+The Republic/', $line))) {
+            $ctx['inContent'] = true;
+        }
+        if (! $ctx['inContent']) {
+            return false;
+        }
+        if (preg_match('/^Notes\s*$/i', $line)) {
+            return true;
+        }
+        if (preg_match('/^(\d+)\.\s+(.+)$/', $line, $m)) {
+            $num = (int) $m[1];
+            if ($ctx['lastSectionNum'] >= 332) {
+                $this->flushSectionBuffer($ctx, $sections);
+
+                return true;
+            }
+            $nextExpected = $ctx['lastSectionNum'] + 1;
+            if ($num <= 332 && $num >= $nextExpected) {
+                $this->flushSectionBuffer($ctx, $sections);
+                $ctx['current'] = ['num' => (string) $num, 'title' => trim($m[2])];
+                $ctx['bodyBuffer'] = [];
+                $ctx['lastSectionNum'] = $num;
+
+                return false;
+            }
+        }
+        if ($ctx['current'] !== null && ! preg_match('/^CHAPTER\s+\d+/i', $line) && ! preg_match('/^PART\s+\d+\./i', $line)) {
+            $ctx['bodyBuffer'][] = $line;
+        }
+
+        return false;
     }
 
     private function extractPreamble(string $raw): ?string

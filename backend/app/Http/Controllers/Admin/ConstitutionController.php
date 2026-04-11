@@ -232,87 +232,114 @@ class ConstitutionController extends Controller
             'is_active' => (bool) ($data['is_active'] ?? $section->is_active),
         ]);
 
-        if (!empty($data['body'])) {
-            $draft = $section->versions()->where('status', 'draft')->first();
-            $publishNow = ! empty($data['publish_now'])
-                && (auth()->user()?->can('admin.presidiumPublish') ?? false);
+        if (empty($data['body'])) {
+            return back()->with('success', 'Section metadata updated.');
+        }
 
-            if ($draft) {
-                $draft->update(['body' => $data['body']]);
-                if ($publishNow) {
-                    $previousPublished = $section->versions()
-                        ->where('status', 'published')
-                        ->whereNull('effective_to')
-                        ->first();
-                    if ($previousPublished) {
-                        $previousPublished->update(['effective_to' => now()->toDateString()]);
-                    }
-                    $draft->update([
-                        'status' => 'published',
-                        'effective_from' => now()->toDateString(),
-                        'effective_to' => null,
-                    ]);
-                    $draft->refresh();
-                    $this->auditLogger->log(
-                        action: 'constitution.section_published_direct',
-                        targetType: SectionVersion::class,
-                        targetId: $draft->id,
-                        metadata: [
-                            'section_id' => $section->id,
-                            'version_number' => $draft->version_number,
-                            'workflow_channel' => 'direct_publish',
-                            'presidium_review_bypassed' => true,
-                            'note' => 'Published from section editor with Publish now (Presidium/System Admin only).',
-                            'actor_roles' => $this->actorRoleSlugs(),
-                        ],
-                        request: $request
-                    );
+        return $this->sectionUpdatePersistBody($request, $section, $data);
+    }
 
-                    return back()->with('success', 'Body updated and published.');
-                }
+    /**
+     * @param  array{logical_number: string, title: string, order?: int|null, is_active?: bool, body: string, publish_now?: bool}  $data
+     */
+    private function sectionUpdatePersistBody(Request $request, Section $section, array $data): RedirectResponse
+    {
+        $publishNow = $this->wantsDirectPublishNow($data);
+        $draft = $section->versions()->where('status', 'draft')->first();
+
+        if ($draft) {
+            $draft->update(['body' => $data['body']]);
+            if (! $publishNow) {
                 return back()->with('success', 'Body updated. Draft saved. Go to Amendments to submit for approval.');
             }
 
-            $nextNum = $section->versions()->max('version_number') + 1;
-            $newVersion = SectionVersion::create([
-                'section_id' => $section->id,
-                'version_number' => $nextNum,
-                'body' => $data['body'],
-                'status' => $publishNow ? 'published' : 'draft',
-                'effective_from' => $publishNow ? now()->toDateString() : null,
+            $this->retireOpenPublishedVersion($section, null);
+            $draft->update([
+                'status' => 'published',
+                'effective_from' => now()->toDateString(),
                 'effective_to' => null,
             ]);
+            $draft->refresh();
+            $this->auditDirectSectionPublish(
+                $request,
+                $section,
+                $draft,
+                'Published from section editor with Publish now (Presidium/System Admin only).'
+            );
 
-            if ($publishNow) {
-                $previousPublished = $section->versions()
-                    ->where('status', 'published')
-                    ->where('id', '!=', $newVersion->id)
-                    ->whereNull('effective_to')
-                    ->first();
-                if ($previousPublished) {
-                    $previousPublished->update(['effective_to' => now()->toDateString()]);
-                }
-                $this->auditLogger->log(
-                    action: 'constitution.section_published_direct',
-                    targetType: SectionVersion::class,
-                    targetId: $newVersion->id,
-                    metadata: [
-                        'section_id' => $section->id,
-                        'version_number' => $newVersion->version_number,
-                        'workflow_channel' => 'direct_publish',
-                        'presidium_review_bypassed' => true,
-                        'note' => 'New version published immediately from section editor (Presidium/System Admin only).',
-                        'actor_roles' => $this->actorRoleSlugs(),
-                    ],
-                    request: $request
-                );
+            return back()->with('success', 'Body updated and published.');
+        }
 
-                return back()->with('success', 'Body updated and published.');
-            }
+        $nextNum = $section->versions()->max('version_number') + 1;
+        $newVersion = SectionVersion::create([
+            'section_id' => $section->id,
+            'version_number' => $nextNum,
+            'body' => $data['body'],
+            'status' => $publishNow ? 'published' : 'draft',
+            'effective_from' => $publishNow ? now()->toDateString() : null,
+            'effective_to' => null,
+        ]);
+
+        if (! $publishNow) {
             return back()->with('success', 'Body saved as draft. Go to Amendments to submit for approval.');
         }
 
-        return back()->with('success', 'Section metadata updated.');
+        $this->retireOpenPublishedVersion($section, $newVersion->id);
+        $this->auditDirectSectionPublish(
+            $request,
+            $section,
+            $newVersion,
+            'New version published immediately from section editor (Presidium/System Admin only).'
+        );
+
+        return back()->with('success', 'Body updated and published.');
+    }
+
+    /**
+     * @param  array{publish_now?: bool}  $data
+     */
+    private function wantsDirectPublishNow(array $data): bool
+    {
+        if (empty($data['publish_now'])) {
+            return false;
+        }
+
+        return auth()->user()?->can('admin.presidiumPublish') ?? false;
+    }
+
+    /**
+     * Set effective_to on the currently open published version, if any.
+     */
+    private function retireOpenPublishedVersion(Section $section, ?int $excludingVersionId): void
+    {
+        $q = $section->versions()
+            ->where('status', 'published')
+            ->whereNull('effective_to');
+        if ($excludingVersionId !== null) {
+            $q->where('id', '!=', $excludingVersionId);
+        }
+        $previous = $q->first();
+        if ($previous) {
+            $previous->update(['effective_to' => now()->toDateString()]);
+        }
+    }
+
+    private function auditDirectSectionPublish(Request $request, Section $section, SectionVersion $version, string $note): void
+    {
+        $this->auditLogger->log(
+            action: 'constitution.section_published_direct',
+            targetType: SectionVersion::class,
+            targetId: $version->id,
+            metadata: [
+                'section_id' => $section->id,
+                'version_number' => $version->version_number,
+                'workflow_channel' => 'direct_publish',
+                'presidium_review_bypassed' => true,
+                'note' => $note,
+                'actor_roles' => $this->actorRoleSlugs(),
+            ],
+            request: $request
+        );
     }
 
     public function sectionDestroy(Section $section): RedirectResponse

@@ -22,14 +22,19 @@
                     <div class="dash-panel-subtitle">Manage Academy courses. Create, edit, publish, or archive.</div>
                 </div>
                 <div style="display:flex;gap:0.75rem;">
-                    <form method="GET" action="{{ route('admin.academy.index') }}" style="display:flex;gap:0.5rem;align-items:center;">
-                        <input
-                            type="text"
-                            name="q"
-                            value="{{ request('q') }}"
-                            placeholder="Search code or title"
-                            style="padding:0.4rem 0.6rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);min-width:18rem;"
-                        >
+                    <form method="GET" action="{{ route('admin.academy.index') }}" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;" role="search" aria-label="Search courses">
+                        <div>
+                            <label for="academy_courses_q" style="display:block;font-size:0.72rem;font-weight:600;color:var(--text-muted);margin-bottom:0.25rem;">Search by code or title</label>
+                            <input
+                                id="academy_courses_q"
+                                type="search"
+                                name="q"
+                                value="{{ request('q') }}"
+                                placeholder="Search code or title"
+                                autocomplete="off"
+                                style="padding:0.4rem 0.6rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);min-width:18rem;"
+                            >
+                        </div>
                         <button type="submit" style="padding:0.4rem 0.75rem;background:var(--zanupf-green);color:#fff;border:none;border-radius:0.4rem;cursor:pointer;font-weight:600;font-size:0.8rem;">
                             Search
                         </button>

@@ -5,6 +5,9 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
+$papertrailHost = env('PAPERTRAIL_URL');
+$papertrailPort = env('PAPERTRAIL_PORT');
+
 return [
 
     /*
@@ -88,9 +91,9 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
             'handler_with' => [
-                'host' => env('PAPERTRAIL_URL'),
-                'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'host' => $papertrailHost,
+                'port' => $papertrailPort,
+                'connectionString' => 'tls://'.$papertrailHost.':'.$papertrailPort,
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],

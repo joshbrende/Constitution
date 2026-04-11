@@ -29,6 +29,24 @@
                                 var(--bg);
                     color: var(--text-main);
                 }
+                .skip-to-main {
+                    position: absolute;
+                    left: -9999px;
+                    top: 0.75rem;
+                    z-index: 10000;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.375rem;
+                    background: #facc15;
+                    color: #020617;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    text-decoration: none;
+                }
+                .skip-to-main:focus {
+                    left: 0.75rem;
+                    outline: 2px solid #facc15;
+                    outline-offset: 2px;
+                }
                 .wrap {
                     min-height: 100vh;
                     display: flex;
@@ -114,26 +132,27 @@
         @endif
     </head>
     <body>
+        <a href="#main-content" class="skip-to-main">Skip to main content</a>
         <div class="wrap">
             <div class="card">
-                <div class="head">
+                <header class="head">
                     <div class="brand">
                         <span class="mark" aria-hidden="true"></span>
                         <span>ZANU PF</span>
                     </div>
-                    <div class="nav">
+                    <nav class="nav" aria-label="Legal pages">
                         <a href="{{ route('legal.privacy') }}">Privacy</a>
                         <a href="{{ route('legal.terms') }}">Terms</a>
                         <a href="{{ route('legal.cookies') }}">Cookies</a>
-                    </div>
-                </div>
-                <div class="body">
+                    </nav>
+                </header>
+                <main id="main-content" tabindex="-1" class="body">
                     @yield('content')
-                </div>
-                <div class="foot">
+                </main>
+                <footer class="foot">
                     <div>© 2026, <strong>Created by TTM Group</strong>.</div>
                     <div>Legal information for the platform.</div>
-                </div>
+                </footer>
             </div>
         </div>
     </body>

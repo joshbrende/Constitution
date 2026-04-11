@@ -43,6 +43,24 @@
                     background: #f3f4f6;
                     color: #020617;
                 }
+                .skip-to-main {
+                    position: absolute;
+                    left: -9999px;
+                    top: 0.75rem;
+                    z-index: 10000;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.375rem;
+                    background: #facc15;
+                    color: #020617;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    text-decoration: none;
+                }
+                .skip-to-main:focus {
+                    left: 0.75rem;
+                    outline: 2px solid #facc15;
+                    outline-offset: 2px;
+                }
                 .dash-shell {
                     min-height: 100vh;
                     display: flex;
@@ -776,8 +794,9 @@
         @endif
     </head>
     <body>
+        <a href="#main-content" class="skip-to-main">Skip to main content</a>
         <div class="dash-shell">
-            <aside class="dash-sidebar">
+            <aside class="dash-sidebar" aria-label="Primary navigation">
                 <div class="dash-logo">
                     <div class="dash-logo-mark"></div>
                     <span>ZANU PF</span>
@@ -1027,7 +1046,7 @@
                 </div>
             </aside>
 
-            <main class="dash-main">
+            <main id="main-content" class="dash-main" tabindex="-1">
                 <div class="dash-topbar">
                     <div>
                         <div style="font-size:0.8rem;color:var(--text-muted);">Dashboard</div>
@@ -1035,7 +1054,7 @@
                     </div>
                     <div class="dash-search">
                         <span class="dash-search-icon">🔍</span>
-                        <input type="text" id="dash-quick-search" placeholder="Search users, courses, sections, library, certificates…">
+                        <input type="text" id="dash-quick-search" name="q" placeholder="Search users, courses, sections, library, certificates…" autocomplete="off" aria-label="Quick search across users, courses, sections, library, and certificates">
                         <div class="dash-search-menu" id="dash-search-menu" role="listbox" aria-label="Quick search results"></div>
                     </div>
                     <div class="dash-kpis">

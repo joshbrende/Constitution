@@ -182,7 +182,7 @@
     <div class="card">
         <div class="head">
             <div class="logo" aria-hidden="true">
-                <img src="{{ asset('Logo.png') }}" alt="">
+                <img src="{{ asset('Logo.png') }}" alt="{{ config('app.name', 'Party') }} logo">
             </div>
             <div class="title">
                 <h1>Setup Wizard</h1>

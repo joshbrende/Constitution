@@ -83,7 +83,10 @@
                 @endif
                 <form action="{{ route('admin.constitution.amendment-official-pdf') }}" method="post" enctype="multipart/form-data" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
                     @csrf
-                    <input type="file" name="pdf" accept="application/pdf" required style="font-size:0.85rem;color:var(--text-muted);max-width:100%;">
+                    <label for="amendment_official_pdf" style="font-size:0.85rem;color:var(--text-muted);max-width:100%;cursor:pointer;">
+                        <span style="display:block;margin-bottom:0.25rem;">PDF file</span>
+                        <input id="amendment_official_pdf" type="file" name="pdf" accept="application/pdf" required style="font-size:0.85rem;color:var(--text-muted);max-width:100%;">
+                    </label>
                     <button type="submit" class="const-tool-btn" style="border:none;cursor:pointer;">Upload / replace PDF</button>
                 </form>
             </div>

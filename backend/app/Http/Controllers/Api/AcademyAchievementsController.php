@@ -8,6 +8,7 @@ use App\Models\AcademyUserBadge;
 use App\Models\AssessmentAttempt;
 use App\Models\Course;
 use App\Models\Certificate;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -39,101 +40,14 @@ class AcademyAchievementsController extends Controller
             }
         }
 
-            $data = $badges->map(function (AcademyBadge $b) use ($user, $course, $unlocked) {
+        $data = $badges->map(function (AcademyBadge $b) use ($user, $course, $unlocked) {
             $isUnlocked = isset($unlocked[$b->id]);
             $progress = 0;
 
             if ($user) {
-                // Compute progress and unlock if achieved
-                if ($b->rule_type === 'enrolled_n') {
-                    $enrolledCount = $course->enrolments()->where('user_id', $user->id)->whereIn('status', ['enrolled', 'completed'])->count();
-                    $progress = $b->target_value > 0 ? min(100, (int) round(($enrolledCount / $b->target_value) * 100)) : 0;
-                    if ($enrolledCount >= $b->target_value && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'completed_n') {
-                    $completedCount = $course->enrolments()->where('user_id', $user->id)->where('status', 'completed')->count();
-                    $progress = $b->target_value > 0 ? min(100, (int) round(($completedCount / $b->target_value) * 100)) : 0;
-                    if ($completedCount >= $b->target_value && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'pass_score_at_least') {
-                    $latestPassScore = AssessmentAttempt::whereHas('assessment', function ($q) use ($course) {
-                        $q->where('course_id', $course->id);
-                    })->where('user_id', $user->id)
-                        ->whereNotNull('score')
-                        ->where('status', 'graded')
-                        ->orderByDesc('submitted_at')
-                        ->value('score');
-
-                    $score = $latestPassScore ?? 0;
-                    $progress = $b->target_value > 0 ? min(100, (int) round(($score / $b->target_value) * 100)) : 0;
-                    if ($score >= $b->target_value && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'assessment_started_n') {
-                    $startedCount = AssessmentAttempt::where('user_id', $user->id)
-                        ->whereHas('assessment', function ($q) use ($course) {
-                            $q->where('course_id', $course->id);
-                        })
-                        ->where('status', 'in_progress')
-                        ->count();
-
-                    // If attempts are already submitted, they may not be in progress.
-                    $progress = $b->target_value > 0 ? min(100, (int) round(($startedCount / $b->target_value) * 100)) : 0;
-                    if ($startedCount >= $b->target_value && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'assessment_submitted_n') {
-                    $submittedCount = AssessmentAttempt::where('user_id', $user->id)
-                        ->whereHas('assessment', function ($q) use ($course) {
-                            $q->where('course_id', $course->id);
-                        })
-                        ->where('status', 'graded')
-                        ->count();
-
-                    $progress = $b->target_value > 0 ? min(100, (int) round(($submittedCount / $b->target_value) * 100)) : 0;
-                    if ($submittedCount >= $b->target_value && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'membership_granted') {
-                    // Membership is tied to actually holding the membership certificate.
-                    $hasMembership = Certificate::where('user_id', $user->id)
-                        ->where('course_id', $course->id)
-                        ->exists();
-                    $progress = $hasMembership ? 100 : 0;
-                    if ($hasMembership && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'certificate_issued') {
-                    $hasCertificate = Certificate::where('user_id', $user->id)
-                        ->where('course_id', $course->id)
-                        ->exists();
-                    $progress = $hasCertificate ? 100 : 0;
-                    if ($hasCertificate && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                } elseif ($b->rule_type === 'perfect_attempt') {
-                    $perfect = AssessmentAttempt::where('user_id', $user->id)
-                        ->whereHas('assessment', function ($q) use ($course) {
-                            $q->where('course_id', $course->id);
-                        })
-                        ->where('status', 'graded')
-                        ->where('score', 100)
-                        ->exists();
-                    $progress = $perfect ? 100 : 0;
-                    if ($perfect && ! $isUnlocked) {
-                        $this->unlock($user->id, $b->id);
-                        $isUnlocked = true;
-                    }
-                }
+                $state = $this->badgeProgressForRule($b, $user, $course, $isUnlocked);
+                $progress = $state['progress'];
+                $isUnlocked = $state['unlocked'];
             }
 
             return [
@@ -150,6 +64,183 @@ class AcademyAchievementsController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressForRule(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        return match ($b->rule_type) {
+            'enrolled_n' => $this->badgeProgressEnrolledN($b, $user, $course, $isUnlocked),
+            'completed_n' => $this->badgeProgressCompletedN($b, $user, $course, $isUnlocked),
+            'pass_score_at_least' => $this->badgeProgressPassScoreAtLeast($b, $user, $course, $isUnlocked),
+            'assessment_started_n' => $this->badgeProgressAssessmentStartedN($b, $user, $course, $isUnlocked),
+            'assessment_submitted_n' => $this->badgeProgressAssessmentSubmittedN($b, $user, $course, $isUnlocked),
+            'membership_granted' => $this->badgeProgressMembershipGranted($b, $user, $course, $isUnlocked),
+            'certificate_issued' => $this->badgeProgressCertificateIssued($b, $user, $course, $isUnlocked),
+            'perfect_attempt' => $this->badgeProgressPerfectAttempt($b, $user, $course, $isUnlocked),
+            default => ['progress' => 0, 'unlocked' => $isUnlocked],
+        };
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressEnrolledN(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $enrolledCount = $course->enrolments()->where('user_id', $user->id)->whereIn('status', ['enrolled', 'completed'])->count();
+        $progress = $this->ratioToProgressPercent($enrolledCount, $b->target_value);
+        if ($enrolledCount >= $b->target_value && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressCompletedN(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $completedCount = $course->enrolments()->where('user_id', $user->id)->where('status', 'completed')->count();
+        $progress = $this->ratioToProgressPercent($completedCount, $b->target_value);
+        if ($completedCount >= $b->target_value && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressPassScoreAtLeast(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $latestPassScore = AssessmentAttempt::whereHas('assessment', function ($q) use ($course) {
+            $q->where('course_id', $course->id);
+        })->where('user_id', $user->id)
+            ->whereNotNull('score')
+            ->where('status', 'graded')
+            ->orderByDesc('submitted_at')
+            ->value('score');
+
+        $score = $latestPassScore ?? 0;
+        $progress = $this->ratioToProgressPercent($score, $b->target_value);
+        if ($score >= $b->target_value && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressAssessmentStartedN(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $startedCount = AssessmentAttempt::where('user_id', $user->id)
+            ->whereHas('assessment', function ($q) use ($course) {
+                $q->where('course_id', $course->id);
+            })
+            ->where('status', 'in_progress')
+            ->count();
+
+        $progress = $this->ratioToProgressPercent($startedCount, $b->target_value);
+        if ($startedCount >= $b->target_value && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressAssessmentSubmittedN(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $submittedCount = AssessmentAttempt::where('user_id', $user->id)
+            ->whereHas('assessment', function ($q) use ($course) {
+                $q->where('course_id', $course->id);
+            })
+            ->where('status', 'graded')
+            ->count();
+
+        $progress = $this->ratioToProgressPercent($submittedCount, $b->target_value);
+        if ($submittedCount >= $b->target_value && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressMembershipGranted(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $hasMembership = Certificate::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+        $progress = $hasMembership ? 100 : 0;
+        if ($hasMembership && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressCertificateIssued(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $hasCertificate = Certificate::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->exists();
+        $progress = $hasCertificate ? 100 : 0;
+        if ($hasCertificate && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    /**
+     * @return array{progress: int, unlocked: bool}
+     */
+    private function badgeProgressPerfectAttempt(AcademyBadge $b, User $user, Course $course, bool $isUnlocked): array
+    {
+        $perfect = AssessmentAttempt::where('user_id', $user->id)
+            ->whereHas('assessment', function ($q) use ($course) {
+                $q->where('course_id', $course->id);
+            })
+            ->where('status', 'graded')
+            ->where('score', 100)
+            ->exists();
+        $progress = $perfect ? 100 : 0;
+        if ($perfect && ! $isUnlocked) {
+            $this->unlock($user->id, $b->id);
+            $isUnlocked = true;
+        }
+
+        return ['progress' => $progress, 'unlocked' => $isUnlocked];
+    }
+
+    private function ratioToProgressPercent(int $numerator, int $denominator): int
+    {
+        if ($denominator <= 0) {
+            return 0;
+        }
+
+        return min(100, (int) round(($numerator / $denominator) * 100));
+    }
+
     private function unlock(int $userId, int $badgeId): void
     {
         $row = AcademyUserBadge::firstOrCreate(
@@ -163,4 +254,3 @@ class AcademyAchievementsController extends Controller
         }
     }
 }
-

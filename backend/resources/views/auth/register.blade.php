@@ -9,7 +9,7 @@
     </p>
 
     @if ($errors->any())
-        <div class="helper-text" style="color:#fecaca;margin-bottom:0.75rem;">
+        <div class="helper-text" role="alert" style="color:#fecaca;margin-bottom:0.75rem;">
             Please correct the highlighted fields and try again.
         </div>
     @endif

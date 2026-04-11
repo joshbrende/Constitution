@@ -9,13 +9,13 @@
     </p>
 
     @if (session('status'))
-        <div class="helper-text" style="color:#bbf7d0;margin-bottom:0.75rem;">
+        <div class="helper-text" role="status" style="color:#bbf7d0;margin-bottom:0.75rem;">
             {{ session('status') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="helper-text" style="color:#fecaca;margin-bottom:0.75rem;">
+        <div class="helper-text" role="alert" style="color:#fecaca;margin-bottom:0.75rem;">
             {{ $errors->first('email') }}
         </div>
     @endif
@@ -40,7 +40,7 @@
                 <span>Send reset link</span>
             </button>
 
-            <a href="{{ route('login') }} " class="text-link">
+            <a href="{{ route('login') }}" class="text-link">
                 Back to login
             </a>
         </div>

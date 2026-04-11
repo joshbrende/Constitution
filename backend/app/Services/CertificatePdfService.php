@@ -34,8 +34,11 @@ class CertificatePdfService
 
     public function templateExists(): bool
     {
-        return is_file(public_path(self::TEMPLATE_PRIMARY)) && is_readable(public_path(self::TEMPLATE_PRIMARY))
-            || is_file(public_path(self::TEMPLATE_FALLBACK)) && is_readable(public_path(self::TEMPLATE_FALLBACK));
+        $primary = public_path(self::TEMPLATE_PRIMARY);
+        $fallback = public_path(self::TEMPLATE_FALLBACK);
+
+        return (is_file($primary) && is_readable($primary))
+            || (is_file($fallback) && is_readable($fallback));
     }
 
     private function getTemplatePath(): string
@@ -143,69 +146,129 @@ class CertificatePdfService
         $pdf->AddPage($size['orientation'] ?? 'L', [$w, $h]);
         $pdf->useImportedPage($tplId, 0, 0, $w, $h);
 
-        $certificateTitle = isset($certificate->course) ? ($certificate->course->certificate_title ?? 'Certificate of Completion') : 'Certificate of Completion';
-        $courseTitle = isset($certificate->course) ? ($certificate->course->title ?? 'Membership') : 'Membership';
+        $fields = $this->resolveCertificateFields($certificate);
+        $this->drawCertificateContent($pdf, $w, $fields);
+
+        return $pdf->Output('', 'S');
+    }
+
+    /**
+     * @return array{
+     *     certificateTitle: string,
+     *     courseTitle: string,
+     *     recipientName: string,
+     *     dateStr: string,
+     *     certNumber: string,
+     *     verifyUrl: ?string
+     * }
+     */
+    private function resolveCertificateFields(object $certificate): array
+    {
+        $certificateTitle = isset($certificate->course)
+            ? ($certificate->course->certificate_title ?? 'Certificate of Completion')
+            : 'Certificate of Completion';
+        $courseTitle = isset($certificate->course)
+            ? ($certificate->course->title ?? 'Membership')
+            : 'Membership';
+
         $name = trim(($certificate->user->name ?? '') . ' ' . ($certificate->user->surname ?? ''));
         if ($name === '') {
             $name = 'Member';
         }
+
         $dateStr = $certificate->issued_at
             ? $certificate->issued_at->format('d F Y')
             : now()->format('d F Y');
+
         $certNumber = $certificate->certificate_number ?? '';
         $publicId = $certificate->public_id ?? null;
         $verificationCode = $certificate->verification_code ?? null;
-        $verificationToken = null;
-        if (is_object($certificate) && method_exists($certificate, 'signedVerificationToken')) {
-            $verificationToken = $certificate->signedVerificationToken();
-        } elseif (isset($certificate->verification_token)) {
-            $verificationToken = (string) $certificate->verification_token;
+        $verificationToken = $this->resolveVerificationToken($certificate);
+
+        $verifyUrl = $this->buildCertificateVerifyUrl($certNumber, $verificationCode, $publicId, $verificationToken);
+
+        return [
+            'certificateTitle' => $certificateTitle,
+            'courseTitle' => $courseTitle,
+            'recipientName' => $name,
+            'dateStr' => $dateStr,
+            'certNumber' => $certNumber,
+            'verifyUrl' => $verifyUrl,
+        ];
+    }
+
+    private function resolveVerificationToken(object $certificate): ?string
+    {
+        if (method_exists($certificate, 'signedVerificationToken')) {
+            return $certificate->signedVerificationToken();
+        }
+        if (isset($certificate->verification_token)) {
+            return (string) $certificate->verification_token;
         }
 
+        return null;
+    }
+
+    private function buildCertificateVerifyUrl(
+        string $certNumber,
+        mixed $verificationCode,
+        mixed $publicId,
+        ?string $verificationToken
+    ): ?string {
+        if (! $verificationCode) {
+            return null;
+        }
+
+        $verifyUrl = config('app.url') . '/verify-certificate?number=' . urlencode($certNumber)
+            . '&code=' . urlencode((string) $verificationCode);
+        if ($publicId) {
+            $verifyUrl .= '&id=' . urlencode((string) $publicId);
+        }
+        if ($verificationToken) {
+            $verifyUrl .= '&token=' . urlencode($verificationToken);
+        }
+
+        return $verifyUrl;
+    }
+
+    /**
+     * @param  array{
+     *     certificateTitle: string,
+     *     courseTitle: string,
+     *     recipientName: string,
+     *     dateStr: string,
+     *     certNumber: string,
+     *     verifyUrl: ?string
+     * }  $fields
+     */
+    private function drawCertificateContent(Fpdi $pdf, float $w, array $fields): void
+    {
         $scriptFont = $this->registerGreatVibesFont($pdf);
 
-        // 0. Certificate title at top – Great Vibes 72pt, green #026302, arched by 20%
         $pdf->SetFont($scriptFont, '', 72);
-        $pdf->SetTextColor(2, 99, 2); // #026302 – title only
-        $this->drawArchedText($pdf, $certificateTitle, $w, self::Y_TITLE, 0.10);
+        $pdf->SetTextColor(2, 99, 2);
+        $this->drawArchedText($pdf, $fields['certificateTitle'], $w, self::Y_TITLE, 0.10);
 
-        // 1. Course name – Great Vibes, centered above recipient (#c10102)
         $pdf->SetFont($scriptFont, '', 36);
-        $pdf->SetTextColor(193, 1, 2); // #c10102
+        $pdf->SetTextColor(193, 1, 2);
         $pdf->SetXY(0, self::Y_COURSE);
-        $pdf->Cell($w, 10, $courseTitle, 0, 0, 'C');
+        $pdf->Cell($w, 10, $fields['courseTitle'], 0, 0, 'C');
 
-        // 2. Recipient name – Great Vibes, centered
         $pdf->SetFont($scriptFont, '', 34);
-        $pdf->SetTextColor(193, 1, 2); // #c10102
+        $pdf->SetTextColor(193, 1, 2);
         $pdf->SetXY(0, self::Y_NAME);
-        $pdf->Cell($w, 14, $name, 0, 0, 'C');
+        $pdf->Cell($w, 14, $fields['recipientName'], 0, 0, 'C');
 
-        // 3. Date – bottom right
         $pdf->SetFont('helvetica', '', 10);
         $pdf->SetTextColor(60, 60, 60);
-        $pdf->Text(self::X_DATE_RIGHT, self::Y_DATE, $dateStr);
+        $pdf->Text(self::X_DATE_RIGHT, self::Y_DATE, $fields['dateStr']);
 
-        // 4. Certificate number – below date
         $pdf->SetFont('helvetica', '', 9);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->Text(self::X_DATE_RIGHT, self::Y_CERT_NO, 'Certificate No. ' . $certNumber);
+        $pdf->Text(self::X_DATE_RIGHT, self::Y_CERT_NO, 'Certificate No. ' . $fields['certNumber']);
 
-        // 5. QR code – verification
-        if ($verificationCode) {
-            $verifyUrl = config('app.url') . '/verify-certificate?number=' . urlencode($certNumber)
-                . '&code=' . urlencode($verificationCode);
-            if ($publicId) {
-                $verifyUrl .= '&id=' . urlencode($publicId);
-            }
-            if ($verificationToken) {
-                $verifyUrl .= '&token=' . urlencode($verificationToken);
-            }
-            $qrX = 370;
-            $qrY = 235;
-            $pdf->write2DBarcode($verifyUrl, 'QRCODE,M', $qrX, $qrY, 22, 22);
+        if ($fields['verifyUrl'] !== null) {
+            $pdf->write2DBarcode($fields['verifyUrl'], 'QRCODE,M', 370, 235, 22, 22);
         }
-
-        return $pdf->Output('', 'S');
     }
 }
