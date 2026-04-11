@@ -72,7 +72,7 @@ class CertificateController extends Controller
     /**
      * Request PDF generation (queued). Returns 202 with pdf_status until ready.
      */
-    public function generate(Request $request, Certificate $certificate): JsonResponse|Response
+    public function generate(Certificate $certificate): JsonResponse|Response
     {
         $this->authorize('generate', $certificate);
 
@@ -100,7 +100,7 @@ class CertificateController extends Controller
     /**
      * Download the certificate PDF. Streams from disk when ready; otherwise 202 with pdf_status.
      */
-    public function download(Request $request, Certificate $certificate): StreamedResponse|JsonResponse|Response
+    public function download(Certificate $certificate): StreamedResponse|JsonResponse|Response
     {
         $this->authorize('download', $certificate);
 

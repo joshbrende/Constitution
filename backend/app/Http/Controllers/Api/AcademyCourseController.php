@@ -26,7 +26,7 @@ class AcademyCourseController extends Controller
     /**
      * List published courses (cached to smooth read demand).
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         $courses = Cache::remember('academy.courses', self::CACHE_TTL_MINUTES * 60, function () {
             return Course::where('status', 'published')

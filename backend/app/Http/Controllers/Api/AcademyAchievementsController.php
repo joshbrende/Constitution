@@ -9,7 +9,6 @@ use App\Models\AssessmentAttempt;
 use App\Models\Course;
 use App\Models\Certificate;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,7 +18,7 @@ class AcademyAchievementsController extends Controller
      * Returns badges for the specified course (or current membership course),
      * along with locked/unlocked state and progress.
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $course = Course::where('grants_membership', true)->where('status', 'published')->first();

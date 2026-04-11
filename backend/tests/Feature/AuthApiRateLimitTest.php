@@ -10,6 +10,8 @@ class AuthApiRateLimitTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const REGISTER_PASSWORD = 'Password123!';
+
     public function test_register_is_rate_limited_per_ip(): void
     {
         Role::firstOrCreate(
@@ -22,8 +24,8 @@ class AuthApiRateLimitTest extends TestCase
                 'name' => 'N',
                 'surname' => 'U',
                 'email' => "user{$i}@example.com",
-                'password' => 'Password123!',
-                'password_confirmation' => 'Password123!',
+                'password' => self::REGISTER_PASSWORD,
+                'password_confirmation' => self::REGISTER_PASSWORD,
                 'accept_terms' => true,
             ]);
             $this->assertNotSame(429, $response->getStatusCode(), "Request {$i} should not be rate limited yet");
@@ -33,8 +35,8 @@ class AuthApiRateLimitTest extends TestCase
             'name' => 'N',
             'surname' => 'U',
             'email' => 'sixth@example.com',
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
+            'password' => self::REGISTER_PASSWORD,
+            'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => true,
         ]);
 

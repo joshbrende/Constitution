@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\PriorityProject;
 use App\Models\PriorityProjectLike;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PriorityProjectsController extends Controller
@@ -44,7 +43,7 @@ class PriorityProjectsController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function like(PriorityProject $priority_project, Request $request): JsonResponse
+    public function like(PriorityProject $priority_project): JsonResponse
     {
         $user = Auth::user();
         abort_unless($user, 401);

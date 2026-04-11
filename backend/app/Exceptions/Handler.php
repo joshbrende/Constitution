@@ -19,76 +19,22 @@ class Handler extends ExceptionHandler
      */
     protected function convertExceptionToArray(Throwable $e): array
     {
-        if ($e instanceof NotFoundHttpException) {
-            return [
+        return match (true) {
+            $e instanceof NotFoundHttpException => [
                 'error' => 'not_found',
                 'message' => 'The requested resource was not found.',
-            ];
-        }
-
-        if ($e instanceof AccessDeniedHttpException) {
-            $msg = $e->getMessage();
-            if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
-                $msg = 'You do not have permission to perform this action.';
-            }
-
-            return [
-                'error' => 'forbidden',
-                'message' => $msg,
-            ];
-        }
-
-        if ($e instanceof TooManyRequestsHttpException) {
-            return [
+            ],
+            $e instanceof AccessDeniedHttpException => $this->accessDeniedPayload($e),
+            $e instanceof TooManyRequestsHttpException => [
                 'error' => 'rate_limited',
                 'message' => 'Too many requests. Please wait and try again.',
-            ];
-        }
-
-        if ($e instanceof HttpExceptionInterface) {
-            $status = $e->getStatusCode();
-
-            if ($status === 503) {
-                return [
-                    'error' => 'service_unavailable',
-                    'message' => 'The service is temporarily unavailable. Please try again shortly.',
-                ];
-            }
-
-            if ($status === 404) {
-                $msg = $e->getMessage();
-                if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
-                    $msg = 'The requested resource was not found.';
-                }
-
-                return [
-                    'error' => 'not_found',
-                    'message' => $msg,
-                ];
-            }
-
-            if ($status >= 500) {
-                return [
-                    'error' => 'server_error',
-                    'message' => 'Something went wrong. Please try again later.',
-                ];
-            }
-
-            $msg = $e->getMessage();
-            if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
-                $msg = 'Request could not be completed.';
-            }
-
-            return [
-                'error' => 'http_error',
-                'message' => $msg,
-            ];
-        }
-
-        return [
-            'error' => 'server_error',
-            'message' => 'Something went wrong. Please try again later.',
-        ];
+            ],
+            $e instanceof HttpExceptionInterface => $this->httpExceptionPayload($e),
+            default => [
+                'error' => 'server_error',
+                'message' => 'Something went wrong. Please try again later.',
+            ],
+        };
     }
 
     /**
@@ -96,12 +42,22 @@ class Handler extends ExceptionHandler
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        return $this->shouldReturnJson($request, $exception)
-            ? response()->json([
+        if ($this->shouldReturnJson($request, $exception)) {
+            $message = $exception->getMessage();
+            if ($message === '') {
+                $message = 'Authentication required.';
+            }
+
+            return response()->json([
                 'error' => 'unauthenticated',
-                'message' => $exception->getMessage() ?: 'Authentication required.',
-            ], 401)
-            : redirect()->guest($exception->redirectTo($request) ?? route('login'));
+                'message' => $message,
+            ], 401);
+        }
+
+        $redirectTo = $exception->redirectTo($request);
+        $loginUrl = $redirectTo ?? route('login');
+
+        return redirect()->guest($loginUrl);
     }
 
     /**
@@ -119,5 +75,81 @@ class Handler extends ExceptionHandler
     protected function looksLikeInternalMessage(string $message): bool
     {
         return (bool) preg_match('/\\\\|\/[a-z]+\.php|SQLSTATE|PDO|Stack trace/i', $message);
+    }
+
+    /**
+     * @return array{error: string, message: string}
+     */
+    private function accessDeniedPayload(AccessDeniedHttpException $e): array
+    {
+        $msg = $e->getMessage();
+        if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
+            $msg = 'You do not have permission to perform this action.';
+        }
+
+        return [
+            'error' => 'forbidden',
+            'message' => $msg,
+        ];
+    }
+
+    /**
+     * @return array{error: string, message: string}
+     */
+    private function httpExceptionPayload(HttpExceptionInterface $e): array
+    {
+        $status = $e->getStatusCode();
+
+        if ($status === 503) {
+            return [
+                'error' => 'service_unavailable',
+                'message' => 'The service is temporarily unavailable. Please try again shortly.',
+            ];
+        }
+
+        if ($status === 404) {
+            return $this->httpNotFoundPayload($e);
+        }
+
+        if ($status >= 500) {
+            return [
+                'error' => 'server_error',
+                'message' => 'Something went wrong. Please try again later.',
+            ];
+        }
+
+        return $this->httpClientErrorPayload($e);
+    }
+
+    /**
+     * @return array{error: string, message: string}
+     */
+    private function httpNotFoundPayload(HttpExceptionInterface $e): array
+    {
+        $msg = $e->getMessage();
+        if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
+            $msg = 'The requested resource was not found.';
+        }
+
+        return [
+            'error' => 'not_found',
+            'message' => $msg,
+        ];
+    }
+
+    /**
+     * @return array{error: string, message: string}
+     */
+    private function httpClientErrorPayload(HttpExceptionInterface $e): array
+    {
+        $msg = $e->getMessage();
+        if ($msg === '' || $this->looksLikeInternalMessage($msg)) {
+            $msg = 'Request could not be completed.';
+        }
+
+        return [
+            'error' => 'http_error',
+            'message' => $msg,
+        ];
     }
 }

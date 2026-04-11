@@ -8,6 +8,8 @@ use Illuminate\Auth\Access\Response;
 
 class LibraryDocumentPolicy
 {
+    private const DENY_RESTRICTED = 'This document is restricted. Sign in or request access.';
+
     /**
      * Published documents only: callers should 404 first when a document is not published.
      */
@@ -17,11 +19,11 @@ class LibraryDocumentPolicy
             'public' => true,
             'member' => $user !== null
                 ? true
-                : Response::deny('This document is restricted. Sign in or request access.'),
+                : Response::deny(self::DENY_RESTRICTED),
             'leadership' => $user !== null && ($user->hasRole('presidium') || $user->hasRole('system_admin'))
                 ? true
-                : Response::deny('This document is restricted. Sign in or request access.'),
-            default => Response::deny('This document is restricted. Sign in or request access.'),
+                : Response::deny(self::DENY_RESTRICTED),
+            default => Response::deny(self::DENY_RESTRICTED),
         };
     }
 }

@@ -16,6 +16,15 @@ final class GovIdVerificationClient
 {
     public function verifyNationalId(string $nationalId): GovIdVerificationResult
     {
+        if (trim($nationalId) === '') {
+            return new GovIdVerificationResult(
+                verified: false,
+                status: 'unverified',
+                reference: null,
+                reason: 'National ID is required',
+            );
+        }
+
         $baseUrl = (string) config('services.gov_id.base_url', '');
         if ($baseUrl === '') {
             return new GovIdVerificationResult(

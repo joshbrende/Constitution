@@ -15,7 +15,7 @@ class DialoguePolicyTest extends TestCase
 
     public function test_cannot_create_thread_when_channel_requires_missing_role(): void
     {
-        $role = Role::firstOrCreate(
+        Role::firstOrCreate(
             ['slug' => 'member'],
             ['name' => 'Member', 'description' => 'Member']
         );

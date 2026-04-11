@@ -48,7 +48,7 @@ class WebLibraryController extends Controller
     /**
      * Show a single document (web read view).
      */
-    public function show(Request $request, LibraryDocument $document): View
+    public function show(LibraryDocument $document): View
     {
         if (! $document->isPublished()) {
             abort(404);

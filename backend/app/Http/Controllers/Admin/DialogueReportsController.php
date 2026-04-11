@@ -58,7 +58,7 @@ class DialogueReportsController extends Controller
         return back()->with('success', 'Report updated.');
     }
 
-    public function removeMessage(Request $request, DialogueReport $report): RedirectResponse
+    public function removeMessage(DialogueReport $report): RedirectResponse
     {
         $this->authorize('admin.section', 'dialogue');
 
@@ -77,7 +77,7 @@ class DialogueReportsController extends Controller
         return back()->with('success', 'Message removed and report resolved.');
     }
 
-    public function lockThread(Request $request, DialogueReport $report): RedirectResponse
+    public function lockThread(DialogueReport $report): RedirectResponse
     {
         $this->authorize('admin.section', 'dialogue');
 

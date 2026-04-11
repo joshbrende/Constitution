@@ -154,7 +154,7 @@ class ZimbabweConstitutionSeeder extends Seeder
                 }
             } else {
                 // Chapters 5-18: create chapter only; sections 88+ are added by ImportZimbabweConstitution command
-                $chapter = Chapter::firstOrCreate(
+                Chapter::firstOrCreate(
                     ['constitution_slug' => $slug, 'number' => $ch['num'], 'title' => $ch['title']],
                     ['part_id' => null, 'order' => $order++]
                 );

@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\DB;
 
 class ProvinceStatsService
 {
+    private const SQL_MEMBERS_DISTINCT = 'users.province_id, COUNT(DISTINCT assessment_attempts.user_id) as cnt';
+
+    private const SQL_PROVINCE_TOTAL_CNT = 'users.province_id, COUNT(*) as cnt';
+
     /**
      * Get province stats (members, passed, attempts, enrolments, certificates, pass_rate) using batched queries.
      *
@@ -24,7 +28,7 @@ class ProvinceStatsService
             ->whereNotNull('assessment_attempts.score')
             ->whereRaw('assessment_attempts.score >= assessments.pass_mark')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(DISTINCT assessment_attempts.user_id) as cnt')
+            ->selectRaw(self::SQL_MEMBERS_DISTINCT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
@@ -35,7 +39,7 @@ class ProvinceStatsService
             ->whereNotNull('assessment_attempts.score')
             ->whereRaw('assessment_attempts.score >= assessments.pass_mark')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
@@ -44,21 +48,21 @@ class ProvinceStatsService
             ->where('assessment_attempts.status', 'graded')
             ->whereNotNull('assessment_attempts.score')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
         $enrolmentsByProvince = DB::table('enrolments')
             ->join('users', 'enrolments.user_id', '=', 'users.id')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
         $certificatesByProvince = DB::table('certificates')
             ->join('users', 'certificates.user_id', '=', 'users.id')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
@@ -102,7 +106,7 @@ class ProvinceStatsService
             ->whereNotNull('assessment_attempts.score')
             ->whereRaw('assessment_attempts.score >= assessments.pass_mark')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 
@@ -111,7 +115,7 @@ class ProvinceStatsService
             ->where('assessment_attempts.status', 'graded')
             ->whereNotNull('assessment_attempts.score')
             ->whereNotNull('users.province_id')
-            ->selectRaw('users.province_id, COUNT(*) as cnt')
+            ->selectRaw(self::SQL_PROVINCE_TOTAL_CNT)
             ->groupBy('users.province_id')
             ->pluck('cnt', 'province_id');
 

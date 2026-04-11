@@ -7,7 +7,7 @@ use App\Models\User;
 
 class PriorityProjectPolicy
 {
-    public function like(User $user, PriorityProject $priorityProject): bool
+    public function like(User $_user, PriorityProject $priorityProject): bool
     {
         return $priorityProject->is_published
             && $priorityProject->published_at !== null

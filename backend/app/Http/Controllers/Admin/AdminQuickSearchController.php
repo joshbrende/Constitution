@@ -10,10 +10,12 @@ use App\Models\Section;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class AdminQuickSearchController extends Controller
 {
     private const MIN_Q = 2;
+
     private const PER_GROUP = 5;
 
     public function __invoke(Request $request): JsonResponse
@@ -28,10 +30,36 @@ class AdminQuickSearchController extends Controller
             ]]);
         }
 
-        // Escape LIKE wildcards; we still wrap in %...% for contains.
-        $q = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $qRaw);
-        $like = "%{$q}%";
+        $like = $this->buildLikePattern($qRaw);
 
+        $groups = array_values(array_filter([
+            $this->usersGroup($like),
+            $this->coursesGroup($like),
+            $this->sectionsGroup($like),
+            $this->libraryDocumentsGroup($like),
+            $this->certificatesGroup($like),
+        ]));
+
+        return response()->json([
+            'data' => [
+                'q' => $qRaw,
+                'groups' => $groups,
+            ],
+        ]);
+    }
+
+    private function buildLikePattern(string $qRaw): string
+    {
+        $q = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $qRaw);
+
+        return "%{$q}%";
+    }
+
+    /**
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function usersGroup(string $like): ?array
+    {
         $users = User::query()
             ->select(['id', 'name', 'surname', 'email', 'national_id'])
             ->where(function ($sub) use ($like) {
@@ -51,6 +79,14 @@ class AdminQuickSearchController extends Controller
             ])
             ->values();
 
+        return $this->nonEmptyGroup('users', 'Users', $users);
+    }
+
+    /**
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function coursesGroup(string $like): ?array
+    {
         $courses = Course::query()
             ->select(['id', 'code', 'title', 'status', 'grants_membership'])
             ->where(function ($sub) use ($like) {
@@ -69,6 +105,14 @@ class AdminQuickSearchController extends Controller
             ])
             ->values();
 
+        return $this->nonEmptyGroup('courses', 'Academy courses', $courses);
+    }
+
+    /**
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function sectionsGroup(string $like): ?array
+    {
         $sections = Section::query()
             ->select(['id', 'logical_number', 'title', 'slug'])
             ->where(function ($sub) use ($like) {
@@ -86,6 +130,14 @@ class AdminQuickSearchController extends Controller
             ])
             ->values();
 
+        return $this->nonEmptyGroup('sections', 'Constitution sections', $sections);
+    }
+
+    /**
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function libraryDocumentsGroup(string $like): ?array
+    {
         $docs = LibraryDocument::query()
             ->select(['id', 'title', 'document_type', 'published_at'])
             ->where('title', 'like', $like)
@@ -101,6 +153,14 @@ class AdminQuickSearchController extends Controller
             ])
             ->values();
 
+        return $this->nonEmptyGroup('library', 'Library documents', $docs);
+    }
+
+    /**
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function certificatesGroup(string $like): ?array
+    {
         $certs = Certificate::query()
             ->select(['id', 'certificate_number', 'public_id', 'verification_code', 'issued_at', 'user_id', 'course_id'])
             ->with(['user:id,name,surname,email', 'course:id,title'])
@@ -116,6 +176,7 @@ class AdminQuickSearchController extends Controller
                 $name = $c->user ? trim(($c->user->name ?? '') . ' ' . ($c->user->surname ?? '')) : null;
                 $course = $c->course?->title;
                 $meta = trim(($name ? $name . ' • ' : '') . ($course ?: ''));
+
                 return [
                     'id' => $c->id,
                     'label' => (string) ($c->certificate_number ?? 'Certificate'),
@@ -128,19 +189,23 @@ class AdminQuickSearchController extends Controller
             })
             ->values();
 
-        $groups = [];
-        if ($users->isNotEmpty()) $groups[] = ['key' => 'users', 'title' => 'Users', 'items' => $users];
-        if ($courses->isNotEmpty()) $groups[] = ['key' => 'courses', 'title' => 'Academy courses', 'items' => $courses];
-        if ($sections->isNotEmpty()) $groups[] = ['key' => 'sections', 'title' => 'Constitution sections', 'items' => $sections];
-        if ($docs->isNotEmpty()) $groups[] = ['key' => 'library', 'title' => 'Library documents', 'items' => $docs];
-        if ($certs->isNotEmpty()) $groups[] = ['key' => 'certificates', 'title' => 'Certificates', 'items' => $certs];
+        return $this->nonEmptyGroup('certificates', 'Certificates', $certs);
+    }
 
-        return response()->json([
-            'data' => [
-                'q' => $qRaw,
-                'groups' => $groups,
-            ],
-        ]);
+    /**
+     * @param  Collection<int, array<string, mixed>>  $items
+     * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
+     */
+    private function nonEmptyGroup(string $key, string $title, Collection $items): ?array
+    {
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        return [
+            'key' => $key,
+            'title' => $title,
+            'items' => $items,
+        ];
     }
 }
-

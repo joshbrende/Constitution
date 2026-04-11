@@ -12,6 +12,10 @@ class AuthApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const REGISTER_PASSWORD = 'Password123!';
+
+    private const NEW_USER_EMAIL = 'newuser@example.com';
+
     public function test_login_rejects_invalid_credentials_with_422(): void
     {
         User::factory()->create([
@@ -59,16 +63,16 @@ class AuthApiTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'New',
             'surname' => 'User',
-            'email' => 'newuser@example.com',
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
+            'email' => self::NEW_USER_EMAIL,
+            'password' => self::REGISTER_PASSWORD,
+            'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => true,
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('user.email', 'newuser@example.com');
+            ->assertJsonPath('user.email', self::NEW_USER_EMAIL);
 
-        $user = User::where('email', 'newuser@example.com')->firstOrFail();
+        $user = User::where('email', self::NEW_USER_EMAIL)->firstOrFail();
         $this->assertTrue($user->roles()->where('slug', 'student')->exists());
     }
 
@@ -78,8 +82,8 @@ class AuthApiTest extends TestCase
             'name' => 'A',
             'surname' => 'B',
             'email' => 'ab@example.com',
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
+            'password' => self::REGISTER_PASSWORD,
+            'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => false,
         ]);
 

@@ -17,7 +17,7 @@ class LibraryController extends Controller
     /**
      * List published library categories (with document counts). Public categories only for guests.
      */
-    public function categories(Request $request): JsonResponse
+    public function categories(): JsonResponse
     {
         $categories = Cache::remember('library.categories', self::CACHE_TTL, function () {
             return LibraryCategory::whereNull('parent_id')
@@ -100,7 +100,7 @@ class LibraryController extends Controller
     /**
      * Show a single published document. Access enforced.
      */
-    public function show(Request $request, LibraryDocument $document): JsonResponse
+    public function show(LibraryDocument $document): JsonResponse
     {
         if (! $document->isPublished()) {
             return response()->json(['message' => 'Document not found.'], 404);
