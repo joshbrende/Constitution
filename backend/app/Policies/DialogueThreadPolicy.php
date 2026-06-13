@@ -7,6 +7,14 @@ use App\Models\User;
 
 class DialogueThreadPolicy
 {
+    public function view(User $user, DialogueThread $dialogueThread): bool
+    {
+        $dialogueThread->loadMissing('channel');
+        $channel = $dialogueThread->channel;
+
+        return $channel !== null && $channel->canUserAccess($user);
+    }
+
     /**
      * Post a new message in the thread (thread must be open; channel must allow posting).
      */

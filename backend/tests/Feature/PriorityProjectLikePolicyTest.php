@@ -23,7 +23,7 @@ class PriorityProjectLikePolicyTest extends TestCase
         ]);
 
         $user = User::factory()->create(['surname' => 'Voter']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->postJson("/api/v1/priority-projects/{$project->id}/like");
 
@@ -41,7 +41,7 @@ class PriorityProjectLikePolicyTest extends TestCase
         ]);
 
         $user = User::factory()->create(['surname' => 'Voter']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->postJson("/api/v1/priority-projects/{$project->id}/like");
 

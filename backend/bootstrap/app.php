@@ -1,10 +1,16 @@
 <?php
 
 use App\Exceptions\Handler as AppExceptionHandler;
+use App\Http\Middleware\EnsureAdminOrContentEditor;
+use App\Http\Middleware\EnsureAdminSection;
+use App\Http\Middleware\EnsurePresidiumAccess;
+use App\Http\Middleware\EnsureSetupNotCompleted;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,10 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
 
         $middleware->alias([
-            'admin.content' => \App\Http\Middleware\EnsureAdminOrContentEditor::class,
-            'admin.section' => \App\Http\Middleware\EnsureAdminSection::class,
-            'presidium' => \App\Http\Middleware\EnsurePresidiumAccess::class,
-            'setup.pending' => \App\Http\Middleware\EnsureSetupNotCompleted::class,
+            'admin.content' => EnsureAdminOrContentEditor::class,
+            'admin.section' => EnsureAdminSection::class,
+            'presidium' => EnsurePresidiumAccess::class,
+            'setup.pending' => EnsureSetupNotCompleted::class,
+            'abilities' => CheckAbilities::class,
+            'ability' => CheckForAnyAbility::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -32,6 +32,7 @@ class User extends Authenticatable
         'cell_id',
         'national_id',
         'password',
+        'accepted_terms_at',
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'accepted_terms_at' => 'datetime',
             'national_id_verified_at' => 'datetime',
         ];
     }
@@ -79,6 +81,34 @@ class User extends Authenticatable
     public function hasRole(string $slug): bool
     {
         return $this->roles->contains(fn ($role) => $role->slug === $slug);
+    }
+
+    public function hasPermission(string $slug): bool
+    {
+        $this->loadMissing('roles.permissions');
+
+        foreach ($this->roles as $role) {
+            if ($role->permissions->contains('slug', $slug)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasAnyPermissionWithPrefix(string $prefix): bool
+    {
+        $this->loadMissing('roles.permissions');
+
+        foreach ($this->roles as $role) {
+            foreach ($role->permissions as $permission) {
+                if (str_starts_with((string) $permission->slug, $prefix)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function enrolments(): HasMany

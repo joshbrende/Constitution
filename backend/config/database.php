@@ -66,6 +66,29 @@ return [
             'options' => $pdoMysqlSslOptions,
         ],
 
+        /*
+        | Optional separate audit store (Phase 4). Defaults mirror the primary MySQL
+        | connection; override with AUDIT_DB_* in production for isolation.
+        */
+        'audit' => [
+            'driver' => env('AUDIT_DB_DRIVER', env('DB_CONNECTION', 'mysql') === 'sqlite' ? 'sqlite' : 'mysql'),
+            'url' => env('AUDIT_DB_URL'),
+            'host' => env('AUDIT_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('AUDIT_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('AUDIT_DB_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('AUDIT_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('AUDIT_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('AUDIT_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => env('AUDIT_DB_CHARSET', env('DB_CHARSET', 'utf8mb4')),
+            'collation' => env('AUDIT_DB_COLLATION', env('DB_COLLATION', 'utf8mb4_unicode_ci')),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'foreign_key_constraints' => env('AUDIT_DB_FOREIGN_KEYS', env('DB_FOREIGN_KEYS', true)),
+            'options' => $pdoMysqlSslOptions,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

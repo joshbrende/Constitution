@@ -11,6 +11,10 @@ class AssessmentAttemptPolicy
 {
     public function submit(User $user, AssessmentAttempt $attempt): bool|Response
     {
+        if ((int) $attempt->user_id !== (int) $user->id) {
+            return Response::deny('Unauthorized.');
+        }
+
         if ($attempt->status !== 'in_progress') {
             return Response::deny('Attempt already submitted.')->withStatus(422);
         }

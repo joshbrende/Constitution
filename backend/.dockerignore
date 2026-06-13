@@ -1,0 +1,12 @@
+# Broken or host-specific symlinks break `docker build` context on Windows.
+public/storage
+
+# Not needed inside the image (runtime uses bind mount or fresh vendor).
+/vendor
+/node_modules
+/.git
+/storage/logs/*
+!/storage/logs/.gitignore
+.env
+.env.*
+!.env.example

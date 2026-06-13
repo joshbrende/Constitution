@@ -8,6 +8,8 @@ use App\Models\Course;
 use App\Models\LibraryDocument;
 use App\Models\Section;
 use App\Models\User;
+use App\Services\AdminAccessService;
+use App\Services\AdminScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -18,9 +20,21 @@ class AdminQuickSearchController extends Controller
 
     private const PER_GROUP = 5;
 
-    public function __invoke(Request $request): JsonResponse
+    /** Maps quick-search group keys to admin section slugs in config/admin.php. */
+    private const GROUP_SECTIONS = [
+        'users' => 'users',
+        'courses' => 'academy',
+        'sections' => 'constitution',
+        'library' => 'library',
+        'certificates' => 'certificates',
+    ];
+
+    public function __invoke(Request $request, AdminAccessService $adminAccess, AdminScopeService $adminScope): JsonResponse
     {
-        $this->authorize('admin.section', 'admin');
+        $this->authorize('admin.anyAccess');
+
+        $admin = $request->user();
+        abort_unless($admin instanceof User, 403);
 
         $qRaw = trim((string) $request->query('q', ''));
         if (mb_strlen($qRaw) < self::MIN_Q) {
@@ -31,13 +45,14 @@ class AdminQuickSearchController extends Controller
         }
 
         $like = $this->buildLikePattern($qRaw);
+        $accessible = collect($adminAccess->getAccessibleSections($request->user()));
 
         $groups = array_values(array_filter([
-            $this->usersGroup($like),
-            $this->coursesGroup($like),
-            $this->sectionsGroup($like),
-            $this->libraryDocumentsGroup($like),
-            $this->certificatesGroup($like),
+            $this->groupIfAllowed($accessible, 'users', fn () => $this->usersGroup($like, $admin, $adminScope)),
+            $this->groupIfAllowed($accessible, 'courses', fn () => $this->coursesGroup($like)),
+            $this->groupIfAllowed($accessible, 'sections', fn () => $this->sectionsGroup($like)),
+            $this->groupIfAllowed($accessible, 'library', fn () => $this->libraryDocumentsGroup($like)),
+            $this->groupIfAllowed($accessible, 'certificates', fn () => $this->certificatesGroup($like)),
         ]));
 
         return response()->json([
@@ -46,6 +61,19 @@ class AdminQuickSearchController extends Controller
                 'groups' => $groups,
             ],
         ]);
+    }
+
+    /**
+     * @param  Collection<int, string>  $accessibleSections
+     */
+    private function groupIfAllowed(Collection $accessibleSections, string $groupKey, callable $builder): ?array
+    {
+        $section = self::GROUP_SECTIONS[$groupKey] ?? null;
+        if ($section === null || ! $accessibleSections->contains($section)) {
+            return null;
+        }
+
+        return $builder();
     }
 
     private function buildLikePattern(string $qRaw): string
@@ -58,16 +86,20 @@ class AdminQuickSearchController extends Controller
     /**
      * @return array{key: string, title: string, items: Collection<int, array<string, mixed>>}|null
      */
-    private function usersGroup(string $like): ?array
+    private function usersGroup(string $like, User $admin, AdminScopeService $adminScope): ?array
     {
-        $users = User::query()
+        $query = User::query()
             ->select(['id', 'name', 'surname', 'email', 'national_id'])
             ->where(function ($sub) use ($like) {
                 $sub->where('name', 'like', $like)
                     ->orWhere('surname', 'like', $like)
                     ->orWhere('email', 'like', $like)
                     ->orWhere('national_id', 'like', $like);
-            })
+            });
+
+        $adminScope->applyToUserQuery($query, $admin);
+
+        $users = $query
             ->orderByDesc('id')
             ->limit(self::PER_GROUP)
             ->get()

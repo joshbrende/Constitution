@@ -24,7 +24,7 @@ class AcademyAssessmentSubmissionTest extends TestCase
             'surname' => 'Learner',
             'national_id' => '12-ABC123',
         ]);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $course = Course::create([
             'code' => 'MEM-201',

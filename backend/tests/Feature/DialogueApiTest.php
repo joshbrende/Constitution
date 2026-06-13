@@ -28,7 +28,7 @@ class DialogueApiTest extends TestCase
         ]);
 
         $user = User::factory()->create(['surname' => 'Chatter']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->getJson('/api/v1/dialogue/channels');
 

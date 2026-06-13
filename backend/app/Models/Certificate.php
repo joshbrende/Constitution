@@ -53,6 +53,20 @@ class Certificate extends Model
     }
 
     /**
+     * API certificate routes are scoped to the authenticated owner (404 if not owned).
+     */
+    public function resolveRouteBinding($value, $field = null): Model
+    {
+        $query = static::query()->where($field ?? $this->getRouteKeyName(), $value);
+
+        if (request()->is('api/v1/certificates/*') && auth()->check()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->firstOrFail();
+    }
+
+    /**
      * Generate next certificate number (e.g. ZP-MEM-2025-00001).
      */
     public static function nextCertificateNumber(): string

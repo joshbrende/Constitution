@@ -28,7 +28,7 @@ class DialoguePolicyTest extends TestCase
         ]);
 
         $user = User::factory()->create(['surname' => 'Student']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->postJson("/api/v1/dialogue/channels/{$channel->id}/threads", [
             'title' => 'New topic',
@@ -54,7 +54,7 @@ class DialoguePolicyTest extends TestCase
         $user = User::factory()->create(['surname' => 'Member']);
         $user->roles()->attach($role->id);
         $user->load('roles');
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->postJson("/api/v1/dialogue/channels/{$channel->id}/threads", [
             'title' => 'New topic',

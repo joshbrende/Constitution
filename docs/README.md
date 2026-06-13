@@ -2,6 +2,7 @@
 
 | Document | Purpose |
 |----------|---------|
+| [**RBAC-MATRIX.md**](./RBAC-MATRIX.md) | Unified role × section × API policy matrix (architecture reference). |
 | [**BACKEND-MOBILE-CONSISTENCY.md**](./BACKEND-MOBILE-CONSISTENCY.md) | Step-by-step backend ↔ Expo alignment: API map, auth, errors, UX split, performance, recommendations. |
 | [**backend-manual/**](./backend-manual/README.md) | Canonical Laravel admin + API reference (numbered chapters). |
 | [**ENVIRONMENTS.md**](./ENVIRONMENTS.md) | WAMP vs Docker, `.env` / `.env.docker`, mobile LAN URL. |

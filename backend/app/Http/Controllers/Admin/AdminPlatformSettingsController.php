@@ -4,18 +4,25 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Services\AdminAccessService;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AdminPlatformSettingsController extends Controller
 {
+    public function __construct(
+        protected AuditLogger $auditLogger,
+        protected AdminAccessService $adminAccess
+    ) {}
+
     public function edit(Request $request): View
     {
         $user = $request->user();
         $user?->loadMissing('roles');
 
-        abort_unless($user && $user->hasRole('system_admin'), 403);
+        abort_unless($user && $this->adminAccess->canPerformAdminAction($user, 'platform_settings'), 403);
 
         return view('admin.platform-settings.edit', [
             'settings' => [
@@ -36,7 +43,15 @@ class AdminPlatformSettingsController extends Controller
         $user = $request->user();
         $user?->loadMissing('roles');
 
-        abort_unless($user && $user->hasRole('system_admin'), 403);
+        abort_unless($user && $this->adminAccess->canPerformAdminAction($user, 'platform_settings'), 403);
+
+        $before = [
+            'org_name' => (string) SiteSetting::get('org_name', 'ZANUPF'),
+            'support_email' => (string) SiteSetting::get('support_email', 'support@ttm-group.co.za'),
+            'public_site_url' => (string) SiteSetting::get('public_site_url', ''),
+            'enable_dialogue' => (bool) SiteSetting::get('enable_dialogue', true),
+            'require_national_id' => (bool) SiteSetting::get('require_national_id', true),
+        ];
 
         $data = $request->validate([
             'org_name' => ['required', 'string', 'max:120'],
@@ -57,6 +72,23 @@ class AdminPlatformSettingsController extends Controller
         SiteSetting::set('legal_cookies_url', $data['legal_cookies_url']);
         SiteSetting::set('enable_dialogue', $request->boolean('enable_dialogue', true));
         SiteSetting::set('require_national_id', $request->boolean('require_national_id', true));
+
+        $this->auditLogger->log(
+            action: 'admin.platform_settings.updated',
+            targetType: SiteSetting::class,
+            targetId: null,
+            metadata: [
+                'before' => $before,
+                'after' => [
+                    'org_name' => $data['org_name'],
+                    'support_email' => $data['support_email'],
+                    'public_site_url' => $data['public_site_url'] ?? '',
+                    'enable_dialogue' => $request->boolean('enable_dialogue', true),
+                    'require_national_id' => $request->boolean('require_national_id', true),
+                ],
+            ],
+            request: $request
+        );
 
         return redirect()
             ->route('admin.platform-settings.edit')

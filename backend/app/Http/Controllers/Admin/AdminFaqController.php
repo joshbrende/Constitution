@@ -47,7 +47,7 @@ class AdminFaqController extends Controller
 
     public function storeQuestion(Request $request): RedirectResponse
     {
-        $this->authorize('admin.section', 'admin');
+        $this->authorize('admin.anyAccess');
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],

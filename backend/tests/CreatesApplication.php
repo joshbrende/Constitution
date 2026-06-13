@@ -15,6 +15,15 @@ trait CreatesApplication
 
         $app->make(Kernel::class)->bootstrap();
 
+        // phpunit.xml sets sqlite :memory:, but Docker Compose injects DB_* env vars
+        // that override PHPUnit env. Force in-memory sqlite for isolated test runs.
+        if ($app->environment('testing')) {
+            config([
+                'database.default' => 'sqlite',
+                'database.connections.sqlite.database' => ':memory:',
+            ]);
+        }
+
         return $app;
     }
 }

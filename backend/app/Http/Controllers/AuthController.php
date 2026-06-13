@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\RefreshToken;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\TokenAbilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,15 +19,17 @@ use Illuminate\Validation\Rules\Password as PasswordRule;
 class AuthController extends Controller
 {
     public function __construct(
-        protected AuditLogger $auditLogger
+        protected AuditLogger $auditLogger,
+        protected TokenAbilityService $tokenAbilities
     ) {}
 
     private function issueAccessToken(User $user): string
     {
         $minutes = (int) config('api_tokens.access_token_expiry_minutes');
         $expiresAt = now()->addMinutes($minutes);
+        $abilities = $this->tokenAbilities->abilitiesForUser($user);
 
-        return $user->createToken('access_token', ['*'], $expiresAt)->plainTextToken;
+        return $user->createToken('access_token', $abilities, $expiresAt)->plainTextToken;
     }
 
     private function issueRefreshToken(User $user): string

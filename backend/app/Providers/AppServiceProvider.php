@@ -55,6 +55,10 @@ class AppServiceProvider extends ServiceProvider
             return $adminAccess->canAccessSection($user, $section);
         });
 
+        Gate::define('admin.anyAccess', function (Authenticatable $user) use ($adminAccess) {
+            return $adminAccess->hasAnyAdminAccess($user);
+        });
+
         Gate::define('admin.presidiumPublish', fn (?User $user) => $p->presidiumPublish($user));
         Gate::define('admin.contentManage', fn (?User $user) => $p->contentManage($user));
     }
@@ -115,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(15)->by($request->ip()),
                 Limit::perMinute(8)->by($request->ip() . '|' . $emailKey),
             ];
+        });
+
+        RateLimiter::for('backend-invitation', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
         });
     }
 

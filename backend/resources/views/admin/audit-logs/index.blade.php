@@ -11,6 +11,7 @@
                     <div class="dash-panel-title">Audit Logs</div>
                     <div class="dash-panel-subtitle">Authentication, academy, certificates, and <strong>constitution workflow</strong> (submit / approve / reject / direct publish). Filter by <code>constitution.</code> to review amendment channels.</div>
                 </div>
+                <a href="{{ route('admin.audit-logs.export', request()->query()) }}" class="dash-btn-ghost" style="text-decoration:none;">Export JSONL</a>
                 <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
             </div>
 

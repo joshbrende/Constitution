@@ -21,10 +21,10 @@ class CertificateAdminTest extends TestCase
             'email' => 'admin@example.com',
         ]);
 
-        $role = Role::create([
-            'name' => 'System Admin',
-            'slug' => 'system_admin',
-        ]);
+        $role = Role::firstOrCreate(
+            ['slug' => 'system_admin'],
+            ['name' => 'System Admin']
+        );
 
         $user->roles()->attach($role->id);
 

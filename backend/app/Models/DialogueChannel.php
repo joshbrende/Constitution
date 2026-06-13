@@ -35,6 +35,14 @@ class DialogueChannel extends Model
         return $this->belongsTo(Section::class, 'zimbabwe_section_id');
     }
 
+    /**
+     * Whether the user may read or write in this channel (same rule for both).
+     */
+    public function canUserAccess(?User $user): bool
+    {
+        return $this->canUserPost($user);
+    }
+
     public function canUserPost(?User $user): bool
     {
         if (! $user) {

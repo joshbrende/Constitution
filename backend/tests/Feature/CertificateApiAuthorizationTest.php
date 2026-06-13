@@ -41,12 +41,11 @@ class CertificateApiAuthorizationTest extends TestCase
         $other = User::factory()->create(['surname' => 'Other']);
         $cert = $this->certificateForUser($owner);
 
-        Sanctum::actingAs($other);
+        $this->sanctumAs($other);
 
         $response = $this->postJson("/api/v1/certificates/{$cert->id}/generate");
 
-        $response->assertForbidden()
-            ->assertJsonFragment(['message' => 'Unauthorized.']);
+        $response->assertNotFound();
     }
 
     public function test_owner_can_generate_own_certificate(): void
@@ -54,7 +53,7 @@ class CertificateApiAuthorizationTest extends TestCase
         $owner = User::factory()->create(['surname' => 'Owner']);
         $cert = $this->certificateForUser($owner);
 
-        Sanctum::actingAs($owner);
+        $this->sanctumAs($owner);
 
         $response = $this->postJson("/api/v1/certificates/{$cert->id}/generate");
 

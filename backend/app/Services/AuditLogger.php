@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 
 class AuditLogger
 {
+    public function __construct(
+        protected AuditIntegrityService $integrityService
+    ) {}
+
     public function log(
         string $action,
         ?string $targetType = null,
@@ -16,7 +20,7 @@ class AuditLogger
     ): AuditLog {
         $request ??= request();
 
-        return AuditLog::create([
+        $attributes = [
             'actor_user_id' => auth()->id(),
             'action' => $action,
             'target_type' => $targetType,
@@ -25,7 +29,11 @@ class AuditLogger
             'ip_address' => $request?->ip(),
             'user_agent' => $request?->userAgent(),
             'request_id' => (string) ($request?->headers->get('X-Request-Id') ?? ''),
-        ]);
+            'created_at' => now(),
+        ];
+
+        $hashes = $this->integrityService->hashAttributesForInsert($attributes);
+
+        return AuditLog::create(array_merge($attributes, $hashes));
     }
 }
-

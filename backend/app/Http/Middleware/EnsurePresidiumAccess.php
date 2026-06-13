@@ -2,12 +2,17 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AdminAccessService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsurePresidiumAccess
 {
+    public function __construct(
+        protected AdminAccessService $adminAccess
+    ) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
@@ -15,17 +20,10 @@ class EnsurePresidiumAccess
             return redirect()->route('login');
         }
 
-        // Presidium-protected actions are also allowed for system admins.
-        $allowed = ['presidium', 'system_admin'];
-        $hasAccess = $user->roles->contains(
-            fn ($r) => in_array((string) $r->slug, $allowed, true)
-        );
-
-        if (! $hasAccess) {
+        if (! $this->adminAccess->canPerformAdminAction($user, 'presidium_publish')) {
             abort(403, 'Presidium access required.');
         }
 
         return $next($request);
     }
 }
-

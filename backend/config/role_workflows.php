@@ -73,10 +73,10 @@ return [
     ],
     'user_manager' => [
         'title' => 'User manager',
-        'summary' => 'Assign roles; you do not edit constitutional or academy content.',
+        'summary' => 'Assign roles on existing accounts; you do not create backend staff or edit constitutional content.',
         'steps' => [
             'Admin → Users: find a user → Edit → assign roles appropriate to their duties.',
-            'Only System Admin should assign System Admin or Presidium unless policy says otherwise.',
+            'Only System Admin can invite or create new backend users and assign System Admin or Presidium.',
             'Members list shows certificate holders; use for membership verification context.',
         ],
     ],
@@ -88,11 +88,22 @@ return [
             'Do not share raw exports outside authorised channels.',
         ],
     ],
+    'stakeholder' => [
+        'title' => 'Stakeholder',
+        'summary' => 'Read-only access to analytics and high-level reports for oversight or briefing.',
+        'steps' => [
+            'Admin → Analytics & reports: review dashboards and exports you are permitted to see.',
+            'Do not share raw exports outside authorised channels.',
+            'You cannot edit content, assign roles, or access user PII screens.',
+        ],
+    ],
     'provincial_admin' => [
         'title' => 'Provincial administrator',
-        'summary' => 'User and member oversight aligned to province (full province scoping can be enabled later).',
+        'summary' => 'User and member oversight scoped to your assigned province (Users / Members admin only).',
         'steps' => [
-            'Use Users / Members as assigned; coordinate with national User Managers.',
+            'Ensure your account has a province set (contact a User Manager if lists are empty).',
+            'Use Users / Members to manage members in your province only.',
+            'Assign student or member roles only; backend invites are handled nationally.',
             'Follow data protection rules for provincial member data.',
         ],
     ],

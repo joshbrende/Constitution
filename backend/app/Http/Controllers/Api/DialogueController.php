@@ -31,8 +31,10 @@ class DialogueController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function threads(DialogueChannel $channel): JsonResponse
+    public function threads(Request $request, DialogueChannel $channel): JsonResponse
     {
+        $this->authorize('view', $channel);
+
         $threads = $channel->threads()
             ->with(['zanupfSection', 'zimbabweSection', 'creator'])
             ->orderByDesc('created_at')
@@ -88,6 +90,8 @@ class DialogueController extends Controller
 
     public function messages(Request $request, DialogueThread $thread): JsonResponse
     {
+        $this->authorize('view', $thread);
+
         $blockedIds = [];
         $user = $request->user();
         if ($user) {
@@ -188,6 +192,11 @@ class DialogueController extends Controller
         $user = $request->user();
         abort_unless($user, 401);
 
+        $message->loadMissing('thread.channel');
+        if ($message->thread) {
+            $this->authorize('view', $message->thread);
+        }
+
         $data = $request->validate([
             'reason' => ['required', 'string', Rule::in(['spam', 'harassment', 'hate', 'sexual', 'violence', 'misinformation', 'other'])],
             'details' => ['nullable', 'string', 'max:1000'],
@@ -212,6 +221,8 @@ class DialogueController extends Controller
     {
         $user = $request->user();
         abort_unless($user, 401);
+
+        $this->authorize('view', $thread);
 
         $data = $request->validate([
             'reason' => ['required', 'string', Rule::in(['spam', 'harassment', 'hate', 'sexual', 'violence', 'misinformation', 'other'])],

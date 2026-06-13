@@ -29,7 +29,7 @@ class CourseEnrolPolicyTest extends TestCase
             'grants_membership' => false,
         ]);
 
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->postJson("/api/v1/academy/courses/{$course->id}/enrol");
 

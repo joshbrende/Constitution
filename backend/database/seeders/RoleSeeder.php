@@ -83,6 +83,11 @@ class RoleSeeder extends Seeder
                 'slug' => 'audit_viewer',
                 'description' => 'Read-only access to audit logs for compliance and oversight.',
             ],
+            [
+                'name' => 'Stakeholder',
+                'slug' => 'stakeholder',
+                'description' => 'External or internal stakeholder with read-only access to selected reports.',
+            ],
         ];
 
         foreach ($roles as $role) {

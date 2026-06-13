@@ -13,8 +13,8 @@ class RegistrationRolesTest extends TestCase
 
     public function test_web_registration_assigns_student_only_not_member(): void
     {
-        Role::create(['name' => 'Student', 'slug' => 'student']);
-        Role::create(['name' => 'Member', 'slug' => 'member']);
+        Role::firstOrCreate(['slug' => 'student'], ['name' => 'Student']);
+        Role::firstOrCreate(['slug' => 'member'], ['name' => 'Member']);
 
         $response = $this->post('/register', [
             'name' => 'Jane',
@@ -30,6 +30,7 @@ class RegistrationRolesTest extends TestCase
         $user = User::where('email', 'jane@example.com')->firstOrFail();
         $this->assertTrue($user->roles()->where('slug', 'student')->exists());
         $this->assertFalse($user->roles()->where('slug', 'member')->exists());
+        $this->assertNotNull($user->accepted_terms_at);
     }
 }
 

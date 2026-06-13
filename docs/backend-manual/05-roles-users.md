@@ -18,7 +18,8 @@ Defined in `database/seeders/RoleSeeder.php` (run `php artisan db:seed --class=R
 | `dialogue_moderator` | Dialogue moderation |
 | `user_manager` | Users list and role assignment |
 | `analytics_viewer` | Analytics read-only |
-| `provincial_admin` | User and member tools (province scoping may be added later) |
+| `stakeholder` | Analytics read-only (oversight / briefing) |
+| `provincial_admin` | User and member tools scoped to assigned province |
 | `audit_viewer` | Audit logs read-only |
 
 ## 5.2 Custom roles
@@ -31,8 +32,8 @@ This section explains, step by step, how a System Administrator assigns roles so
 
 ### Who can assign roles
 
-- **System Administrator** — can assign any role, including `system_admin` and `presidium`.
-- **User Manager** — can assign roles except `system_admin` and `presidium`. Those two are restricted to System Administrators only (per `config/admin.php`).
+- **System Administrator** — can assign any role, including `system_admin` and `presidium`. Only System Administrators can **invite** or **create** new backend dashboard users (see §5.6).
+- **User Manager** — can assign roles on **existing** users except `system_admin` and `presidium`. Cannot invite or create backend staff.
 
 ### Step-by-step flow (explicit)
 
@@ -53,6 +54,7 @@ This section explains, step by step, how a System Administrator assigns roles so
 | Presidium | Approve or reject constitutional amendments |
 | Content Editor | Edit constitution and library content |
 | Analytics Viewer | Read-only reports and exports |
+| Stakeholder | Read-only analytics for oversight / briefing |
 | Audit Viewer | Read-only audit logs |
 | Dialogue Moderator | Moderate dialogue channels and threads |
 | Provincial Admin | User/member oversight (province scope as configured) |
@@ -61,12 +63,42 @@ This section explains, step by step, how a System Administrator assigns roles so
 
 The form submits role IDs; the controller runs `$user->roles()->sync(...)` on the `role_user` pivot table.
 
-## 5.4 Members versus users
+## 5.6 Provisioning backend staff (System Administrator only)
+
+Use this when onboarding new back-office users who need admin dashboard access.
+
+### Invite by email (recommended)
+
+1. **Admin → Users** → **Invite backend user**
+2. Enter email and tick one or more **provisionable** roles (roles with admin section access)
+3. The invitee receives an email with login URL, assigned duties, admin areas, and an activation link
+4. They set their password on first visit; roles apply immediately
+
+**Routes:** `admin.users.invite.create`, `admin.users.invite.store`  
+**Service:** `BackendRoleDutiesService` — filters roles and builds duty briefs for UI/email
+
+### Create with temporary password
+
+1. **Admin → Users** → **Create backend user**
+2. Enter name, surname, email, and roles
+3. System generates a 16-character temporary password and emails it with duties
+4. User should change password after first login
+
+**Routes:** `admin.users.create-backend`, `admin.users.store-backend`  
+**Audit:** `admin.users.backend_created`
+
+### What is *not* granted automatically
+
+Selecting scoped roles (e.g. `dialogue_moderator`, `academy_manager`) grants only the admin sections mapped in `config/admin.php`. Full platform access requires explicit assignment of `system_admin`.
+
+**User Managers** and **Provincial Admins** cannot access invite/create screens (403).
+
+## 5.7 Members versus users
 
 - **Users** — all accounts.
 - **Members** — users who have at least one **certificate** (`MembersController` uses `whereHas('certificates')`).
 
-## 5.5 Related docs
+## 5.8 Related docs
 
 - [04-admin-rbac.md](./04-admin-rbac.md)
 - [14-members-users.md](./14-members-users.md)

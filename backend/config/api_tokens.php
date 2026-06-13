@@ -16,4 +16,9 @@ return [
 
     'refresh_token_expiry_days' => (int) env('REFRESH_TOKEN_EXPIRY_DAYS', 7),
 
+    /*
+    | Token abilities are resolved per user via TokenAbilityService (config/permissions.php).
+    | Wildcard ['*'] is no longer issued on login/register/refresh.
+    */
+
 ];

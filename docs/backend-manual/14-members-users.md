@@ -4,8 +4,11 @@
 
 - **Route:** `admin.users.index` — paginated list, search by name/surname/email
 - **Edit:** `admin.users.edit`, `admin.users.update` — assign roles (checkbox list)
+- **Invite backend user:** `admin.users.invite.create`, `admin.users.invite.store` — **system_admin** only; email invitation with duties
+- **Create backend user:** `admin.users.create-backend`, `admin.users.store-backend` — **system_admin** only; immediate account + welcome email
 
-**Controller:** `App\Http\Controllers\Admin\UsersController`
+**Controller:** `App\Http\Controllers\Admin\UsersController`  
+**Provisioning:** `BackendRoleDutiesService`, `BackendUserInvitationController` (guest accept flow)
 
 ## 14.2 Members
 

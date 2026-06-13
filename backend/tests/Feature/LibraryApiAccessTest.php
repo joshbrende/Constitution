@@ -69,7 +69,7 @@ class LibraryApiAccessTest extends TestCase
         $docs = $this->seedDocuments($cat);
 
         $user = User::factory()->create(['surname' => 'Member']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $response = $this->getJson('/api/v1/library/documents?per_page=50');
 
@@ -97,7 +97,7 @@ class LibraryApiAccessTest extends TestCase
         $docs = $this->seedDocuments($cat);
 
         $user = User::factory()->create(['surname' => 'Member']);
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $this->getJson("/api/v1/library/documents/{$docs['member']->id}")
             ->assertOk()
@@ -117,7 +117,7 @@ class LibraryApiAccessTest extends TestCase
         $user->roles()->attach($role->id);
         $user->load('roles');
 
-        Sanctum::actingAs($user);
+        $this->sanctumAs($user);
 
         $this->getJson("/api/v1/library/documents/{$docs['leadership']->id}")
             ->assertOk()

@@ -37,9 +37,22 @@ class AssessmentAttempt extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * API attempt submit routes are scoped to the authenticated owner (404 if not owned).
+     */
+    public function resolveRouteBinding($value, $field = null): Model
+    {
+        $query = static::query()->where($field ?? $this->getRouteKeyName(), $value);
+
+        if (request()->is('api/v1/academy/attempts/*') && auth()->check()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->firstOrFail();
+    }
+
     public function answers(): HasMany
     {
         return $this->hasMany(AssessmentAnswer::class);
     }
 }
-

@@ -25,8 +25,6 @@ use App\Http\Controllers\Api\ConstitutionOfficialController;
 use App\Http\Controllers\Api\AppConfigController;
 
 Route::prefix('v1')->group(function () {
-    // Authentication
-    // Official constitution documents (e.g. gazetted PDF for Amendment Bill — used by mobile)
     Route::get('constitution/official/amendment3', [ConstitutionOfficialController::class, 'amendment3']);
 
     Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
@@ -37,89 +35,96 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
-        // Profile
-        Route::get('profile', [ApiProfileController::class, 'show']);
-        Route::put('profile', [ApiProfileController::class, 'update']);
-        Route::delete('profile', [ApiProfileController::class, 'destroy']);
+        Route::middleware('abilities:profile:read')->group(function () {
+            Route::get('profile', [ApiProfileController::class, 'show']);
+            Route::get('provinces', [ApiProvinceController::class, 'index']);
+        });
 
-        // Provinces (for profile picker)
-        Route::get('provinces', [ApiProvinceController::class, 'index']);
+        Route::middleware('abilities:profile:write')->group(function () {
+            Route::put('profile', [ApiProfileController::class, 'update']);
+            Route::delete('profile', [ApiProfileController::class, 'destroy']);
+        });
 
-        // Academy
-        Route::get('academy/courses', [AcademyCourseController::class, 'index']);
-        Route::get('academy/courses/membership', [AcademyCourseController::class, 'membershipCourse']);
-        Route::get('academy/summary', [AcademyCourseController::class, 'summary']);
-        Route::get('academy/courses/{course}', [AcademyCourseController::class, 'show']);
-        Route::post('academy/courses/{course}/enrol', [AcademyCourseController::class, 'enrol']);
-        Route::get('academy/courses/{course}/enrolment', [AcademyCourseController::class, 'enrolment']);
-        Route::get('academy/assessments/{assessment}', [AcademyAssessmentController::class, 'assessment']);
-        Route::post('academy/assessments/{assessment}/attempts', [AcademyAssessmentController::class, 'startAttempt'])
-            ->middleware('throttle:assessments');
-        Route::post('academy/attempts/{attempt}/submit', [AcademyAssessmentController::class, 'submitAttempt'])
-            ->middleware('throttle:assessments');
+        Route::middleware('abilities:academy:read')->group(function () {
+            Route::get('academy/courses', [AcademyCourseController::class, 'index']);
+            Route::get('academy/courses/membership', [AcademyCourseController::class, 'membershipCourse']);
+            Route::get('academy/summary', [AcademyCourseController::class, 'summary']);
+            Route::get('academy/courses/{course}', [AcademyCourseController::class, 'show']);
+            Route::get('academy/courses/{course}/enrolment', [AcademyCourseController::class, 'enrolment']);
+            Route::get('academy/assessments/{assessment}', [AcademyAssessmentController::class, 'assessment']);
+            Route::get('academy/badges', [AcademyAchievementsController::class, 'index']);
+        });
 
-        // Academy Achievements (badges + locked/unlocked + progress)
-        Route::get('academy/badges', [AcademyAchievementsController::class, 'index']);
+        Route::middleware('abilities:academy:write')->group(function () {
+            Route::post('academy/courses/{course}/enrol', [AcademyCourseController::class, 'enrol']);
+            Route::post('academy/assessments/{assessment}/attempts', [AcademyAssessmentController::class, 'startAttempt'])
+                ->middleware('throttle:assessments');
+            Route::post('academy/attempts/{attempt}/submit', [AcademyAssessmentController::class, 'submitAttempt'])
+                ->middleware('throttle:assessments');
+        });
 
-        // Certificates (generate is rate-limited; download returns 202 until PDF ready)
-        Route::get('certificates/preview', [CertificateController::class, 'preview']);
-        Route::get('certificates', [CertificateController::class, 'index']);
-        Route::post('certificates/{certificate}/generate', [CertificateController::class, 'generate'])
-            ->middleware('throttle:certificates');
-        Route::get('certificates/{certificate}/pdf', [CertificateController::class, 'download'])
-            ->middleware('throttle:certificates');
+        Route::middleware('abilities:certificates:read')->group(function () {
+            Route::get('certificates/preview', [CertificateController::class, 'preview']);
+            Route::get('certificates', [CertificateController::class, 'index']);
+            Route::get('certificates/{certificate}/pdf', [CertificateController::class, 'download'])
+                ->middleware('throttle:certificates');
+        });
 
-        // Dialogue (channels and threads – authenticated)
-        Route::get('dialogue/channels', [DialogueController::class, 'channels']);
-        Route::get('dialogue/channels/{channel}/threads', [DialogueController::class, 'threads']);
-        Route::post('dialogue/channels/{channel}/threads', [DialogueController::class, 'storeThread']);
-        Route::get('dialogue/threads/{thread}/messages', [DialogueController::class, 'messages']);
-        Route::post('dialogue/threads/{thread}/messages', [DialogueController::class, 'storeMessage']);
-        Route::post('dialogue/messages/{message}/report', [DialogueController::class, 'reportMessage']);
-        Route::post('dialogue/threads/{thread}/report', [DialogueController::class, 'reportThread']);
-        Route::post('users/{userId}/block', [DialogueController::class, 'blockUser']);
-        Route::delete('users/{userId}/block', [DialogueController::class, 'unblockUser']);
+        Route::middleware('abilities:certificates:write')->group(function () {
+            Route::post('certificates/{certificate}/generate', [CertificateController::class, 'generate'])
+                ->middleware('throttle:certificates');
+        });
 
-        // Priority projects (members can view and like)
-        Route::get('priority-projects', [PriorityProjectsController::class, 'index']);
-        Route::post('priority-projects/{priority_project}/like', [PriorityProjectsController::class, 'like']);
+        Route::middleware('abilities:dialogue:read')->group(function () {
+            Route::get('dialogue/channels', [DialogueController::class, 'channels']);
+            Route::get('dialogue/channels/{channel}/threads', [DialogueController::class, 'threads']);
+            Route::get('dialogue/threads/{thread}/messages', [DialogueController::class, 'messages']);
+        });
+
+        Route::middleware('abilities:dialogue:write')->group(function () {
+            Route::post('dialogue/channels/{channel}/threads', [DialogueController::class, 'storeThread']);
+            Route::post('dialogue/threads/{thread}/messages', [DialogueController::class, 'storeMessage']);
+            Route::post('dialogue/messages/{message}/report', [DialogueController::class, 'reportMessage']);
+            Route::post('dialogue/threads/{thread}/report', [DialogueController::class, 'reportThread']);
+            Route::post('users/{userId}/block', [DialogueController::class, 'blockUser']);
+            Route::delete('users/{userId}/block', [DialogueController::class, 'unblockUser']);
+        });
+
+        Route::middleware('abilities:projects:read')->group(function () {
+            Route::get('priority-projects', [PriorityProjectsController::class, 'index']);
+        });
+
+        Route::middleware('abilities:projects:write')->group(function () {
+            Route::post('priority-projects/{priority_project}/like', [PriorityProjectsController::class, 'like']);
+        });
     });
 
-    // Digital Library (categories public; documents filtered by access)
     Route::get('library/categories', [LibraryController::class, 'categories']);
     Route::get('library/documents', [LibraryController::class, 'index']);
     Route::get('library/documents/{document}', [LibraryController::class, 'show']);
 
-    // Party Organs (public, published only)
     Route::get('party-organs', [PartyOrgansController::class, 'index']);
     Route::get('party-organs/{party_organ}', [PartyOrgansController::class, 'show']);
 
-    // Presidium (public, published only)
     Route::get('presidium', [PresidiumController::class, 'index']);
 
-    // Party (public profile)
     Route::get('party/profile', [ApiPartyController::class, 'profile']);
 
-    // Home banners (public, used on mobile overview)
     Route::get('home-banners', [ApiHomeBannersController::class, 'index']);
 
-    // Mobile/web app config (public, DB-backed)
     Route::get('app-config', [AppConfigController::class, 'show']);
 
-    // Health check (used for uptime monitoring)
     Route::get('health', [HealthController::class, 'show']);
 
-    // Static content pages (help, terms, privacy)
     Route::get('pages/{slug}', [ApiStaticPagesController::class, 'show']);
 
-    // Constitution content
     Route::get('parts', [PartController::class, 'index']);
     Route::get('chapters', [ChapterController::class, 'index']);
     Route::get('chapters/{chapter}', [ChapterController::class, 'show']);
     Route::get('sections/search', [SectionController::class, 'search']);
     Route::get('sections/{section}', [SectionController::class, 'show']);
     Route::get('sections/{section}/comments', [CommentController::class, 'index']);
-    Route::post('sections/{section}/comments', [CommentController::class, 'store'])
-        ->middleware('auth:sanctum');
-});
 
+    Route::post('sections/{section}/comments', [CommentController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:comments:write']);
+});

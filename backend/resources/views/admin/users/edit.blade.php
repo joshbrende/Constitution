@@ -41,15 +41,29 @@
                         <legend class="form-label" style="padding:0;">Roles</legend>
                         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.5rem;">
                             @foreach ($roles as $role)
-                                <label style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem;border-radius:0.3rem;background:rgba(15,23,42,0.5);">
+                                @php
+                                    $canAssign = $assignableRoleIds->contains($role->id);
+                                @endphp
+                                <label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.5rem;border-radius:0.3rem;background:rgba(15,23,42,0.5);{{ $canAssign ? '' : ';opacity:0.85;' }}">
                                     <input
                                         type="checkbox"
                                         name="roles[]"
                                         value="{{ $role->id }}"
                                         {{ $user->roles->contains('id', $role->id) ? 'checked' : '' }}
+                                        @disabled(! $canAssign)
+                                        style="margin-top:0.2rem;"
                                     >
-                                    <span>{{ $role->name }}</span>
-                                    <span style="font-size:0.75rem;color:var(--text-muted);">({{ $role->slug }})</span>
+                                    <span>
+                                        <span style="font-weight:600;">{{ $role->name }}</span>
+                                        <span style="font-size:0.75rem;color:var(--text-muted);"> ({{ $role->slug }})</span>
+                                        @php $duty = $roleDutyMap[$role->slug] ?? null; @endphp
+                                        @if ($duty && ! empty($duty['sections']))
+                                            <span style="display:block;font-size:0.72rem;color:var(--zanupf-gold);margin-top:0.2rem;">{{ implode(' · ', $duty['sections']) }}</span>
+                                        @endif
+                                        @if (! $canAssign)
+                                            <span style="font-size:0.7rem;color:var(--text-muted);"> locked</span>
+                                        @endif
+                                    </span>
                                 </label>
                             @endforeach
                         </div>

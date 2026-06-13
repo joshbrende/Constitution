@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\AdminQuickSearchController;
 use App\Http\Controllers\Admin\AdminFaqController;
 use App\Http\Controllers\Admin\AdminPlatformSettingsController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\BackendUserInvitationController;
 use App\Http\Controllers\CertificatePreviewController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DashboardController;
@@ -66,6 +67,15 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/password/forgot', [WebAuthController::class, 'showForgotPasswordForm'])->name('password.request');
     Route::post('/password/email', [WebAuthController::class, 'sendResetLinkEmail'])->name('password.email');
+
+    Route::get('/invitations/backend/{token}', [BackendUserInvitationController::class, 'show'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->middleware('throttle:backend-invitation')
+        ->name('backend-invitations.show');
+    Route::post('/invitations/backend/{token}', [BackendUserInvitationController::class, 'accept'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->middleware('throttle:backend-invitation')
+        ->name('backend-invitations.accept');
 });
 
 Route::post('/logout', [WebAuthController::class, 'logout'])
@@ -216,6 +226,14 @@ Route::middleware('auth')->group(function () {
             Route::delete('/party-leagues/{party_league}', [AdminPartyLeaguesController::class, 'destroy'])->name('party-leagues.destroy');
 
             Route::get('/users', [AdminUsersController::class, 'index'])->name('users.index');
+            Route::get('/users/invite/create', [AdminUsersController::class, 'createInvite'])->name('users.invite.create');
+            Route::post('/users/invite', [AdminUsersController::class, 'storeInvite'])
+                ->middleware('throttle:30,1')
+                ->name('users.invite.store');
+            Route::get('/users/create-backend', [AdminUsersController::class, 'createBackendUser'])->name('users.create-backend');
+            Route::post('/users/create-backend', [AdminUsersController::class, 'storeBackendUser'])
+                ->middleware('throttle:30,1')
+                ->name('users.store-backend');
             Route::get('/users/{user}/edit', [AdminUsersController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}', [AdminUsersController::class, 'update'])->name('users.update');
             Route::get('/members', [AdminMembersController::class, 'index'])->name('members.index');
@@ -267,6 +285,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/party-organs/{party_organ}', [AdminPartyOrgansController::class, 'destroy'])->name('party-organs.destroy');
 
             Route::get('/audit-logs', [AuditLogsController::class, 'index'])->name('audit-logs.index');
+            Route::get('/audit-logs/export', [AuditLogsController::class, 'export'])->name('audit-logs.export');
             Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
             Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
             Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');

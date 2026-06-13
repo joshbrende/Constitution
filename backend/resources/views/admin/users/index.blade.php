@@ -11,8 +11,18 @@
                     <div class="dash-panel-title">Users</div>
                     <div class="dash-panel-subtitle">All system users, including administrators, editors, students, and members.</div>
                 </div>
-                <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
+                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                    @if ($canProvisionBackendUsers ?? false)
+                    <a href="{{ route('admin.users.invite.create') }}" style="padding:0.45rem 0.85rem;background:var(--zanupf-green);color:#fff;border-radius:0.4rem;text-decoration:none;font-size:0.85rem;font-weight:600;">Invite backend user</a>
+                    <a href="{{ route('admin.users.create-backend') }}" class="dash-btn-ghost" style="text-decoration:none;font-size:0.85rem;">Create backend user</a>
+                    @endif
+                    <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
+                </div>
             </div>
+
+            @if (session('success'))
+                <div class="dash-alert dash-alert--success" style="margin-bottom:1rem;">{{ session('success') }}</div>
+            @endif
 
             <form method="GET" action="{{ route('admin.users.index') }}" style="margin-bottom:1rem;">
                 <div style="display:flex;gap:0.5rem;max-width:28rem;">

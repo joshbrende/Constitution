@@ -2,10 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\Permission;
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 class AdminAccessService
 {
+    public function permissionsEnabled(): bool
+    {
+        return Permission::query()->where('domain', Permission::DOMAIN_ADMIN)->exists();
+    }
+
     /**
      * All roles that can access at least one admin section.
      */
@@ -24,8 +31,12 @@ class AdminAccessService
      */
     public function canAccessSection(?Authenticatable $user, string $section): bool
     {
-        if (! $user) {
+        if (! $user instanceof User) {
             return false;
+        }
+
+        if ($this->permissionsEnabled()) {
+            return $user->hasPermission("admin.section.{$section}");
         }
 
         $allowedRoles = config("admin.sections.{$section}", []);
@@ -38,13 +49,31 @@ class AdminAccessService
         return count(array_intersect($allowedRoles, $userRoles)) > 0;
     }
 
+    public function canPerformAdminAction(User $user, string $action): bool
+    {
+        if ($this->permissionsEnabled()) {
+            return $user->hasPermission("admin.action.{$action}");
+        }
+
+        return match ($action) {
+            'presidium_publish' => $user->hasRole('presidium') || $user->hasRole('system_admin'),
+            'platform_settings', 'roles_manage' => $user->hasRole('system_admin'),
+            default => false,
+        };
+    }
+
     /**
      * Check if user has any admin access (can see admin home).
      */
     public function hasAnyAdminAccess(?Authenticatable $user): bool
     {
-        if (! $user) {
+        if (! $user instanceof User) {
             return false;
+        }
+
+        if ($this->permissionsEnabled()) {
+            return $user->hasAnyPermissionWithPrefix('admin.section.')
+                || $user->hasAnyPermissionWithPrefix('admin.action.');
         }
 
         $userRoles = $user->roles->pluck('slug')->map(fn ($s) => (string) $s)->all();
@@ -60,7 +89,7 @@ class AdminAccessService
      */
     public function getAccessibleSections(?Authenticatable $user): array
     {
-        if (! $user) {
+        if (! $user instanceof User) {
             return [];
         }
 

@@ -4,18 +4,28 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AdminScopeService;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 
 class MembersController extends Controller
 {
+    public function __construct(
+        protected AdminScopeService $adminScope
+    ) {}
+
     public function index(Request $request): View
     {
+        $admin = $request->user();
+        abort_unless($admin instanceof User, 403);
+
         // "Members" = users who have at least one certificate (completed membership path)
         $query = User::query()
             ->whereHas('certificates')
             ->with(['roles', 'certificates'])
             ->orderByDesc('id');
+
+        $this->adminScope->applyToUserQuery($query, $admin);
 
         // Basic search for admin convenience.
         if ($request->filled('q')) {

@@ -74,6 +74,7 @@ class AuthApiTest extends TestCase
 
         $user = User::where('email', self::NEW_USER_EMAIL)->firstOrFail();
         $this->assertTrue($user->roles()->where('slug', 'student')->exists());
+        $this->assertNotNull($user->accepted_terms_at);
     }
 
     public function test_register_validation_requires_accepted_terms(): void

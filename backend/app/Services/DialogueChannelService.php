@@ -19,6 +19,10 @@ class DialogueChannelService
             ->orderBy('name')
             ->get();
 
+        if ($user) {
+            $channels = $channels->filter(fn (DialogueChannel $c) => $c->canUserAccess($user))->values();
+        }
+
         if (! $user) {
             return $this->mapChannelsWithoutUser($channels);
         }

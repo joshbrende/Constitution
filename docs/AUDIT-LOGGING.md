@@ -37,6 +37,30 @@ Current wired events include:
 - `auth.web.login_failed`
 - `auth.web.logged_out`
 
+**Admin / users**
+- `admin.users.invitation_sent`
+- `admin.users.backend_created` — system admin created backend user with welcome email
+- `admin.users.roles_updated`
+- `admin.users.pii_viewed` — admin opened user role edit (PII screen)
+- `auth.backend_invitation.accepted`
+
+**Platform**
+- `admin.platform_settings.updated`
+
+**Audit meta**
+- `audit_logs.viewed` — admin viewed audit log index (includes filter metadata)
+- `audit_logs.exported` — admin exported audit logs to JSONL
+- `audit_logs.purged` — retention cleanup deleted aged rows (includes archive path)
+
+**Dialogue**
+- `dialogue.message_sent`
+
+**Constitution workflow** (see `backend/docs/role-workflows.md`)
+- `constitution.version_submitted_for_review`
+- `constitution.version_approved`
+- `constitution.version_rejected_to_draft`
+- `constitution.section_published_direct`
+
 **Academy**
 - `academy.attempt_started`
 - `academy.attempt_submitted`
@@ -126,12 +150,33 @@ Suggested policy by environment:
 
 ## Purge/archival procedure
 
-1. Export records older than retention threshold to secure archive (CSV/JSON dump).
+1. Export records older than retention threshold to secure archive (JSONL via `audit:export` or automatic export during `ops:cleanup-security-data`).
 2. Verify archive integrity and access controls.
-3. Delete archived rows from primary DB.
-4. Record purge run details (time, range, row count, operator).
+3. Delete archived rows from primary DB (cleanup command uses append-only guard bypass).
+4. Record purge run details (`audit_logs.purged` event with row count and archive path).
 
-Example SQL purge (after archive):
+**Commands (Docker):**
+
+```bash
+docker compose exec app php artisan audit:export --from=2025-01-01 --to=2025-12-31 --verify
+docker compose exec app php artisan audit:verify
+docker compose exec app php artisan ops:cleanup-security-data --dry-run
+docker compose exec app php artisan ops:cleanup-security-data
+```
+
+Use `--skip-archive` only in local/dev when `AUDIT_REQUIRE_ARCHIVE_BEFORE_PURGE=false` or explicitly for testing.
+
+**Separate audit database (optional):**
+
+Set `AUDIT_DB_CONNECTION=audit` and `AUDIT_DB_DATABASE=constitution_audit` (plus host credentials). Run migrations against the audit connection:
+
+```bash
+docker compose exec app php artisan migrate --database=audit
+```
+
+When unset, audit logs remain on the primary connection with append-only and hash-chain controls.
+
+Example SQL purge (after archive; prefer the artisan cleanup command):
 
 ```sql
 DELETE FROM audit_logs
