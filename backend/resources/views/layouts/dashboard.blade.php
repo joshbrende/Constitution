@@ -963,6 +963,12 @@
                         @endcanAccessSection
                         @canAccessSection('certificates')
                         <li class="dash-nav-item">
+                            <a href="{{ route('admin.certificate-applications.index') }}" class="dash-nav-link {{ request()->routeIs('admin.certificate-applications.*') ? 'is-active' : '' }}">
+                                <span class="dot"></span>
+                                <span>Cert. applications</span>
+                            </a>
+                        </li>
+                        <li class="dash-nav-item">
                             <a href="{{ route('admin.certificates.index') }}" class="dash-nav-link {{ request()->routeIs('admin.certificates.*') ? 'is-active' : '' }}">
                                 <span class="dot"></span>
                                 <span>Certificates</span>

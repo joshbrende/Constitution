@@ -12,6 +12,7 @@
 | [**PRODUCTION-HARDENING.md**](./PRODUCTION-HARDENING.md) | Pre-go-live checklist (CORS, debug, TLS, secrets). |
 | **Setup Wizard** | One-time `/setup` wizard (system_admin only) that writes platform defaults to DB; includes a server `.env` checklist. See **§ Setup Wizard** in [ENVIRONMENTS.md](./ENVIRONMENTS.md). |
 | [**AUDIT-LOGGING.md**](./AUDIT-LOGGING.md) | Audit log retention and queries. |
+| [**ACADEMY-CERTIFICATE-WORKFLOW.md**](./ACADEMY-CERTIFICATE-WORKFLOW.md) | Government payment → Presidium → print → collection runbook. |
 | [**CERTIFICATE-SECURITY.md**](./CERTIFICATE-SECURITY.md) | Certificate verification and abuse notes. |
 | [**INPUT-SANITIZATION.md**](./INPUT-SANITIZATION.md) | User content sanitization. |
 | [**LOAD-BALANCER.md**](./LOAD-BALANCER.md) | Proxy / LB configuration. |

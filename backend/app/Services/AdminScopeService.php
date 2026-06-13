@@ -80,6 +80,27 @@ class AdminScopeService
         return (int) $target->province_id === $provinceId;
     }
 
+    /**
+     * Scope certificate applications to applicants in the admin's province.
+     *
+     * @param  Builder<\App\Models\CertificateApplication>  $query
+     * @return Builder<\App\Models\CertificateApplication>
+     */
+    public function applyToCertificateApplicationQuery(Builder $query, User $admin): Builder
+    {
+        $provinceId = $this->scopedProvinceId($admin);
+
+        if ($provinceId === null) {
+            return $query;
+        }
+
+        if ($provinceId === 0) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('user', fn (Builder $userQuery) => $userQuery->where('province_id', $provinceId));
+    }
+
     public function assertCanAccessUser(User $admin, User $target): void
     {
         if (! $this->canAccessUser($admin, $target)) {

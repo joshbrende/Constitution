@@ -23,6 +23,7 @@ class EnsureAdminSection
         'admin.party' => 'party',
         'admin.presidium' => 'presidium',
         'admin.certificates' => 'certificates',
+        'admin.certificate-applications' => 'certificates',
         'admin.users' => 'users',
         'admin.members' => 'members',
         'admin.analytics' => 'analytics',

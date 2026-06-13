@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Province;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -25,7 +26,9 @@ class WebAuthController extends Controller
 
     public function showRegisterForm()
     {
-        return view('auth.register');
+        $provinces = Province::orderBy('sort_order')->orderBy('name')->get();
+
+        return view('auth.register', compact('provinces'));
     }
 
     public function showForgotPasswordForm()
@@ -70,6 +73,7 @@ class WebAuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
             'accept_terms' => ['required', 'accepted'],
+            'province_id' => ['required', 'integer', 'exists:provinces,id'],
         ]);
 
         $user = User::create([
@@ -77,6 +81,7 @@ class WebAuthController extends Controller
             'surname' => $data['surname'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'province_id' => $data['province_id'],
             'accepted_terms_at' => now(),
         ]);
 

@@ -34,6 +34,9 @@ class Course extends Model
         'is_mandatory',
         'grants_membership',
         'certificate_title',
+        'certificate_fee_amount',
+        'certificate_fee_currency',
+        'payment_office_instructions',
         'status',
         'created_by',
     ];

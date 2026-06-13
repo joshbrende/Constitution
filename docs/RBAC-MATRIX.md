@@ -77,7 +77,7 @@ Implementation: `AdminScopeService` + `config/scoping.php`. Provincial admins ca
 | academy | + academy_manager |
 | library, party, party_leagues, presidium, party_organs, priority_projects, home_banners, static_pages | system_admin, content_editor, approver, presidium |
 | dialogue | + dialogue_moderator, moderator |
-| certificates | + user_manager, academy_manager |
+| certificates | + user_manager, academy_manager, **provincial_admin** |
 | users, members | + user_manager, provincial_admin |
 | analytics | + analytics_viewer, stakeholder |
 | audit_logs | system_admin, presidium, audit_viewer |
@@ -91,6 +91,12 @@ Implementation: `AdminScopeService` + `config/scoping.php`. Provincial admins ca
 | Platform settings | `hasRole('system_admin')` in controller | system_admin only |
 | Quick search / FAQ submit | `admin.anyAccess` | Any role with ≥1 admin section |
 | Quick search result groups | Filtered by caller's accessible sections | Per section map in `AdminQuickSearchController` |
+| Confirm academy payment | `admin.action.academy_payment_confirm` | academy_manager, system_admin, provincial_admin |
+| Presidium approve certificate | `admin.action.academy_certificate_presidium_approve` | presidium, system_admin |
+| Print / download certificate PDF (admin) | `admin.action.academy_certificate_print` | academy_manager, system_admin |
+| Mark ready / collected | `admin.action.academy_certificate_collection` | academy_manager, system_admin, provincial_admin |
+
+**Academy certificate workflow:** Provincial admins see applications for their province only (`AdminScopeService`). Presidium cannot confirm payment. Students use `/api/v1/academy/applications` — not certificate PDF download. See [`ACADEMY-CERTIFICATE-WORKFLOW.md`](./ACADEMY-CERTIFICATE-WORKFLOW.md).
 
 ---
 
@@ -99,7 +105,8 @@ Implementation: `AdminScopeService` + `config/scoping.php`. Provincial admins ca
 | Resource | Policy | view / read | create / write | Notes |
 |----------|--------|-------------|----------------|-------|
 | Library document | `LibraryDocumentPolicy` | `view` by `access_rule`: public / member (auth) / leadership (presidium, system_admin) | N/A (admin CMS) | List filtered in controller |
-| Certificate | `CertificatePolicy` | Owner list only (`user_id`) | `generate`, `download` — owner only | Route binding scoped on API |
+| Certificate | `CertificatePolicy` | Owner list only (`user_id`) when legacy download enabled | `generate`, `download` — **denied** when `academy.student_certificate_download_enabled` is false | Government workflow: use `CertificateApplication` API |
+| Certificate application | `CertificateApplicationPolicy` | Owner only (`user_id`) | Receipt PDF download — owner only | Created on exam pass; see applications API |
 | Course | `CoursePolicy` | Published courses public to auth users | `enrol` — published only | National ID in controller |
 | Assessment | `AssessmentPolicy` | `take` — enrolled + published | start/submit via attempts | Anti-cheat in controller |
 | Assessment attempt | `AssessmentAttemptPolicy` | — | `submit` — owner + in_progress + enrolled | Route binding scoped on API |
@@ -156,6 +163,7 @@ Full event list: [`AUDIT-LOGGING.md`](./AUDIT-LOGGING.md).
 - [`backend-manual/04-admin-rbac.md`](./backend-manual/04-admin-rbac.md) — middleware detail
 - [`backend-manual/05-roles-users.md`](./backend-manual/05-roles-users.md) — role assignment
 - [`AUDIT-LOGGING.md`](./AUDIT-LOGGING.md) — audit operations
+- [`ACADEMY-CERTIFICATE-WORKFLOW.md`](./ACADEMY-CERTIFICATE-WORKFLOW.md) — government payment + Presidium certificate process
 - [`CERTIFICATE-SECURITY.md`](./CERTIFICATE-SECURITY.md) — certificate verification
 
 *Update this matrix when adding roles, admin sections, or API policies.*

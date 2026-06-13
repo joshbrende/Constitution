@@ -20,7 +20,7 @@ return [
         'home_banners' => ['system_admin', 'content_editor', 'approver', 'presidium'],
         'static_pages' => ['system_admin', 'content_editor', 'approver', 'presidium'],
         'dialogue' => ['system_admin', 'content_editor', 'approver', 'presidium', 'dialogue_moderator', 'moderator'],
-        'certificates' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'academy_manager'],
+        'certificates' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'academy_manager', 'provincial_admin'],
         'users' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'provincial_admin'],
         'members' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'provincial_admin'],
         'analytics' => ['system_admin', 'content_editor', 'approver', 'presidium', 'analytics_viewer', 'stakeholder'],

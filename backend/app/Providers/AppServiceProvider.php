@@ -61,6 +61,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('admin.presidiumPublish', fn (?User $user) => $p->presidiumPublish($user));
         Gate::define('admin.contentManage', fn (?User $user) => $p->contentManage($user));
+
+        Gate::define('admin.action', function (Authenticatable $user, string $action) use ($adminAccess) {
+            return $user instanceof User && $adminAccess->canPerformAdminAction($user, $action);
+        });
     }
 
     protected function registerBladeDirectives(): void

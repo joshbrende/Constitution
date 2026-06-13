@@ -20,6 +20,13 @@ class CertificatePolicy
 
     private function allowsPdfActions(User $user, Certificate $certificate): bool|Response
     {
+        if (! config('academy.student_certificate_download_enabled', false)) {
+            return Response::deny(
+                'Certificates are issued and collected through the government payment workflow. Use your Academy payment receipt.',
+                'CERTIFICATE_WORKFLOW_ADMIN_ONLY'
+            );
+        }
+
         if ($certificate->user_id !== $user->id) {
             return Response::deny('Unauthorized.');
         }

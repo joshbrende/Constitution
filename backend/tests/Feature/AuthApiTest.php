@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Province;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -60,6 +61,8 @@ class AuthApiTest extends TestCase
             ['name' => 'Student', 'description' => 'Learner']
         );
 
+        $province = Province::query()->orderBy('id')->firstOrFail();
+
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'New',
             'surname' => 'User',
@@ -67,6 +70,7 @@ class AuthApiTest extends TestCase
             'password' => self::REGISTER_PASSWORD,
             'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => true,
+            'province_id' => $province->id,
         ]);
 
         $response->assertStatus(201)
@@ -74,6 +78,7 @@ class AuthApiTest extends TestCase
 
         $user = User::where('email', self::NEW_USER_EMAIL)->firstOrFail();
         $this->assertTrue($user->roles()->where('slug', 'student')->exists());
+        $this->assertSame($province->id, (int) $user->province_id);
         $this->assertNotNull($user->accepted_terms_at);
     }
 

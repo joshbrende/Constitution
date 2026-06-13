@@ -123,6 +123,28 @@
                                 </button>
                             </p>
                         </div>
+                        <div style="display:grid;grid-template-columns:1fr 8rem;gap:0.75rem;max-width:28rem;">
+                            <div>
+                                <label for="certificate_fee_amount" class="form-label">Certificate fee (required for membership courses)</label>
+                                <input id="certificate_fee_amount" type="number" step="0.01" min="0.01" name="certificate_fee_amount"
+                                    value="{{ old('certificate_fee_amount', $course?->certificate_fee_amount ?? config('academy.default_membership_fee_amount')) }}"
+                                    class="form-input" placeholder="25.00">
+                                <p class="form-help">Amount the student pays at the government office before certificate printing.</p>
+                            </div>
+                            <div>
+                                <label for="certificate_fee_currency" class="form-label">Currency</label>
+                                <input id="certificate_fee_currency" type="text" name="certificate_fee_currency" maxlength="3"
+                                    value="{{ old('certificate_fee_currency', $course?->certificate_fee_currency ?? config('academy.default_fee_currency', 'USD')) }}"
+                                    class="form-input" style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div style="max-width:36rem;">
+                            <label for="payment_office_instructions" class="form-label">Payment office instructions (optional)</label>
+                            <textarea id="payment_office_instructions" name="payment_office_instructions" rows="3" maxlength="2000"
+                                placeholder="Override default national office instructions for this course."
+                                class="form-input">{{ old('payment_office_instructions', $course?->payment_office_instructions) }}</textarea>
+                            <p class="form-help">Shown on the student payment receipt. Leave blank to use the national list in system configuration.</p>
+                        </div>
                     </div>
                 </div>
 

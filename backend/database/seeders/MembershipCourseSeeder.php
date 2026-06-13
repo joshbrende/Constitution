@@ -23,6 +23,8 @@ class MembershipCourseSeeder extends Seeder
                 'is_mandatory' => true,
                 'grants_membership' => true,
                 'certificate_title' => 'Certificate of Competence',
+                'certificate_fee_amount' => config('academy.default_membership_fee_amount', 25.00),
+                'certificate_fee_currency' => config('academy.default_fee_currency', 'USD'),
                 'status' => 'published',
                 'created_by' => null,
             ]

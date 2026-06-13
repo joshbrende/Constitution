@@ -21,6 +21,22 @@ return [
             'name' => 'Manage role definitions (CRUD)',
             'roles' => ['system_admin'],
         ],
+        'academy_payment_confirm' => [
+            'name' => 'Confirm academy certificate payment',
+            'roles' => ['academy_manager', 'system_admin', 'provincial_admin'],
+        ],
+        'academy_certificate_presidium_approve' => [
+            'name' => 'Presidium approve certificate for printing',
+            'roles' => ['presidium', 'system_admin'],
+        ],
+        'academy_certificate_print' => [
+            'name' => 'Mark academy certificate printed / download PDF',
+            'roles' => ['academy_manager', 'system_admin'],
+        ],
+        'academy_certificate_collection' => [
+            'name' => 'Manage certificate collection status',
+            'roles' => ['academy_manager', 'system_admin', 'provincial_admin'],
+        ],
     ],
 
     /*

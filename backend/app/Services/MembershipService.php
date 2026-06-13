@@ -4,15 +4,16 @@ namespace App\Services;
 
 use App\Models\AssessmentAttempt;
 use App\Models\Certificate;
+use App\Models\Course;
 use App\Models\Enrolment;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\AuditLogger;
+use InvalidArgumentException;
 
 class MembershipService
 {
     public function __construct(
-        protected AuditLogger $auditLogger
+        protected AuditLogger $auditLogger,
     ) {}
 
     private function defaultCertificateExpiry(): ?\Illuminate\Support\Carbon
@@ -27,7 +28,7 @@ class MembershipService
 
     /**
      * When a user passes an assessment for a course that grants membership,
-     * complete their enrolment and grant the member role.
+     * complete their enrolment and start certificate processing.
      */
     public function grantMembershipIfPassed(AssessmentAttempt $attempt): void
     {
@@ -58,17 +59,50 @@ class MembershipService
             'completed_at' => now(),
         ]);
 
-        $memberRole = Role::firstOrCreate(
-            ['slug' => 'member'],
-            ['name' => 'Member', 'description' => 'Ordinary party member or app user.']
-        );
+        if (config('academy.grant_member_role_on') === 'exam_pass') {
+            $this->grantLegacyImmediateMembership($user, $course, $attempt);
 
-        $wasMember = $user->hasRole('member');
-        if (! $wasMember) {
-            $user->roles()->attach($memberRole->id);
+            return;
         }
 
-        // Issue certificate if not already issued (PDF generated async via queue)
+        try {
+            app(CertificateApplicationService::class)->createFromPassedAttempt($attempt);
+        } catch (InvalidArgumentException) {
+            return;
+        }
+    }
+
+    /**
+     * Attach member role after payment confirmation (Phase 3 admin workflow).
+     */
+    public function grantMemberRoleAfterPayment(User $user, Certificate $certificate): void
+    {
+        $wasMember = $user->hasRole('member');
+        if (! $wasMember) {
+            $this->attachMemberRole($user);
+        }
+
+        $this->auditLogger->log(
+            action: 'membership.granted',
+            targetType: Certificate::class,
+            targetId: $certificate->id,
+            metadata: [
+                'user_id' => $user->id,
+                'course_id' => $certificate->course_id,
+                'member_role_attached' => ! $wasMember,
+                'source' => 'payment_confirmed',
+                'certificate_number' => $certificate->certificate_number,
+            ]
+        );
+    }
+
+    private function grantLegacyImmediateMembership(User $user, Course $course, AssessmentAttempt $attempt): void
+    {
+        $wasMember = $user->hasRole('member');
+        if (! $wasMember) {
+            $this->attachMemberRole($user);
+        }
+
         $certificate = Certificate::firstOrCreate(
             ['user_id' => $user->id, 'course_id' => $course->id],
             [
@@ -79,7 +113,6 @@ class MembershipService
             ]
         );
 
-        // Log "membership granted" once per user+course grant (when we actually issued or confirmed certificate).
         $this->auditLogger->log(
             action: 'membership.granted',
             targetType: Certificate::class,
@@ -92,7 +125,20 @@ class MembershipService
                 'score' => $attempt->score,
                 'member_role_attached' => ! $wasMember,
                 'certificate_number' => $certificate->certificate_number,
+                'source' => 'exam_pass',
             ]
         );
+    }
+
+    private function attachMemberRole(User $user): void
+    {
+        $memberRole = Role::firstOrCreate(
+            ['slug' => 'member'],
+            ['name' => 'Member', 'description' => 'Ordinary party member or app user.']
+        );
+
+        if (! $user->hasRole('member')) {
+            $user->roles()->attach($memberRole->id);
+        }
     }
 }

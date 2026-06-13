@@ -130,6 +130,8 @@ class Phase4AuditInfrastructureTest extends TestCase
 
     public function test_audit_verify_command_passes_for_valid_chain(): void
     {
+        AuditLog::allowingMutation(fn () => AuditLog::query()->delete());
+
         app(AuditLogger::class)->log(action: 'verify.one');
         app(AuditLogger::class)->log(action: 'verify.two');
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Province;
 use App\Models\Role;
 use App\Models\RefreshToken;
 use App\Models\User;
@@ -67,6 +68,7 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
             'accept_terms' => ['required', 'accepted'],
+            'province_id' => ['required', 'integer', 'exists:provinces,id'],
         ]);
 
         $user = User::create([
@@ -74,6 +76,7 @@ class AuthController extends Controller
             'surname' => $data['surname'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'province_id' => $data['province_id'],
             'accepted_terms_at' => now(),
         ]);
 

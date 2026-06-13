@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PartyController as ApiPartyController;
 use App\Http\Controllers\Api\DialogueController;
 use App\Http\Controllers\Api\PriorityProjectsController;
 use App\Http\Controllers\Api\AcademyAchievementsController;
+use App\Http\Controllers\Api\CertificateApplicationController;
 use App\Http\Controllers\Api\HomeBannersController as ApiHomeBannersController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\StaticPagesController as ApiStaticPagesController;
@@ -53,6 +54,9 @@ Route::prefix('v1')->group(function () {
             Route::get('academy/courses/{course}/enrolment', [AcademyCourseController::class, 'enrolment']);
             Route::get('academy/assessments/{assessment}', [AcademyAssessmentController::class, 'assessment']);
             Route::get('academy/badges', [AcademyAchievementsController::class, 'index']);
+            Route::get('academy/applications', [CertificateApplicationController::class, 'index']);
+            Route::get('academy/applications/{application}', [CertificateApplicationController::class, 'show']);
+            Route::get('academy/applications/{application}/receipt.pdf', [CertificateApplicationController::class, 'receiptPdf']);
         });
 
         Route::middleware('abilities:academy:write')->group(function () {

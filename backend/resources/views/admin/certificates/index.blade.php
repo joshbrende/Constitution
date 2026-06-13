@@ -11,6 +11,7 @@
                     <div class="dash-panel-title">Certificates</div>
                     <div class="dash-panel-subtitle">
                         Verify membership certificates by unique certificate number and verification code. Each certificate has a unique ID and QR code for fraud prevention.
+                        <a href="{{ route('admin.certificate-applications.index') }}" style="color:var(--zanupf-gold);margin-left:0.5rem;">Application queue →</a>
                         <a href="{{ route('certificate.verify') }}" target="_blank" style="color:var(--zanupf-green);margin-left:0.5rem;">Verify a certificate →</a>
                     </div>
                 </div>

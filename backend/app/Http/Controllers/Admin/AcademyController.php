@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Question;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AcademyController extends Controller
@@ -46,18 +47,7 @@ class AcademyController extends Controller
     public function courseStore(Request $request): RedirectResponse
     {
         $this->authorize('admin.section', 'academy');
-        $data = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:courses,code', 'regex:/^[A-Z0-9\-_]+$/i'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'level' => ['required', 'in:basic,intermediate,advanced'],
-            'is_mandatory' => ['boolean'],
-            'grants_membership' => ['boolean'],
-            'certificate_title' => ['nullable', 'string', 'max:120'],
-            'status' => ['required', 'in:draft,published,archived'],
-        ]);
-        $data['is_mandatory'] = (bool) ($data['is_mandatory'] ?? false);
-        $data['grants_membership'] = (bool) ($data['grants_membership'] ?? false);
+        $data = $this->validateCourseData($request);
         $data['created_by'] = auth()->id();
         $course = Course::create($data);
         return redirect()->route('admin.academy.courses.edit', $course)
@@ -74,18 +64,7 @@ class AcademyController extends Controller
     public function courseUpdate(Request $request, Course $course): RedirectResponse
     {
         $this->authorize('admin.section', 'academy');
-        $data = $request->validate([
-            'code' => ['required', 'string', 'max:50', 'unique:courses,code,' . $course->id, 'regex:/^[A-Z0-9\-_]+$/i'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'level' => ['required', 'in:basic,intermediate,advanced'],
-            'is_mandatory' => ['boolean'],
-            'grants_membership' => ['boolean'],
-            'certificate_title' => ['nullable', 'string', 'max:120'],
-            'status' => ['required', 'in:draft,published,archived'],
-        ]);
-        $data['is_mandatory'] = (bool) ($data['is_mandatory'] ?? false);
-        $data['grants_membership'] = (bool) ($data['grants_membership'] ?? false);
+        $data = $this->validateCourseData($request, $course);
         $course->update($data);
         return redirect()->route('admin.academy.index')->with('success', 'Course updated.');
     }
@@ -270,5 +249,43 @@ class AcademyController extends Controller
         $question->delete();
         return redirect()->route('admin.academy.assessments.show', $assessment)
             ->with('success', 'Question deleted.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateCourseData(Request $request, ?Course $course = null): array
+    {
+        $grantsMembership = $request->boolean('grants_membership');
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:50', 'unique:courses,code'.($course ? ','.$course->id : ''), 'regex:/^[A-Z0-9\-_]+$/i'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'level' => ['required', 'in:basic,intermediate,advanced'],
+            'is_mandatory' => ['boolean'],
+            'grants_membership' => ['boolean'],
+            'certificate_title' => ['nullable', 'string', 'max:120'],
+            'certificate_fee_amount' => [
+                Rule::requiredIf($grantsMembership),
+                'nullable',
+                'numeric',
+                'min:0.01',
+                'max:999999.99',
+            ],
+            'certificate_fee_currency' => ['nullable', 'string', 'size:3'],
+            'payment_office_instructions' => ['nullable', 'string', 'max:2000'],
+            'status' => ['required', 'in:draft,published,archived'],
+        ]);
+
+        $data['is_mandatory'] = (bool) ($data['is_mandatory'] ?? false);
+        $data['grants_membership'] = (bool) ($data['grants_membership'] ?? false);
+        $data['certificate_fee_currency'] = strtoupper((string) ($data['certificate_fee_currency'] ?? config('academy.default_fee_currency', 'USD')));
+
+        if (! $data['grants_membership']) {
+            $data['certificate_fee_amount'] = $data['certificate_fee_amount'] ?? null;
+        }
+
+        return $data;
     }
 }

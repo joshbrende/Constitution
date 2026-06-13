@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PartyController as AdminPartyController;
 use App\Http\Controllers\Admin\MembersController as AdminMembersController;
 use App\Http\Controllers\Admin\UsersController as AdminUsersController;
 use App\Http\Controllers\Admin\CertificatesController as AdminCertificatesController;
+use App\Http\Controllers\Admin\CertificateApplicationsController;
 use App\Http\Controllers\Admin\PartyOrgansController as AdminPartyOrgansController;
 use App\Http\Controllers\Admin\PartyLeaguesController as AdminPartyLeaguesController;
 use App\Http\Controllers\Admin\DialogueController as AdminDialogueController;
@@ -240,6 +241,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/certificates', [AdminCertificatesController::class, 'index'])->name('certificates.index');
             Route::post('/certificates/{certificate}/revoke', [AdminCertificatesController::class, 'revoke'])->name('certificates.revoke');
             Route::post('/certificates/{certificate}/unrevoke', [AdminCertificatesController::class, 'unrevoke'])->name('certificates.unrevoke');
+
+            Route::get('/certificate-applications', [CertificateApplicationsController::class, 'index'])->name('certificate-applications.index');
+            Route::get('/certificate-applications/{application}', [CertificateApplicationsController::class, 'show'])->name('certificate-applications.show');
+            Route::post('/certificate-applications/{application}/confirm-payment', [CertificateApplicationsController::class, 'confirmPayment'])->name('certificate-applications.confirm-payment');
+            Route::post('/certificate-applications/{application}/presidium-approve', [CertificateApplicationsController::class, 'presidiumApprove'])->name('certificate-applications.presidium-approve');
+            Route::post('/certificate-applications/{application}/mark-printed', [CertificateApplicationsController::class, 'markPrinted'])->name('certificate-applications.mark-printed');
+            Route::post('/certificate-applications/{application}/ready-for-collection', [CertificateApplicationsController::class, 'markReadyForCollection'])->name('certificate-applications.ready-for-collection');
+            Route::post('/certificate-applications/{application}/mark-collected', [CertificateApplicationsController::class, 'markCollected'])->name('certificate-applications.mark-collected');
+            Route::get('/certificate-applications/{application}/certificate.pdf', [CertificateApplicationsController::class, 'downloadCertificate'])->name('certificate-applications.certificate-pdf');
 
             Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
             Route::get('/analytics/export/enrolments', [AdminAnalyticsController::class, 'exportEnrolments'])->name('analytics.export.enrolments');

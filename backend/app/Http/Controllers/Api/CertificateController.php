@@ -58,9 +58,21 @@ class CertificateController extends Controller
 
     /**
      * List the authenticated user's certificates (includes pdf_status for polling).
+     * Disabled when government certificate workflow is active — use academy/applications instead.
      */
     public function index(Request $request)
     {
+        if (! config('academy.student_certificate_download_enabled', false)) {
+            return response()->json([
+                'data' => [],
+                'meta' => [
+                    'certificates_disabled' => true,
+                    'message' => 'Certificates are processed after payment and Presidium approval. View your payment receipt under Academy applications.',
+                    'applications_url' => '/api/v1/academy/applications',
+                ],
+            ]);
+        }
+
         $certificates = Certificate::where('user_id', $request->user()->id)
             ->with('course:id,title,code')
             ->orderByDesc('issued_at')

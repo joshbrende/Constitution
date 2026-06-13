@@ -64,8 +64,18 @@ Current wired events include:
 **Academy**
 - `academy.attempt_started`
 - `academy.attempt_submitted`
+- `academy.application.created` — exam pass creates certificate application + receipt
+- `academy.application.payment_confirmed` — admin confirms offline payment
+- `academy.application.presidium_approved` — Presidium approves for printing
+- `academy.application.printed` — certificate marked printed
+- `academy.application.ready_for_collection` — ready for student pickup
+- `academy.application.collected` — student collected certificate
+- `membership.granted` — member role attached (metadata includes `source`: `payment_confirmed` or `exam_pass`)
 
----
+**Academy enrolment**
+- `academy.enrolled`
+
+See also [`ACADEMY-CERTIFICATE-WORKFLOW.md`](./ACADEMY-CERTIFICATE-WORKFLOW.md) for operator procedures.
 
 ## Query examples
 

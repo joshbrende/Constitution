@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AssessmentAttempt;
+use App\Models\CertificateApplication;
 use App\Models\Course;
 use App\Models\Enrolment;
+use App\Enums\CertificateApplicationStatus;
 use App\Services\AuditLogger;
 use App\Services\GovIdVerification\GovIdVerificationClient;
 use App\Services\ProvinceStatsService;
@@ -188,9 +190,32 @@ class AcademyCourseController extends Controller
         $enrolledCount = $enrolments->count();
         $completedCount = $enrolments->where('status', 'completed')->count();
 
-        // Membership status for the overview is tied to actually holding
-        // at least one certificate, not just having the "member" role.
-        $hasMembership = $user->certificates()->exists();
+        // Membership: certificate record or active application in government workflow
+        $hasMembership = $user->certificates()->exists()
+            || $user->hasRole('member');
+        $applications = CertificateApplication::where('user_id', $user->id)->get(['status']);
+        $pendingPaymentApplications = $applications->where('status', CertificateApplicationStatus::PaymentPending)->count();
+        $latestApplication = CertificateApplication::where('user_id', $user->id)
+            ->orderByDesc('exam_passed_at')
+            ->first(['status', 'receipt_number']);
+
+        $portalMessages = $user->notifications()
+            ->where('data->type', 'like', 'academy.%')
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(fn ($notification) => [
+                'id' => $notification->id,
+                'type' => $notification->data['type'] ?? null,
+                'title' => $notification->data['title'] ?? null,
+                'body' => $notification->data['body'] ?? null,
+                'receipt_number' => $notification->data['receipt_number'] ?? null,
+                'application_id' => $notification->data['application_id'] ?? null,
+                'read' => $notification->read_at !== null,
+                'at' => optional($notification->created_at)->toIso8601String(),
+            ])
+            ->values()
+            ->all();
 
         // Learner performance (graded attempts only)
         $gradedAttempts = AssessmentAttempt::where('user_id', $user->id)
@@ -233,6 +258,11 @@ class AcademyCourseController extends Controller
                 'province_rank' => $provinceRank,
                 'province_passed' => $provincePassed,
                 'province_total_with_activity' => $provinceTotalWithActivity,
+                'pending_payment_applications' => $pendingPaymentApplications,
+                'latest_application_status' => $latestApplication?->status?->value,
+                'latest_application_status_label' => $latestApplication?->status?->label(),
+                'latest_receipt_number' => $latestApplication?->receipt_number,
+                'portal_messages' => $portalMessages,
             ],
         ]);
     }

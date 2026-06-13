@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Province;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,6 +20,8 @@ class AuthApiRateLimitTest extends TestCase
             ['name' => 'Student', 'description' => 'Learner']
         );
 
+        $province = Province::query()->orderBy('id')->firstOrFail();
+
         for ($i = 0; $i < 5; $i++) {
             $response = $this->postJson('/api/v1/auth/register', [
                 'name' => 'N',
@@ -27,6 +30,7 @@ class AuthApiRateLimitTest extends TestCase
                 'password' => self::REGISTER_PASSWORD,
                 'password_confirmation' => self::REGISTER_PASSWORD,
                 'accept_terms' => true,
+                'province_id' => $province->id,
             ]);
             $this->assertNotSame(429, $response->getStatusCode(), "Request {$i} should not be rate limited yet");
         }
@@ -38,6 +42,7 @@ class AuthApiRateLimitTest extends TestCase
             'password' => self::REGISTER_PASSWORD,
             'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => true,
+            'province_id' => $province->id,
         ]);
 
         $blocked->assertStatus(429);

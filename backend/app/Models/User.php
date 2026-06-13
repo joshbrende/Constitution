@@ -125,4 +125,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Certificate::class);
     }
+
+    public function certificateApplications(): HasMany
+    {
+        return $this->hasMany(\App\Models\CertificateApplication::class);
+    }
 }

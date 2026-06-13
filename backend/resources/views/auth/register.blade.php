@@ -63,6 +63,24 @@
         </div>
 
         <div class="form-group">
+            <label for="province_id">Province <span style="color:#fecaca;">*</span></label>
+            <select id="province_id" name="province_id" required class="form-input" style="width:100%;padding:0.55rem 0.65rem;border-radius:0.4rem;border:1px solid rgba(148,163,184,0.35);background:rgba(15,23,42,0.9);color:#f9fafb;">
+                <option value="">Select your province</option>
+                @foreach ($provinces as $province)
+                    <option value="{{ $province->id }}" {{ (string) old('province_id') === (string) $province->id ? 'selected' : '' }}>
+                        {{ $province->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('province_id')
+                <div class="error-text">{{ $message }}</div>
+            @enderror
+            <div class="helper-text">
+                Required for Academy assessments and provincial membership processing.
+            </div>
+        </div>
+
+        <div class="form-group">
             <label for="password">Password</label>
             <div class="password-wrapper">
                 <input

@@ -56,8 +56,11 @@ class AdminAccessService
         }
 
         return match ($action) {
-            'presidium_publish' => $user->hasRole('presidium') || $user->hasRole('system_admin'),
+            'presidium_publish', 'academy_certificate_presidium_approve' => $user->hasRole('presidium') || $user->hasRole('system_admin'),
             'platform_settings', 'roles_manage' => $user->hasRole('system_admin'),
+            'academy_payment_confirm' => $user->hasRole('academy_manager') || $user->hasRole('system_admin') || $user->hasRole('provincial_admin'),
+            'academy_certificate_print' => $user->hasRole('academy_manager') || $user->hasRole('system_admin'),
+            'academy_certificate_collection' => $user->hasRole('academy_manager') || $user->hasRole('system_admin') || $user->hasRole('provincial_admin'),
             default => false,
         };
     }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Province;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,6 +17,8 @@ class RegistrationRolesTest extends TestCase
         Role::firstOrCreate(['slug' => 'student'], ['name' => 'Student']);
         Role::firstOrCreate(['slug' => 'member'], ['name' => 'Member']);
 
+        $province = Province::query()->orderBy('id')->firstOrFail();
+
         $response = $this->post('/register', [
             'name' => 'Jane',
             'surname' => 'Doe',
@@ -23,6 +26,7 @@ class RegistrationRolesTest extends TestCase
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
             'accept_terms' => '1',
+            'province_id' => $province->id,
         ]);
 
         $response->assertRedirect('/dashboard');
