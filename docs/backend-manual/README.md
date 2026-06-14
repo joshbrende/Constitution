@@ -62,7 +62,9 @@ This folder is the **canonical backend documentation** for administrators, devel
 | [`../PRODUCTION-HARDENING.md`](../PRODUCTION-HARDENING.md) | Pre-production checklist (CORS, TLS, secrets) |
 | [`../AUDIT-LOGGING.md`](../AUDIT-LOGGING.md) | Audit retention & SQL |
 | [`../CERTIFICATE-SECURITY.md`](../CERTIFICATE-SECURITY.md) | Certificate security |
-| [`../ENVIRONMENTS.md`](../ENVIRONMENTS.md) | Environments |
+| [`../RECONSTRUCTION.md`](../RECONSTRUCTION.md) | Disaster recovery — can docs rebuild the app? |
+| [`../DATA-MODEL.md`](../DATA-MODEL.md) | Table catalog |
+| [`../MOBILE-APP.md`](../MOBILE-APP.md) | Expo mobile client |
 | [`../OPS-RUNBOOK.md`](../OPS-RUNBOOK.md) | Operations |
 | [`../../backend/docs/role-workflows.md`](../../backend/docs/role-workflows.md) | Amendment workflow |
 

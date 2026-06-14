@@ -4,7 +4,7 @@ Government-led membership certificate process: exam pass → payment receipt →
 
 **Audience:** Academy managers, provincial administrators, Presidium reviewers, finance office staff, and system administrators.
 
-**Related:** [`RBAC-MATRIX.md`](./RBAC-MATRIX.md) · [`AUDIT-LOGGING.md`](./AUDIT-LOGGING.md) · [`backend-manual/15-certificates-admin.md`](./backend-manual/15-certificates-admin.md)
+**Related:** [`RBAC-MATRIX.md`](./RBAC-MATRIX.md) · [`CERTIFICATE-STATE-MACHINE.md`](./CERTIFICATE-STATE-MACHINE.md) · [`AUDIT-LOGGING.md`](./AUDIT-LOGGING.md) · [`backend-manual/15-certificates-admin.md`](./backend-manual/15-certificates-admin.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Environments (WAMP vs Docker)
 
-**Mobile + API:** See [`BACKEND-MOBILE-CONSISTENCY.md`](./BACKEND-MOBILE-CONSISTENCY.md) and [`mobile/docs/OFFLINE-MOBILE.md`](../mobile/docs/OFFLINE-MOBILE.md).
+**Mobile + API:** See [MOBILE-APP.md](./MOBILE-APP.md) and [BACKEND-MOBILE-CONSISTENCY.md](./BACKEND-MOBILE-CONSISTENCY.md).
 
 This project can be run in two common environments:
 
