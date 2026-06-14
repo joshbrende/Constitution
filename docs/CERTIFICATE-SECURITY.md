@@ -205,7 +205,7 @@ For stakeholder/security audit packets, include:
   - revoke and reinstate workflow
 - Config snapshot:
   - `CERTIFICATE_DEFAULT_EXPIRY_DAYS`
-- Change log references in `docs/progress.md`.
+- Change log: [`docs/CHANGELOG.md`](./CHANGELOG.md).
 
 ---
 

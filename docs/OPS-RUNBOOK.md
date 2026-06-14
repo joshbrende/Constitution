@@ -60,6 +60,40 @@ php artisan ops:cleanup-security-data --dry-run
 
 ---
 
+## Queue worker
+
+Background jobs (certificate PDF generation, academy/backend email) use Laravel queues. **Docker Compose** includes a `queue` service that runs:
+
+```bash
+php artisan queue:work redis --queue=default,mail
+```
+
+**Start stack (includes worker):**
+
+```bash
+docker compose up -d
+```
+
+**Manual worker (WAMP / without Compose):**
+
+```bash
+cd backend
+php artisan queue:work database --tries=3 --timeout=120 --queue=default,mail
+```
+
+**Env:**
+
+| Variable | Docker Compose | Local dev |
+|----------|----------------|-----------|
+| `QUEUE_CONNECTION` | `redis` (set in compose) | `database` or `redis` |
+| `REDIS_HOST` | `redis` | `127.0.0.1` |
+
+Academy portal messages are written to the database **immediately**; email is sent via the `mail` queue (`SendAcademyApplicationMailJob`).
+
+After deploy: `php artisan queue:restart` so workers reload code.
+
+---
+
 ## Scheduler
 
 The Laravel scheduler runs:

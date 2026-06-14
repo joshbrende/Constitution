@@ -4,6 +4,14 @@ This changelog tracks **user-visible** changes across `backend/` (Laravel admin 
 
 ## Unreleased
 
+### Setup Wizard (backend)
+- Added public **6-step installation wizard** at `/setup` (Welcome → checks → admin → platform → seed → finish).
+- System checks: PHP, extensions, DB, storage link, GD, mail, official PDF, queue.
+- Platform step: Softaculous-style **Installation URL** (protocol / domain / directory) → `public_site_url` / recommended `APP_URL`.
+- Mandatory content seed (constitution, academy, banners, library, static pages).
+- Finish step: **Production checklist** (mail, CORS, cron, mobile API, certificates, admin invites) with copy buttons.
+- Wizard progress restored from DB if session lost; `installed_at` locks wizard after complete.
+
 ### Admin dashboard (web)
 - Added top-right **bell** + **gear** actions with a right-side settings drawer.
 - Bell now shows a **live activity feed** driven by audit logs (enrolments, messages, membership grants, registrations).

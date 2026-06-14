@@ -105,9 +105,23 @@ docker-compose exec app php artisan migrate --seed
 
 ### URLs / ports
 
-- Nginx: `http://localhost:8080`
-- MySQL: `127.0.0.1:3307` (forwarded to container `db:3306`)
+- Nginx (API + web): `http://localhost:8081`
+- MySQL: `127.0.0.1:3308` (forwarded to container `db:3306`)
 - Redis: `127.0.0.1:6379` (forwarded)
+
+### First install (recommended)
+
+With containers running and `backend/.env` configured (`APP_KEY`, `DB_*`):
+
+1. Open `http://localhost:8081/setup`
+2. Complete the wizard (system checks → admin → platform → content seed → finish)
+3. The wizard creates the database (if needed), runs migrations, seeds platform content, and sets `installed_at`
+
+Manual alternative (developers only):
+
+```bash
+docker compose exec app php artisan migrate --seed
+```
 
 ---
 
@@ -121,25 +135,32 @@ Mobile uses:
 Examples:
 
 - WAMP API: `http://<YOUR-LAN-IP>:8000/api/v1`
-- Docker API (if accessing from phone/emulator): `http://<YOUR-LAN-IP>:8080/api/v1`
+- Docker API (phone/emulator on LAN): `http://<YOUR-LAN-IP>:8081/api/v1`
 
 ---
 
 ## Setup Wizard (one-time)
 
-The backend includes a one-time **Setup Wizard** at:
+The backend includes a multi-step **Installation Wizard** at:
 
-- `GET /setup` (requires login + role `system_admin`)
+- `GET /setup` (public — no login required until setup is complete)
 
-Purpose:
+Steps:
 
-- Stores **platform defaults** (organisation name, support email, public site URL, legal links, feature toggles) in the **database** (`site_settings` table).
-- Avoids editing `.env` from the web UI (safer and more hosting-compatible).
+1. **Welcome** — introduction and branding.
+2. **System checks** — PHP version, extensions, database, storage, migrations (creates DB and runs migrations when you continue).
+3. **Administrator** — create the first `system_admin` account (skipped if one already exists).
+4. **Platform settings** — installation URL (`APP_URL`), organisation name, support email, legal links, feature toggles (stored in `site_settings`).
+5. **Install content** — **required** seed of constitution, banners, academy, library, and static pages.
+6. **Complete** — production checklist, `.env` copy block, sets `installed_at`, and locks the wizard.
 
-Important note:
+After installation, authenticated routes redirect to `/setup` until `installed_at` is set. The wizard returns 404 once complete. Progress is restored from the database if the browser session is lost mid-install.
 
-- The wizard **does not create or rewrite** `.env`.
-- Production still requires correct server environment values (via hosting env vars / secrets / `.env`).
+Important notes:
+
+- The wizard **does not create or rewrite** `.env` (except attempting `storage:link` during database setup).
+- Production still requires mail, CORS, queue/cron, and mobile API configuration — see the **Production checklist** on the finish step.
+- Branding uses public assets `bg-1.jpg` (background) and `Logo.png` (header logo).
 
 ### Wizard “Server config checklist”
 
@@ -149,6 +170,25 @@ The wizard displays:
 - **Recommended for production**: derived from wizard inputs (e.g. `public_site_url`) and best practices
 
 If the current values look like development (e.g. `localhost`, `APP_ENV!=production`, `APP_DEBUG=true`), the wizard shows a warning to the operator.
+
+### Production checklist (finish step)
+
+Before clicking **Complete installation**, review the checklist on step 6. It covers:
+
+| Item | Notes |
+|------|--------|
+| `.env` / `APP_*` | Copy block from wizard; run `php artisan config:clear` |
+| `storage:link` | Attempted during DB setup; verify on checklist |
+| Mail (`MAIL_*`) | Required for admin invitations and academy emails |
+| `CORS_ALLOWED_ORIGINS` | Browser clients only; see below |
+| Queue worker | `php artisan queue:work` (Compose includes `queue` service) |
+| Cron / scheduler | `* * * * * php artisan schedule:run` |
+| `EXPO_PUBLIC_API_BASE_URL` | Mobile production API base including `/api/v1` |
+| Certificate PDFs | PHP `ext-gd` and writable `storage/app` |
+| Official PDF | `storage/app/public/constitution-official/amendment3.pdf` |
+| Admin invites | Admin → Users → Invite after install |
+
+Progress is restored from the database if the browser session is lost mid-install (`SyncSetupProgress` middleware).
 
 ---
 

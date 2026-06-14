@@ -1,127 +1,93 @@
 ## Docker deployment guide
 
-This document describes how to run the Constitution backend with Docker and `docker-compose`. It is the reference for future Docker/Kubernetes work.
+Run the Constitution **backend** with Docker Compose. See also [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) and [`docs/OPS-RUNBOOK.md`](docs/OPS-RUNBOOK.md).
 
 ### 1. Overview
 
-- **Backend app**: Laravel 12 (PHP 8.2, `backend/`).
-- **Web server**: Nginx serving `backend/public`.
-- **Database**: MySQL 8 (service name `db`).
-- **Cache/queue**: Redis 7 (service name `redis`).
+| Service | Role |
+|---------|------|
+| `app` | Laravel PHP-FPM |
+| `nginx` | Web server → `backend/public` |
+| `db` | MySQL 8 |
+| `redis` | Cache, sessions, queues |
+| `queue` | `php artisan queue:work redis --queue=default,mail` |
 
-The main files are:
+Files: `backend/Dockerfile`, `nginx.conf`, `docker-compose.yml`.
 
-- `backend/Dockerfile` – PHP‑FPM image for Laravel.
-- `nginx.conf` – Nginx vhost pointing to `public/index.php`.
-- `docker-compose.yml` – wires `app`, `nginx`, `db`, `redis` together.
+### 2. One-time setup
 
-### 2. One‑time setup
-
-1. Ensure Docker and `docker-compose` (or Docker Desktop) are installed.
-2. **Compose secrets (required):** In the **repository root** (same folder as `docker-compose.yml`), copy `compose.env.example` to `.env`. Docker Compose reads this file for `${DB_PASSWORD}`, `${MYSQL_PASSWORD}`, and `${MYSQL_ROOT_PASSWORD}` in `docker-compose.yml`. Adjust values for production; the example matches local dev defaults documented below.
-3. From the project root (`c:\wamp64\www\constitution`), use the Docker-specific env for Laravel:
+1. Install Docker Desktop (or Docker + Compose).
+2. **Compose secrets:** Copy `compose.env.example` → `.env` at the **repository root** (`DB_PASSWORD`, `MYSQL_*`).
+3. **Laravel env:** Copy `backend/.env.docker` → `backend/.env` and set `APP_KEY`:
 
 ```bash
 cd backend
-copy .env.docker .env   # or cp on Linux/macOS
+copy .env.docker .env
+docker compose run --rm app php artisan key:generate
 ```
 
-4. Verify `backend/.env` for Docker matches the database credentials (especially `DB_PASSWORD` must match the root `.env` value used by Compose for the app container).
+4. Ensure `DB_PASSWORD` in `backend/.env` matches the root `.env` value used by Compose.
 
-- Set:
+Recommended Docker drivers in `backend/.env`:
 
 ```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=http://localhost:8080
-
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=constitution
-DB_USERNAME=constitution
-DB_PASSWORD=constitution
-
-REDIS_CLIENT=phpredis
+SESSION_DRIVER=redis
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
 REDIS_HOST=redis
-REDIS_PORT=6379
+DB_HOST=db
 ```
 
-- Recommended for Docker: set `SESSION_DRIVER=redis`, `CACHE_STORE=redis`, and `QUEUE_CONNECTION=redis`.
+### 3. Running locally
 
-5. **Optional — seeded admin user:** If you run `php artisan db:seed`, set `ADMIN_SEED_PASSWORD` in `backend/.env` (see `backend/.env.example`). Never commit real passwords.
-
-6. Generate the app key (first run only):
+From the repository root:
 
 ```bash
-docker-compose run --rm app php artisan key:generate
+docker compose up -d --build
 ```
 
-### 3. Running the stack locally
+| Endpoint | URL |
+|----------|-----|
+| Web + API | `http://localhost:8081` |
+| API example | `http://localhost:8081/api/v1/home-banners` |
+| MySQL (host) | `127.0.0.1:3308` |
+| Redis (host) | `127.0.0.1:6379` |
 
-From the project root:
+Stop: `docker compose down`
+
+### 4. First install
+
+**Recommended — Setup Wizard**
+
+1. Open `http://localhost:8081/setup`
+2. Complete all six steps (checks → admin → platform → content → finish)
+3. Wizard creates DB (if permitted), migrates, seeds content, sets `installed_at`
+
+**Manual (developers)**
 
 ```bash
-docker-compose up --build
+docker compose exec app php artisan migrate --seed
 ```
 
-- Nginx: `http://localhost:8080`
-- MySQL: host `127.0.0.1`, port `3307`, db `constitution`, user `constitution`, password `constitution`.
-- Redis: `127.0.0.1:6379` (forwarded).
+Optional seeded admin: set `ADMIN_SEED_PASSWORD` in `backend/.env` before seeding.
 
-To stop:
+### 5. Queue worker
+
+Compose starts the `queue` service automatically. After code deploy:
 
 ```bash
-docker-compose down
+docker compose exec app php artisan queue:restart
 ```
 
-### 4. Database migrations and seeders
+See [`docs/OPS-RUNBOOK.md`](docs/OPS-RUNBOOK.md) § Queue worker.
 
-After the containers are up (first time on a new database):
+### 6. Production notes
 
-```bash
-docker-compose exec app php artisan migrate --seed
-```
-
-To seed the default admin user (`admin@zanupf.org`), set `ADMIN_SEED_PASSWORD` in `backend/.env` before `--seed`. If it is unset, `AdminUserSeeder` skips that user (other seeders still run).
-
-You can re‑run migrations or seeders the same way whenever needed.
-
-### 5. Queue worker (optional for now)
-
-The current `docker-compose.yml` runs only the web `app` service. When we are ready to add a dedicated queue worker:
-
-```yaml
-  queue:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    command: php artisan queue:work --tries=3 --timeout=90
-    depends_on:
-      - app
-      - redis
-    env_file:
-      - ./backend/.env
-```
-
-Then:
-
-```bash
-docker-compose up -d queue
-```
-
-### 6. Production notes (for later)
-
-- Use a separate `.env` for production secrets (do not commit).
-- Put Nginx behind TLS (e.g. reverse proxy or cloud load balancer).
-- Move the database to a managed service if you adopt Kubernetes later; reuse the same Docker images.
+- Use strong secrets in root `.env` and `backend/.env`; never commit them.
+- Terminate TLS at a reverse proxy; set `APP_URL` to HTTPS.
+- Complete the wizard **Production checklist** (mail, CORS, cron, mobile API URL).
+- Back up MySQL volume `db_data` and `storage/app/public`.
 
 ---
 
-## Local dev vs Docker env (important)
-
-- **Local WAMP** uses `backend/.env` with DB host `127.0.0.1` and typically `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=database`.
-- **Docker** uses `backend/.env.docker` (copied to `.env` for containers) with DB host `db` and Redis host `redis`.
-
-This file should be updated as we refine the Docker/Kubernetes strategy.
-
+**Local WAMP** uses `DB_HOST=127.0.0.1` and typically database-backed cache/session/queue — see [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md).

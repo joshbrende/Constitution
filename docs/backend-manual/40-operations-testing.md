@@ -28,14 +28,15 @@
 - **Run:** `cd backend && php artisan test` (requires **PHP ≥ 8.2**, e.g. Laravel Sail: `docker compose exec laravel.test php artisan test`)
 - **Locations:** `tests/Feature`, `tests/Unit`
 
-Coverage includes example tests, academy assessment submission, certificate admin flows, registration roles, **constitution official document API** (`ConstitutionOfficialDocumentApiTest`) — expand as features grow.
+Coverage includes setup wizard (`SetupWizardTest`), academy assessment submission, certificate admin flows, registration roles, constitution official document API — expand as features grow.
 
 ## 40.5 Gap remediation & production checklist
 
 | Document | Purpose |
 |----------|---------|
 | [`../BACKEND-MOBILE-CONSISTENCY.md`](../BACKEND-MOBILE-CONSISTENCY.md) | Cross-stack review + historical gap remediation (§7) |
-| [`../PRODUCTION-HARDENING.md`](../PRODUCTION-HARDENING.md) | `APP_DEBUG`, CORS, HTTPS, secrets, `EXPO_PUBLIC_API_BASE_URL`, storage |
+| [`../PRODUCTION-HARDENING.md`](../PRODUCTION-HARDENING.md) | Pre-production checklist + Setup Wizard |
+| [`../ENVIRONMENTS.md`](../ENVIRONMENTS.md) | Environments + **Setup Wizard** |
 
 ---
 
