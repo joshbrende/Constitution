@@ -29,7 +29,6 @@ class EnsureAdminSection
         'admin.analytics' => 'analytics',
         'admin.dialogue' => 'dialogue',
         'admin.roles' => 'roles',
-        'admin.quick-search' => 'users',
         'admin.platform-settings' => 'platform_settings',
     ];
 
@@ -42,6 +41,7 @@ class EnsureAdminSection
     /** Routes authorized in the controller (not section matrix). */
     private const CONTROLLER_GATED_ROUTE_PREFIXES = [
         'admin.platform-settings',
+        'admin.quick-search',
     ];
 
     public function __construct(

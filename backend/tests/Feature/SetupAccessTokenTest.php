@@ -9,6 +9,14 @@ class SetupAccessTokenTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        \App\Models\SiteSetting::query()->where('key', 'installed_at')->delete();
+        $this->app['env'] = 'testing';
+    }
+
     public function test_setup_requires_token_when_configured(): void
     {
         config(['setup.access_token' => 'secret-install-token']);

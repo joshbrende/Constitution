@@ -11,6 +11,8 @@ class AuthApiRateLimitTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected bool $enableThrottleMiddleware = true;
+
     private const REGISTER_PASSWORD = 'Password123!';
 
     public function test_register_is_rate_limited_per_ip(): void

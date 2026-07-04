@@ -7,14 +7,20 @@ use App\Models\Province;
 use Illuminate\Http\JsonResponse;
 
 /**
- * @group Profile
+ * @group Public content
  *
- * Provinces list for registration and profile picker.
+ * Zimbabwe provinces for registration and profile pickers.
+ *
+ * @unauthenticated
  */
 class ProvinceController extends Controller
 {
     /**
-     * List all Zimbabwe provinces (for profile picker, etc.).
+     * List all Zimbabwe provinces
+     *
+     * Returns provinces in constitution sort order (Bulawayo id=1, Harare id=2, …).
+     *
+     * @response 200 {"data":[{"id":1,"name":"Bulawayo","code":"bulawayo"},{"id":2,"name":"Harare","code":"harare"}]}
      */
     public function index(): JsonResponse
     {

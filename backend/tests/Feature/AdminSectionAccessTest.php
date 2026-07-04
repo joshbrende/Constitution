@@ -62,6 +62,28 @@ class AdminSectionAccessTest extends TestCase
         $response->assertForbidden();
     }
 
+    public function test_dialogue_moderator_can_access_quick_search(): void
+    {
+        $moderator = $this->userWithRole(
+            $this->role('dialogue_moderator', 'Dialogue Moderator')
+        );
+
+        $this->actingAs($moderator)
+            ->getJson(route('admin.quick-search', ['q' => 'ab']))
+            ->assertOk()
+            ->assertJsonPath('data.q', 'ab');
+    }
+
+    public function test_quick_search_returns_empty_groups_for_short_query(): void
+    {
+        $admin = $this->userWithRole($this->role('system_admin', 'System Admin'));
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.quick-search', ['q' => 'a']))
+            ->assertOk()
+            ->assertJsonPath('data.groups', []);
+    }
+
     public function test_system_admin_can_access_quick_search(): void
     {
         $admin = $this->userWithRole($this->role('system_admin', 'System Admin'));

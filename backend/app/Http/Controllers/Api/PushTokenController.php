@@ -20,6 +20,7 @@ class PushTokenController extends Controller
      *
      * Stores an Expo push token for the authenticated user (iOS or Android).
      *
+     * @authenticated
      * @bodyParam expo_push_token string required Expo push token. Example: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
      * @bodyParam platform string required Device platform. Example: android
      * @bodyParam device_name string optional Human-readable device name. Example: Pixel 8
@@ -58,6 +59,7 @@ class PushTokenController extends Controller
      *
      * Removes an Expo push token on logout or when the user disables notifications.
      *
+     * @authenticated
      * @bodyParam expo_push_token string required The token to remove. Example: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
      */
     public function destroy(Request $request): JsonResponse

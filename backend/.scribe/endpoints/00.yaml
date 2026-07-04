@@ -34,14 +34,14 @@ endpoints:
       -
         custom: []
         status: 200
-        content: '{"available":true,"title":"Constitution Amendment (No 3) Bill 2026","url":"http:\/\/localhost\/storage\/constitution-official\/amendment3.pdf"}'
+        content: '{"available":true,"title":"Constitution Amendment (No 3) Bill 2026","url":"http:\/\/localhost:8081\/storage\/constitution-official\/amendment3.pdf"}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: e11e8583-0d26-4a44-b3c1-a3e0ae4c9d39
-          vary: Origin
+          x-request-id: 5ed2ecc2-607f-4f44-ab7b-d765aa8f4258
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -85,8 +85,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 8f0cc270-41a1-4c70-af57-06cc6d75b30b
-          vary: Origin
+          x-request-id: c9028303-0d53-48fd-b1cc-c444651f46e0
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -130,8 +130,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 348a5af3-e676-4e85-933b-6ab116d407fe
-          vary: Origin
+          x-request-id: 51d06ebd-0c7d-49e7-b4f5-e66a53ffe8ae
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -187,8 +187,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: afd73009-9b6b-4eab-a974-3935604706a4
-          vary: Origin
+          x-request-id: dd259c2e-5260-4b14-b157-22582f1a1f64
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -232,8 +232,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: e47e8b18-6556-4276-855f-fe165ed2ab84
-          vary: Origin
+          x-request-id: 78a1c59b-a20e-4486-a946-fc6fecc97ecd
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -289,8 +289,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 93b41be8-5ed9-41ff-81e6-06bfe7317b65
-          vary: Origin
+          x-request-id: 1e1bd480-201e-4c4e-b2af-47fe47272eb4
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -350,8 +350,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: f5aea12e-f876-45c4-8f8b-46d7b3cb22da
-          vary: Origin
+          x-request-id: 7a679f7b-eb12-4076-b8d5-e0f5737da5fa
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []

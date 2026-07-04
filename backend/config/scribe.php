@@ -29,6 +29,12 @@ return [
 
             Tokens are scoped by role (`profile:read`, `academy:write`, etc.). Public endpoints (constitution, library, party profile, health) do not require auth.
 
+            ### Try It Out (browser tester)
+            - **Login / Register** — use the pre-filled examples; register needs a **new** email each time.
+            - **Refresh** — call Login first, copy `refresh_token` from the response, paste it into Refresh, then send.
+            - **Protected routes** (Profile, Logout, Academy, …) — run **Login** first, click **Try it out** on the endpoint, then set the **Authorization** header to `Bearer {access_token}`. The same token is remembered across endpoints once entered.
+            - **Forgot password** — use a seeded email such as `mobile.test@zanupf.org.zw`.
+
             ### Conventions
             | Topic | Convention |
             |-------|------------|
@@ -44,7 +50,8 @@ return [
 
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
-    'base_url' => rtrim((string) config('app.url'), '/').'/api/v1',
+    // Site root only — route paths in docs already include `api/v1/...`.
+    'base_url' => rtrim((string) config('app.url'), '/'),
 
     // Routes to include in the docs
     'routes' => [

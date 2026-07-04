@@ -191,6 +191,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
             'name' => 'Local',
             'surname' => 'CertHolder',
             'province_id' => $harare->id,
+            'membership_standing' => \App\Enums\MembershipStanding::Member->value,
         ]);
         Certificate::create([
             'user_id' => $localMember->id,
@@ -205,6 +206,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
             'name' => 'Remote',
             'surname' => 'CertHolder',
             'province_id' => $bulawayo->id,
+            'membership_standing' => \App\Enums\MembershipStanding::Member->value,
         ]);
         Certificate::create([
             'user_id' => $remoteMember->id,

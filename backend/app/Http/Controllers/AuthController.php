@@ -60,6 +60,15 @@ class AuthController extends Controller
      * Creates a student-role user and returns Sanctum access and refresh tokens.
      *
      * @unauthenticated
+     * @bodyParam name string required First name. Example: Tariro
+     * @bodyParam surname string required Last name. Example: Moyo
+     * @bodyParam email string required Unique email address. Example: member@example.org.zw
+     * @bodyParam password string required Minimum 8 characters. Example: SecurePass123!
+     * @bodyParam password_confirmation string required Must match `password`. Example: SecurePass123!
+     * @bodyParam accept_terms string required Must be `true` or `1`. Example: true
+     * @bodyParam province_id integer optional Province ID from `GET /api/v1/provinces` (1=Bulawayo, 2=Harare, …). Example: 2
+     * @response 201 scenario="Success" {"user":{},"access_token":"1|…","refresh_token":"…"}
+     * @response 422 scenario="Validation error" {"message":"The email has already been taken.","errors":{"email":["The email has already been taken."]}}
      */
     public function register(Request $request): JsonResponse
     {
@@ -115,6 +124,10 @@ class AuthController extends Controller
      * Returns access and refresh tokens. Previous tokens for this user are revoked.
      *
      * @unauthenticated
+     * @bodyParam email string required Account email. Example: member@example.org.zw
+     * @bodyParam password string required Account password. Example: SecurePass123!
+     * @response 200 {"user":{},"access_token":"1|…","refresh_token":"…"}
+     * @response 422 scenario="Invalid credentials" {"message":"The provided credentials are incorrect."}
      */
     public function login(Request $request): JsonResponse
     {
@@ -168,6 +181,13 @@ class AuthController extends Controller
      * Logout
      *
      * Revokes the current access token and all refresh tokens for the user.
+     *
+     * **Try it in these docs:** run **Login** first, click **Try it out**, set **Authorization** to
+     * `Bearer {access_token}` from the login response, then send.
+     *
+     * @authenticated
+     * @response 200 {"message":"Logged out successfully."}
+     * @response 401 scenario="Missing token" {"error":"unauthenticated","message":"Unauthenticated."}
      */
     public function logout(Request $request): JsonResponse
     {
@@ -202,7 +222,14 @@ class AuthController extends Controller
      *
      * Rotates the refresh token and issues a new access token. Rate limited.
      *
+     * **Try it in these docs:** run **Login** (or **Register**) first, copy the `refresh_token`
+     * from the JSON response, paste it into the field below, then send this request.
+     * Each refresh returns a new refresh token — the old one is invalidated.
+     *
      * @unauthenticated
+     * @bodyParam refresh_token string required Paste `refresh_token` from the Login or Register response (64 chars). Example: PASTE_REFRESH_TOKEN_FROM_LOGIN
+     * @response 200 {"user":{},"access_token":"1|…","refresh_token":"…"}
+     * @response 401 scenario="Invalid token" {"message":"Refresh token expired or invalid. Please sign in again."}
      */
     public function refresh(Request $request): JsonResponse
     {
@@ -264,6 +291,10 @@ class AuthController extends Controller
      * Sends a password reset link when the email exists. Rate limited to 3 requests per hour per email.
      *
      * @unauthenticated
+     * @bodyParam email string required Registered account email. Example: mobile.test@zanupf.org.zw
+     * @response 200 scenario="Reset link sent" {"message":"We have emailed your password reset link."}
+     * @response 422 scenario="Unknown email" {"message":"We can't find a user with that email address."}
+     * @response 429 scenario="Rate limited" {"message":"Too many password reset requests for this email. Please try again in about an hour."}
      */
     public function forgotPassword(Request $request): JsonResponse
     {

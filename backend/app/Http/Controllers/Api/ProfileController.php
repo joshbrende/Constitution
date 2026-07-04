@@ -18,6 +18,13 @@ class ProfileController extends Controller
      * Get profile
      *
      * Returns the authenticated user with roles and province.
+     *
+     * **Try it:** run **Login** first, then click **Try it out** here and set
+     * **Authorization** to `Bearer {access_token}` from the login response.
+     *
+     * @authenticated
+     * @response 200 {"data":{"id":1,"name":"Tariro","surname":"Moyo","email":"member@example.org.zw","province":{"id":2,"name":"Harare","code":"harare"},"roles":[]}}
+     * @response 401 scenario="Missing token" {"error":"unauthenticated","message":"Unauthenticated."}
      */
     public function show(Request $request): JsonResponse
     {
@@ -30,6 +37,11 @@ class ProfileController extends Controller
      * Update profile
      *
      * Update national ID and province. National ID format is validated server-side.
+     *
+     * @authenticated
+     * @bodyParam national_id string optional Zimbabwe national ID. Example: 63-123456A78
+     * @bodyParam province_id integer optional Province ID from GET /api/v1/provinces. Example: 2
+     * @response 200 {"data":{"id":1,"national_id":"63-123456A78","province_id":2}}
      */
     public function update(Request $request): JsonResponse
     {
@@ -51,6 +63,10 @@ class ProfileController extends Controller
      * Delete account
      *
      * Permanently deletes the authenticated user and revokes all tokens.
+     *
+     * @authenticated
+     * @response 204 scenario="Deleted" {}
+     * @response 401 scenario="Missing token" {"message":"Unauthenticated."}
      */
     public function destroy(Request $request): JsonResponse
     {

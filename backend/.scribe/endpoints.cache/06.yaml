@@ -40,8 +40,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 0d8d4bf5-ecbf-4e55-9dae-8e636e0389bd
-          vary: Origin
+          x-request-id: fd58e89c-e1c1-45cd-9029-b7e62c27fe4b
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -88,6 +88,45 @@ endpoints:
     cleanBodyParameters: []
     fileParameters: []
     responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/provinces
+    metadata:
+      custom: []
+      groupName: 'Public content'
+      groupDescription: |-
+
+        Zimbabwe provinces for registration and profile pickers.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all Zimbabwe provinces'
+      description: 'Returns provinces in constitution sort order (Bulawayo id=1, Harare id=2, …).'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":1,"name":"Bulawayo","code":"bulawayo"},{"id":2,"name":"Harare","code":"harare"}]}'
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -327,8 +366,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 545662d4-cc5c-470e-a316-f2d8d1c15a36
-          vary: Origin
+          x-request-id: e53cc3b8-7d0b-49d0-a7ac-445f17451101
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -384,8 +423,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 6302228a-6c89-4c90-aedb-ee80ffb736fa
-          vary: Origin
+          x-request-id: b8727568-7f50-48ec-85e0-257d37f403ad
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -429,8 +468,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 0058ea30-beba-4cc4-97a7-5046c40b9339
-          vary: Origin
+          x-request-id: 3b740d6e-a5a6-4090-a2c1-17463b6507e5
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -474,8 +513,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 3274fe6c-86ab-4d77-95b0-40d4b46c51d2
-          vary: Origin
+          x-request-id: e9530566-3aa7-479b-a27e-eef27fd6cf96
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -519,8 +558,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 52da2957-6926-4682-a6d2-a99af01cb621
-          vary: Origin
+          x-request-id: 942809b9-378e-460b-90ed-1a1b350beb36
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -558,14 +597,14 @@ endpoints:
       -
         custom: []
         status: 200
-        content: '{"data":{"org_name":"ZANU PF","support_email":"support@zanupf.org","public_site_url":"http:\/\/localhost:8081","legal":{"privacy_url":"http:\/\/localhost:8081\/privacy-policy","terms_url":"http:\/\/localhost:8081\/terms-of-use","cookies_url":"http:\/\/localhost:8081\/cookies"},"features":{"enable_dialogue":true,"require_national_id":true},"mobile":{"app_store_url":"","play_store_url":""},"meta":{"updated_at":"2026-07-04T21:29:56+00:00","source":"site_settings"}}}'
+        content: '{"data":{"org_name":"ZANU PF","support_email":"support@zanupf.org","public_site_url":"http:\/\/localhost:8081","legal":{"privacy_url":"http:\/\/localhost:8081\/privacy-policy","terms_url":"http:\/\/localhost:8081\/terms-of-use","cookies_url":"http:\/\/localhost:8081\/cookies"},"features":{"enable_dialogue":true,"require_national_id":true},"mobile":{"app_store_url":"","play_store_url":""},"meta":{"updated_at":"2026-07-04T22:47:10+00:00","source":"site_settings"}}}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 987333f8-7167-4f28-b06b-c90f922d5af9
-          vary: Origin
+          x-request-id: 46250eec-000a-45f5-8529-5005b4d71e13
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -621,8 +660,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 7b2fac4f-b0ff-446b-b5e3-2f89c62acd3e
-          vary: Origin
+          x-request-id: c6aa157a-d66e-4b23-9f33-fc4a2d06e84b
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []

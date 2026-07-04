@@ -48,7 +48,8 @@ class Phase2PermissionModelTest extends TestCase
 
         $this->assertContains('profile:read', $apiSlugs);
         $this->assertContains('academy:write', $apiSlugs);
-        $this->assertContains('dialogue:write', $apiSlugs);
+        $this->assertContains('dialogue:read', $apiSlugs);
+        $this->assertNotContains('dialogue:write', $apiSlugs);
     }
 
     public function test_admin_access_service_uses_permissions_when_seeded(): void

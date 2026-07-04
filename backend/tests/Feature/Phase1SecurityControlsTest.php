@@ -9,6 +9,8 @@ use App\Models\Course;
 use App\Models\Role;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\PermissionSyncService;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -16,6 +18,13 @@ use Tests\TestCase;
 class Phase1SecurityControlsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleSeeder::class);
+        app(PermissionSyncService::class)->syncAll();
+    }
 
     public function test_certificate_api_route_binding_returns_not_found_for_other_users(): void
     {
@@ -87,7 +96,7 @@ class Phase1SecurityControlsTest extends TestCase
 
     public function test_platform_settings_update_writes_audit_log(): void
     {
-        $adminRole = Role::firstOrCreate(['slug' => 'system_admin'], ['name' => 'System Admin']);
+        $adminRole = Role::query()->where('slug', 'system_admin')->firstOrFail();
         $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin@example.org.zw']);
         $admin->roles()->attach($adminRole->id);
 

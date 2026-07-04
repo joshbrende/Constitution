@@ -41,8 +41,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: a51bb280-3669-4e4e-a270-143a803680b7
-          vary: Origin
+          x-request-id: bd362e6d-fc75-4975-8d3f-c76be8df5f54
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
       -
         custom: []

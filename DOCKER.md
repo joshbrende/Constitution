@@ -99,6 +99,8 @@ Or: `docker compose exec app composer docs:api`
 
 Optional: set `SCRIBE_AUTH_KEY` in `backend/.env` to a valid bearer token before generating — Scribe will call authenticated GET endpoints for live response samples.
 
+**Try It Out** in the browser requires `APP_URL=http://localhost:8081` and `CORS_ALLOWED_ORIGINS=http://localhost:8081` (set automatically in Docker Compose). Authenticated endpoints need a bearer token in the docs auth field.
+
 Generated files live in `backend/public/docs/` (gitignored; regenerate on each deploy).
 
 ### 7. Production notes

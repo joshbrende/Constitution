@@ -40,8 +40,8 @@ endpoints:
           content-type: application/json
           x-ratelimit-limit: '120'
           x-ratelimit-remaining: '119'
-          x-request-id: 92a1ea13-f319-4c55-b395-1b8d3ea76a62
-          vary: Origin
+          x-request-id: 2ec78940-19a6-40d7-a96a-e9a4573db0d1
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []

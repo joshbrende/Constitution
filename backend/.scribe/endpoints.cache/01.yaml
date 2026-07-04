@@ -33,78 +33,102 @@ endpoints:
       name:
         custom: []
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'First name.'
         required: true
-        example: vmqeopfuudtdsufvyvddq
+        example: Tariro
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       surname:
         custom: []
         name: surname
-        description: 'Must not be greater than 255 characters.'
+        description: 'Last name.'
         required: true
-        example: amniihfqcoynlazghdtqt
+        example: Moyo
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       email:
         custom: []
         name: email
-        description: 'Must be a valid email address. Must not be greater than 255 characters.'
+        description: 'Unique email address.'
         required: true
-        example: andreanne00@example.org
+        example: member@example.org.zw
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       password:
         custom: []
         name: password
-        description: ''
+        description: 'Minimum 8 characters.'
         required: true
-        example: consequatur
+        example: SecurePass123!
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       accept_terms:
         custom: []
         name: accept_terms
-        description: 'Must be accepted.'
+        description: 'Must be `true` or `1`.'
         required: true
-        example: true
-        type: boolean
+        example: 'true'
+        type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       province_id:
         custom: []
         name: province_id
-        description: 'Must match an existing stored value.'
+        description: 'optional Province ID from `GET /api/v1/provinces` (1=Bulawayo, 2=Harare, …).'
         required: false
-        example: 17
+        example: 2
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: true
         deprecated: false
+      password_confirmation:
+        custom: []
+        name: password_confirmation
+        description: 'Must match `password`.'
+        required: true
+        example: SecurePass123!
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
     cleanBodyParameters:
-      name: vmqeopfuudtdsufvyvddq
-      surname: amniihfqcoynlazghdtqt
-      email: andreanne00@example.org
-      password: consequatur
-      accept_terms: true
-      province_id: 17
+      name: Tariro
+      surname: Moyo
+      email: member@example.org.zw
+      password: SecurePass123!
+      accept_terms: 'true'
+      province_id: 2
+      password_confirmation: SecurePass123!
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"user":{},"access_token":"1|…","refresh_token":"…"}'
+        headers: []
+        description: Success
+      -
+        custom: []
+        status: 422
+        content: '{"message":"The email has already been taken.","errors":{"email":["The email has already been taken."]}}'
+        headers: []
+        description: 'Validation error'
     responseFields: []
     auth: []
     controller: null
@@ -138,30 +162,42 @@ endpoints:
       email:
         custom: []
         name: email
-        description: 'Must be a valid email address.'
+        description: 'Account email.'
         required: true
-        example: qkunze@example.com
+        example: member@example.org.zw
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       password:
         custom: []
         name: password
-        description: ''
+        description: 'Account password.'
         required: true
-        example: 'O[2UZ5ij-e/dl4m{o,'
+        example: SecurePass123!
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      email: qkunze@example.com
-      password: 'O[2UZ5ij-e/dl4m{o,'
+      email: member@example.org.zw
+      password: SecurePass123!
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"user":{},"access_token":"1|…","refresh_token":"…"}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: '{"message":"The provided credentials are incorrect."}'
+        headers: []
+        description: 'Invalid credentials'
     responseFields: []
     auth: []
     controller: null
@@ -195,18 +231,36 @@ endpoints:
       email:
         custom: []
         name: email
-        description: 'Must be a valid email address.'
+        description: 'Registered account email.'
         required: true
-        example: qkunze@example.com
+        example: mobile.test@zanupf.org.zw
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      email: qkunze@example.com
+      email: mobile.test@zanupf.org.zw
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"message":"We have emailed your password reset link."}'
+        headers: []
+        description: 'Reset link sent'
+      -
+        custom: []
+        status: 422
+        content: '{"message":"We can''t find a user with that email address."}'
+        headers: []
+        description: 'Unknown email'
+      -
+        custom: []
+        status: 429
+        content: '{"message":"Too many password reset requests for this email. Please try again in about an hour."}'
+        headers: []
+        description: 'Rate limited'
     responseFields: []
     auth: []
     controller: null
@@ -226,7 +280,12 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Refresh tokens'
-      description: 'Rotates the refresh token and issues a new access token. Rate limited.'
+      description: |-
+        Rotates the refresh token and issues a new access token. Rate limited.
+
+        **Try it in these docs:** run **Login** (or **Register**) first, copy the `refresh_token`
+        from the JSON response, paste it into the field below, then send this request.
+        Each refresh returns a new refresh token — the old one is invalidated.
       authenticated: false
       deprecated: false
     headers:
@@ -240,18 +299,30 @@ endpoints:
       refresh_token:
         custom: []
         name: refresh_token
-        description: ''
+        description: 'Paste `refresh_token` from the Login or Register response (64 chars).'
         required: true
-        example: consequatur
+        example: PASTE_REFRESH_TOKEN_FROM_LOGIN
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      refresh_token: consequatur
+      refresh_token: PASTE_REFRESH_TOKEN_FROM_LOGIN
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"user":{},"access_token":"1|…","refresh_token":"…"}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Refresh token expired or invalid. Please sign in again."}'
+        headers: []
+        description: 'Invalid token'
     responseFields: []
     auth: []
     controller: null
@@ -271,10 +342,15 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: Logout
-      description: 'Revokes the current access token and all refresh tokens for the user.'
-      authenticated: false
+      description: |-
+        Revokes the current access token and all refresh tokens for the user.
+
+        **Try it in these docs:** run **Login** first, click **Try it out**, set **Authorization** to
+        `Bearer {access_token}` from the login response, then send.
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -284,9 +360,24 @@ endpoints:
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"message":"Logged out successfully."}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers: []
+        description: 'Missing token'
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null

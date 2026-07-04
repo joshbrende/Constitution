@@ -3,7 +3,9 @@
 namespace Tests\Unit;
 
 use App\Models\HomeBanner;
+use App\Models\Role;
 use App\Models\SiteSetting;
+use App\Models\User;
 use App\Services\Setup\SetupInstallService;
 use App\Services\Setup\SetupProgressResolver;
 use App\Services\Setup\SetupSystemChecker;
@@ -38,10 +40,34 @@ class SetupProgressResolverTest extends TestCase
         $this->assertTrue(session('setup_seed_done'));
     }
 
-    public function test_resume_route_points_to_finish_when_content_seeded(): void
+    public function test_resume_route_points_to_admin_when_content_seeded_but_no_system_admin(): void
     {
         SiteSetting::set('public_site_url', 'https://test.example');
         SiteSetting::set('org_name', 'Test Org');
+        HomeBanner::query()->create([
+            'title' => 'Test',
+            'subtitle' => 'Banner',
+            'image_url' => '/test.jpg',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $resolver = new SetupProgressResolver(
+            app(SetupSystemChecker::class),
+            app(SetupInstallService::class)
+        );
+
+        $this->assertSame('setup.admin', $resolver->resumeRoute());
+    }
+
+    public function test_resume_route_points_to_finish_when_fully_ready(): void
+    {
+        SiteSetting::set('public_site_url', 'https://test.example');
+        SiteSetting::set('org_name', 'Test Org');
+        $adminRole = Role::query()->firstOrCreate(['slug' => 'system_admin'], ['name' => 'System Admin']);
+        $admin = User::factory()->create(['email' => 'setup-admin@example.org.zw']);
+        $admin->roles()->attach($adminRole->id);
+
         HomeBanner::query()->create([
             'title' => 'Test',
             'subtitle' => 'Banner',

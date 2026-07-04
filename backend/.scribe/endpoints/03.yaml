@@ -38,8 +38,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: a457f156-ce96-4a73-82b0-485030978876
-          vary: Origin
+          x-request-id: 040bec6d-e636-47fe-a3f9-86130f8c4c33
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -81,8 +81,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: f0b2fef9-4e0f-46b9-9dfb-467baa7f46ca
-          vary: Origin
+          x-request-id: 88c260c0-7ae4-4b18-a49c-cdf3861c4359
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -124,8 +124,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 27399fba-9978-48a3-8788-8636484dc672
-          vary: Origin
+          x-request-id: 999da03f-817b-4fb9-aca3-88e11a537e70
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -179,8 +179,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 8f7e45b3-e014-47a6-be31-b7d407d14edf
-          vary: Origin
+          x-request-id: 07e38350-7780-4df7-ad93-5c16144eb31b
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -234,8 +234,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 74ec43b6-092d-464e-8f41-7a8224fe0e55
-          vary: Origin
+          x-request-id: 40a35db0-cba3-4dd5-a53e-c413288cec00
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -292,8 +292,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 7d86f45e-2447-4557-bf61-dd003a702b8c
-          vary: Origin
+          x-request-id: 2261c8f3-42fd-4577-9ed6-4afc70240739
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -347,8 +347,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: c1236e43-4dac-4a1a-b587-c1d93ded36e0
-          vary: Origin
+          x-request-id: b5307ca2-7601-4e6e-acce-a8be67cc5e21
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -392,8 +392,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 4430c481-f220-41e3-abee-59c5436dc163
-          vary: Origin
+          x-request-id: 73474637-42ea-4cd4-a48f-c1554acc853c
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
     responseFields: []
     auth: []
@@ -570,8 +570,8 @@ endpoints:
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
-          x-request-id: 9f7df6a3-9aac-4b42-9c47-3e836e6a025f
-          vary: Origin
+          x-request-id: 41095406-c701-45d4-8830-c3bc24a6374f
+          access-control-allow-origin: 'http://localhost:8081'
         description: null
       -
         custom: []

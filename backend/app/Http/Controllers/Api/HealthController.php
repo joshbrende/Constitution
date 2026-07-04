@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -21,15 +20,17 @@ class HealthController extends Controller
      * Health check
      *
      * Returns database and Redis connectivity for load balancers.
+     * Redis is checked only when queue, cache, or session uses the redis driver.
+     *
+     * @response 200 scenario="Healthy" {"status":"ok","checks":{"database":true,"redis":true}}
+     * @response 503 scenario="Degraded" {"status":"degraded","checks":{"database":true,"redis":false}}
      */
     public function show(): JsonResponse
     {
         $checks = [
             'database' => false,
-            'redis' => false,
         ];
 
-        // Database check
         try {
             DB::select('select 1');
             $checks['database'] = true;
@@ -37,16 +38,8 @@ class HealthController extends Controller
             $checks['database'] = false;
         }
 
-        // Redis / cache check
-        try {
-            if (class_exists(Redis::class)) {
-                Redis::connection()->ping();
-            } else {
-                Cache::store(config('cache.default'))->get('health-check', null);
-            }
-            $checks['redis'] = true;
-        } catch (\Throwable) {
-            $checks['redis'] = false;
+        if ($this->shouldCheckRedis()) {
+            $checks['redis'] = $this->redisIsReachable();
         }
 
         $ok = ! in_array(false, $checks, true);
@@ -55,6 +48,24 @@ class HealthController extends Controller
             'status' => $ok ? 'ok' : 'degraded',
             'checks' => $checks,
         ], $ok ? 200 : 503);
+    }
+
+    private function shouldCheckRedis(): bool
+    {
+        return config('queue.default') === 'redis'
+            || config('cache.default') === 'redis'
+            || config('session.driver') === 'redis';
+    }
+
+    private function redisIsReachable(): bool
+    {
+        try {
+            Redis::connection()->ping();
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
 

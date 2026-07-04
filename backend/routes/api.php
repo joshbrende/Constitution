@@ -40,7 +40,6 @@ Route::prefix('v1')->group(function () {
 
         Route::middleware('abilities:profile:read')->group(function () {
             Route::get('profile', [ApiProfileController::class, 'show']);
-            Route::get('provinces', [ApiProvinceController::class, 'index']);
         });
 
         Route::middleware('abilities:profile:write')->group(function () {
@@ -109,6 +108,8 @@ Route::prefix('v1')->group(function () {
             Route::post('priority-projects/{priority_project}/like', [PriorityProjectsController::class, 'like']);
         });
     });
+
+    Route::get('provinces', [ApiProvinceController::class, 'index']);
 
     Route::get('library/categories', [LibraryController::class, 'categories']);
     Route::get('library/documents', [LibraryController::class, 'index']);

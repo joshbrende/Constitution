@@ -19,53 +19,15 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get profile'
-      description: 'Returns the authenticated user with roles and province.'
-      authenticated: false
-      deprecated: false
-    headers:
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        custom: []
-        status: 401
-        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          x-request-id: f0612716-554a-4c06-9582-b1643a92ce4b
-          vary: Origin
-        description: null
-    responseFields: []
-    auth: []
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - GET
-    uri: api/v1/provinces
-    metadata:
-      custom: []
-      groupName: Profile
-      groupDescription: |-
+      description: |-
+        Returns the authenticated user with roles and province.
 
-        Provinces list for registration and profile picker.
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'List all Zimbabwe provinces (for profile picker, etc.).'
-      description: ''
-      authenticated: false
+        **Try it:** run **Login** first, then click **Try it out** here and set
+        **Authorization** to `Bearer {access_token}` from the login response.
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -78,16 +40,21 @@ endpoints:
     responses:
       -
         custom: []
+        status: 200
+        content: '{"data":{"id":1,"name":"Tariro","surname":"Moyo","email":"member@example.org.zw","province":{"id":2,"name":"Harare","code":"harare"},"roles":[]}}'
+        headers: []
+        description: ''
+      -
+        custom: []
         status: 401
         content: '{"error":"unauthenticated","message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          x-request-id: a3927b8e-dcef-4be7-97ca-173ec788ed71
-          vary: Origin
-        description: null
+        headers: []
+        description: 'Missing token'
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null
@@ -106,9 +73,10 @@ endpoints:
       subgroupDescription: ''
       title: 'Update profile'
       description: 'Update national ID and province. National ID format is validated server-side.'
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -119,32 +87,41 @@ endpoints:
       national_id:
         custom: []
         name: national_id
-        description: 'Must not be greater than 32 characters.'
+        description: 'optional Zimbabwe national ID.'
         required: false
-        example: vmqeopfuudtdsufvyvddq
+        example: 63-123456A78
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: true
         deprecated: false
       province_id:
         custom: []
         name: province_id
-        description: 'Must match an existing stored value.'
+        description: 'optional Province ID from GET /api/v1/provinces.'
         required: false
-        example: 17
+        example: 2
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      national_id: vmqeopfuudtdsufvyvddq
-      province_id: 17
+      national_id: 63-123456A78
+      province_id: 2
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":1,"national_id":"63-123456A78","province_id":2}}'
+        headers: []
+        description: ''
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null
@@ -163,9 +140,10 @@ endpoints:
       subgroupDescription: ''
       title: 'Delete account'
       description: 'Permanently deletes the authenticated user and revokes all tokens.'
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -175,9 +153,24 @@ endpoints:
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 204
+        content: '{}'
+        headers: []
+        description: Deleted
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers: []
+        description: 'Missing token'
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null
@@ -196,9 +189,10 @@ endpoints:
       subgroupDescription: ''
       title: 'Register push token'
       description: 'Stores an Expo push token for the authenticated user (iOS or Android).'
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -246,7 +240,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null
@@ -265,9 +262,10 @@ endpoints:
       subgroupDescription: ''
       title: 'Unregister push token'
       description: 'Removes an Expo push token on logout or when the user disables notifications.'
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
@@ -291,7 +289,10 @@ endpoints:
     fileParameters: []
     responses: []
     responseFields: []
-    auth: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
     controller: null
     method: null
     route: null

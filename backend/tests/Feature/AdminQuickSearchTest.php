@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\PermissionSyncService;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,16 +13,17 @@ class AdminQuickSearchTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleSeeder::class);
+        app(PermissionSyncService::class)->syncAll();
+    }
+
     public function test_quick_search_limits_groups_to_accessible_sections(): void
     {
-        $dialogueRole = Role::firstOrCreate(
-            ['slug' => 'dialogue_moderator'],
-            ['name' => 'Dialogue Moderator']
-        );
-        $editorRole = Role::firstOrCreate(
-            ['slug' => 'content_editor'],
-            ['name' => 'Content Editor']
-        );
+        $dialogueRole = Role::query()->where('slug', 'dialogue_moderator')->firstOrFail();
+        $editorRole = Role::query()->where('slug', 'content_editor')->firstOrFail();
 
         User::factory()->create([
             'name' => 'Unique',
