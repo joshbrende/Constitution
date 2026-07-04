@@ -8,6 +8,9 @@ use App\Models\AssessmentAttempt;
 use App\Models\AssessmentAnswer;
 use App\Models\Option;
 use App\Models\User;
+use App\Services\AssessmentAttemptLimitService;
+use App\Services\AssessmentQuestionSelectorService;
+use App\Services\AssessmentTimeLimitService;
 use App\Services\AuditLogger;
 use App\Services\MembershipService;
 use Illuminate\Http\JsonResponse;
@@ -16,13 +19,21 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * @group Academy
+ *
+ * Assessments, attempts, and eligibility checks.
+ */
 class AcademyAssessmentController extends Controller
 {
     private const CACHE_TTL_MINUTES = 10;
 
     public function __construct(
         protected MembershipService $membershipService,
-        protected AuditLogger $auditLogger
+        protected AuditLogger $auditLogger,
+        protected AssessmentQuestionSelectorService $questionSelector,
+        protected AssessmentTimeLimitService $timeLimit,
+        protected AssessmentAttemptLimitService $attemptLimits,
     ) {}
 
     /**
@@ -57,6 +68,24 @@ class AcademyAssessmentController extends Controller
     }
 
     /**
+     * Attempt limits and cooldown status (no question set issued).
+     */
+    public function attemptEligibility(Request $request, Assessment $assessment): JsonResponse
+    {
+        $gate = $this->gateNationalId($request);
+        if ($gate !== null) {
+            return $gate;
+        }
+
+        $user = $request->user();
+        $this->authorize('take', $assessment);
+
+        return response()->json([
+            'data' => $this->attemptLimits->eligibility($user, $assessment),
+        ]);
+    }
+
+    /**
      * Start an assessment attempt.
      */
     public function startAttempt(Request $request, Assessment $assessment): JsonResponse
@@ -75,7 +104,14 @@ class AcademyAssessmentController extends Controller
             ->first();
 
         if ($inProgress) {
-            return response()->json(['data' => $inProgress]);
+            return response()->json([
+                'data' => $this->attemptResponse($inProgress, $assessment),
+            ]);
+        }
+
+        $blocked = $this->attemptLimits->assertCanStart($user, $assessment);
+        if ($blocked !== null) {
+            return $blocked;
         }
 
         $questionSetToken = $request->input('question_set_token');
@@ -118,7 +154,15 @@ class AcademyAssessmentController extends Controller
             request: $request
         );
 
-        return response()->json(['data' => $attempt], 201);
+        return response()->json(['data' => $this->attemptResponse($attempt, $assessment)], 201);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function attemptResponse(AssessmentAttempt $attempt, Assessment $assessment): array
+    {
+        return array_merge($attempt->toArray(), $this->timeLimit->attemptMeta($attempt, $assessment));
     }
 
     /**
@@ -136,6 +180,10 @@ class AcademyAssessmentController extends Controller
         $assessment = $attempt->assessment()->with('questions')->first();
         if (! $assessment) {
             return response()->json(['message' => 'Assessment not found.'], 404);
+        }
+
+        if ($this->timeLimit->hasExpired($attempt, $assessment)) {
+            return $this->timeLimit->expiredResponse();
         }
 
         $data = $request->validate([
@@ -252,30 +300,43 @@ class AcademyAssessmentController extends Controller
 
         $assessment->setRelation('questions', $subsetQuestions);
         $assessment->setAttribute('question_set_token', null);
+        if ($inProgress = AssessmentAttempt::where('assessment_id', $assessment->id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'in_progress')
+            ->first()) {
+            $assessment->setAttribute('attempt_timing', $this->timeLimit->attemptMeta($inProgress, $assessment));
+        }
 
         return response()->json(['data' => $assessment]);
     }
 
     private function jsonAssessmentWithNewQuestionSet(User $user, Assessment $assessment): JsonResponse
     {
-        $questions = $assessment->questions->shuffle();
-        $perAttempt = $assessment->questions_per_attempt;
-        if ($perAttempt !== null && (int) $perAttempt > 0 && $questions->count() > (int) $perAttempt) {
-            $questions = $questions->take((int) $perAttempt);
+        $blocked = $this->attemptLimits->assertCanStart($user, $assessment);
+        if ($blocked !== null) {
+            return $blocked;
         }
 
-        $questions = $questions->values();
+        $questions = $this->questionSelector->select(
+            $assessment->questions,
+            $assessment->questions_per_attempt !== null ? (int) $assessment->questions_per_attempt : null
+        );
         $questionIds = $questions->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
 
         $token = Str::random(48);
         $cacheKey = "academy.assessment_question_set.{$user->id}.{$assessment->id}.{$token}";
-        Cache::put($cacheKey, ['question_ids' => $questionIds], now()->addMinutes(self::CACHE_TTL_MINUTES));
+        Cache::put(
+            $cacheKey,
+            ['question_ids' => $questionIds],
+            now()->addMinutes($this->timeLimit->questionSetCacheTtlMinutes($assessment))
+        );
 
         $assessment->setRelation('questions', $questions);
         foreach ($assessment->questions as $question) {
             $question->setRelation('options', $question->options->shuffle()->values());
         }
         $assessment->setAttribute('question_set_token', $token);
+        $assessment->setAttribute('attempt_eligibility', $this->attemptLimits->eligibility($user, $assessment));
 
         return response()->json(['data' => $assessment]);
     }

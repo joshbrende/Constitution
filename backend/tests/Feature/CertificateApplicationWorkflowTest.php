@@ -93,6 +93,7 @@ class CertificateApplicationWorkflowTest extends TestCase
         $this->assertSame('USD', $application->fee_currency);
         $this->assertNotEmpty($application->receipt_number);
         $this->assertNotEmpty($application->payment_reference_code);
+        $this->assertMatchesRegularExpression('/^ZPF-REC-\d{4}-HAR-\d{6}$/', $application->receipt_number);
 
         $this->assertFalse($user->fresh()->hasRole('member'));
         $this->assertNull(Certificate::where('user_id', $user->id)->where('course_id', $course->id)->first());
@@ -136,20 +137,23 @@ class CertificateApplicationWorkflowTest extends TestCase
         $this->assertSame(1, CertificateApplication::count());
     }
 
-    public function test_registration_requires_province(): void
+    public function test_registration_succeeds_without_province(): void
     {
         Role::firstOrCreate(['slug' => 'student'], ['name' => 'Student']);
 
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Jane',
             'surname' => 'Doe',
-            'email' => 'jane-province@example.com',
+            'email' => 'jane-province@example.org.zw',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
             'accept_terms' => true,
         ]);
 
-        $response->assertStatus(422)->assertJsonValidationErrors(['province_id']);
+        $response->assertStatus(201);
+
+        $user = User::where('email', 'jane-province@example.org.zw')->firstOrFail();
+        $this->assertNull($user->province_id);
     }
 
     public function test_student_can_list_and_view_own_application(): void
@@ -183,7 +187,7 @@ class CertificateApplicationWorkflowTest extends TestCase
                 'started_at' => now(),
                 'submitted_at' => now(),
             ])->id,
-            'receipt_number' => 'ZP-REC-2026-TEST0001',
+            'receipt_number' => 'ZPF-REC-2026-TEST0001',
             'payment_reference_code' => 'PAYREF1234',
             'fee_amount' => 25.00,
             'fee_currency' => 'USD',
@@ -203,7 +207,7 @@ class CertificateApplicationWorkflowTest extends TestCase
                 'started_at' => now(),
                 'submitted_at' => now(),
             ])->id,
-            'receipt_number' => 'ZP-REC-2026-OTHER001',
+            'receipt_number' => 'ZPF-REC-2026-OTHER001',
             'payment_reference_code' => 'PAYREF5678',
             'fee_amount' => 25.00,
             'fee_currency' => 'USD',
@@ -274,7 +278,7 @@ class CertificateApplicationWorkflowTest extends TestCase
                 'started_at' => now(),
                 'submitted_at' => now(),
             ])->id,
-            'receipt_number' => 'ZP-REC-2026-PDF0001',
+            'receipt_number' => 'ZPF-REC-2026-PDF0001',
             'payment_reference_code' => 'PDFREF1234',
             'fee_amount' => 25.00,
             'fee_currency' => 'USD',
@@ -307,7 +311,7 @@ class CertificateApplicationWorkflowTest extends TestCase
         $certificate = Certificate::create([
             'user_id' => $user->id,
             'course_id' => $course->id,
-            'certificate_number' => 'ZP-MEM-2026-NODL001',
+            'certificate_number' => 'ZPF-MEM-2026-NODL001',
             'issued_at' => now(),
             'pdf_status' => 'ready',
             'pdf_path' => 'certificates/test.pdf',

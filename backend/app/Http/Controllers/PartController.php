@@ -6,6 +6,13 @@ use App\Models\Chapter;
 use App\Models\Part;
 use Illuminate\Http\Request;
 
+/**
+ * @group Constitution
+ *
+ * Constitution parts tree (ZANU PF, Zimbabwe, or amendment documents).
+ *
+ * @unauthenticated
+ */
 class PartController extends Controller
 {
     public function index(Request $request)

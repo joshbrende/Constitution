@@ -29,6 +29,19 @@ class EnsureAdminSection
         'admin.analytics' => 'analytics',
         'admin.dialogue' => 'dialogue',
         'admin.roles' => 'roles',
+        'admin.quick-search' => 'users',
+        'admin.platform-settings' => 'platform_settings',
+    ];
+
+    /** Routes any authenticated admin may access (documentation / help). */
+    private const OPEN_ADMIN_ROUTE_PREFIXES = [
+        'admin.home',
+        'admin.guide.',
+    ];
+
+    /** Routes authorized in the controller (not section matrix). */
+    private const CONTROLLER_GATED_ROUTE_PREFIXES = [
+        'admin.platform-settings',
     ];
 
     public function __construct(
@@ -47,7 +60,43 @@ class EnsureAdminSection
             abort(403, 'You do not have access to this section.');
         }
 
+        if ($section === null && ! $this->isOpenAdminRoute($request) && ! $this->isControllerGatedRoute($request)) {
+            abort(403, 'You do not have access to this admin area.');
+        }
+
         return $next($request);
+    }
+
+    private function isOpenAdminRoute(Request $request): bool
+    {
+        $routeName = $request->route()?->getName();
+        if (! $routeName) {
+            return false;
+        }
+
+        foreach (self::OPEN_ADMIN_ROUTE_PREFIXES as $prefix) {
+            if ($routeName === $prefix || str_starts_with($routeName, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isControllerGatedRoute(Request $request): bool
+    {
+        $routeName = $request->route()?->getName();
+        if (! $routeName) {
+            return false;
+        }
+
+        foreach (self::CONTROLLER_GATED_ROUTE_PREFIXES as $prefix) {
+            if (str_starts_with($routeName, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function inferSection(Request $request): ?string

@@ -16,6 +16,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // Docker Compose sets QUEUE_CONNECTION=redis on the app container; force sync for tests.
+        config(['queue.default' => 'sync']);
+
         // Web form tests (admin Blade POST/PUT) do not carry CSRF tokens by default.
         $this->withoutMiddleware(ValidateCsrfToken::class);
     }

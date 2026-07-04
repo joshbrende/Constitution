@@ -67,15 +67,17 @@ class Certificate extends Model
     }
 
     /**
-     * Generate next certificate number (e.g. ZP-MEM-2025-00001).
+     * Generate next certificate number (e.g. ZPF-MEM-2025-00001).
      */
-    public static function nextCertificateNumber(): string
+    public static function nextCertificateNumber(?Course $course = null): string
     {
-        // Keep the human-readable format but make it non-sequential to reduce enumeration.
         $year = date('Y');
+        $prefix = $course instanceof Course
+            ? $course->resolvedCertificatePrefix()
+            : (string) config('certificates.certificate_number_prefix', 'ZPF-MEM');
         do {
             $suffix = strtoupper(Str::random(8));
-            $number = sprintf('ZP-MEM-%s-%s', $year, $suffix);
+            $number = sprintf('%s-%s-%s', $prefix, $year, $suffix);
         } while (static::where('certificate_number', $number)->exists());
 
         return $number;

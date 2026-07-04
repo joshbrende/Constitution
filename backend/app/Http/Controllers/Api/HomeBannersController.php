@@ -6,6 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\HomeBanner;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Public content
+ *
+ * Home screen carousel banners for the mobile app.
+ *
+ * @unauthenticated
+ */
 class HomeBannersController extends Controller
 {
     public function index(): JsonResponse

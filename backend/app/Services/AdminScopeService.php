@@ -47,6 +47,29 @@ class AdminScopeService
     }
 
     /**
+     * Optional district filter for provincial admins assigned to a district.
+     *
+     * - null: no district filter (province-wide)
+     * - positive int: filter to that district
+     */
+    public function scopedDistrictId(User $admin): ?int
+    {
+        if (! config('scoping.enable_district_scoping', true)) {
+            return null;
+        }
+
+        if ($this->scopedProvinceId($admin) === null) {
+            return null;
+        }
+
+        if (! $admin->district_id) {
+            return null;
+        }
+
+        return (int) $admin->district_id;
+    }
+
+    /**
      * @param  Builder<User>  $query
      * @return Builder<User>
      */
@@ -62,7 +85,14 @@ class AdminScopeService
             return $query->whereRaw('1 = 0');
         }
 
-        return $query->where('province_id', $provinceId);
+        $query = $query->where('province_id', $provinceId);
+
+        $districtId = $this->scopedDistrictId($admin);
+        if ($districtId !== null) {
+            $query = $query->where('district_id', $districtId);
+        }
+
+        return $query;
     }
 
     public function canAccessUser(User $admin, User $target): bool
@@ -77,7 +107,16 @@ class AdminScopeService
             return false;
         }
 
-        return (int) $target->province_id === $provinceId;
+        if ((int) $target->province_id !== $provinceId) {
+            return false;
+        }
+
+        $districtId = $this->scopedDistrictId($admin);
+        if ($districtId !== null) {
+            return (int) $target->district_id === $districtId;
+        }
+
+        return true;
     }
 
     /**
@@ -98,7 +137,13 @@ class AdminScopeService
             return $query->whereRaw('1 = 0');
         }
 
-        return $query->whereHas('user', fn (Builder $userQuery) => $userQuery->where('province_id', $provinceId));
+        return $query->whereHas('user', function (Builder $userQuery) use ($provinceId, $admin) {
+            $userQuery->where('province_id', $provinceId);
+            $districtId = $this->scopedDistrictId($admin);
+            if ($districtId !== null) {
+                $userQuery->where('district_id', $districtId);
+            }
+        });
     }
 
     public function assertCanAccessUser(User $admin, User $target): void

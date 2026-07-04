@@ -18,7 +18,7 @@ class CertificateAdminTest extends TestCase
     {
         $user = User::factory()->create([
             'surname' => 'Admin',
-            'email' => 'admin@example.com',
+            'email' => 'admin@example.org.zw',
         ]);
 
         $role = Role::firstOrCreate(
@@ -47,7 +47,7 @@ class CertificateAdminTest extends TestCase
         return Certificate::create([
             'user_id' => $recipient->id,
             'course_id' => $course->id,
-            'certificate_number' => 'ZP-MEM-2026-ABC12345',
+            'certificate_number' => 'ZPF-MEM-2026-ABC12345',
             'verification_code' => 'VERIFY99',
             'issued_at' => now(),
             'pdf_status' => 'pending',
@@ -61,7 +61,7 @@ class CertificateAdminTest extends TestCase
 
         $response = $this->actingAs($admin)->get('/admin/certificates?search_mode=certificate_number&q=ABC12345');
         $response->assertOk();
-        $response->assertSee('ZP-MEM-2026-ABC12345');
+        $response->assertSee('ZPF-MEM-2026-ABC12345');
     }
 
     public function test_revoke_and_reinstate_write_audit_logs_and_metadata(): void

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\MembershipStanding;
 use App\Http\Controllers\Controller;
 use App\Models\AssessmentAttempt;
 use App\Models\AuditLog;
@@ -12,6 +13,7 @@ use App\Models\Enrolment;
 use App\Models\PriorityProject;
 use App\Models\Province;
 use App\Models\User;
+use App\Services\CourseAnalyticsService;
 use App\Services\ProvinceStatsService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
@@ -22,7 +24,8 @@ use Illuminate\View\View;
 class AdminAnalyticsController extends Controller
 {
     public function __construct(
-        protected ProvinceStatsService $provinceStatsService
+        protected ProvinceStatsService $provinceStatsService,
+        protected CourseAnalyticsService $courseAnalytics,
     ) {}
 
     public function index(): View
@@ -40,8 +43,11 @@ class AdminAnalyticsController extends Controller
         $monthAgo = $now->copy()->subMonth();
         $firstPassedByUser = $this->loadFirstPassedByUser();
 
-        $totalMembers = $firstPassedByUser->count();
-        $newMembersLast30 = $firstPassedByUser->filter(fn ($r) => $r->first_passed_at && Carbon::parse($r->first_passed_at)->gte($monthAgo))->count();
+        $totalFullMembers = User::where('membership_standing', MembershipStanding::Member->value)->count();
+        $newFullMembersLast30 = Certificate::where('issued_at', '>=', $monthAgo)->distinct()->count('user_id');
+
+        $totalAssessmentPasses = $firstPassedByUser->count();
+        $newAssessmentPassesLast30 = $firstPassedByUser->filter(fn ($r) => $r->first_passed_at && Carbon::parse($r->first_passed_at)->gte($monthAgo))->count();
 
         $totalCourses = Course::count();
         $publishedCourses = Course::where('status', 'published')->count();
@@ -62,9 +68,12 @@ class AdminAnalyticsController extends Controller
         $certificatesLast30 = Certificate::where('issued_at', '>=', $monthAgo)->count();
 
         $priorPeriodStart = $monthAgo->copy()->subMonth();
-        $membersPrev30 = $firstPassedByUser->filter(fn ($r) => $r->first_passed_at && Carbon::parse($r->first_passed_at)->gte($priorPeriodStart) && Carbon::parse($r->first_passed_at)->lt($monthAgo))->count();
-        $membersCurr30 = $newMembersLast30;
-        $membersImprovement = $this->periodImprovementPercent($membersPrev30, $membersCurr30);
+        $fullMembersPrev30 = Certificate::where('issued_at', '>=', $priorPeriodStart)
+            ->where('issued_at', '<', $monthAgo)
+            ->distinct()
+            ->count('user_id');
+        $fullMembersCurr30 = $newFullMembersLast30;
+        $membersImprovement = $this->periodImprovementPercent($fullMembersPrev30, $fullMembersCurr30);
 
         $certificatesPrev30 = Certificate::where('issued_at', '>=', $priorPeriodStart)->where('issued_at', '<', $monthAgo)->count();
         $certificatesCurr30 = $certificatesLast30;
@@ -122,8 +131,12 @@ class AdminAnalyticsController extends Controller
             ->values();
 
         return array_merge([
-            'totalMembers' => $totalMembers,
-            'newMembersLast30' => $newMembersLast30,
+            'totalFullMembers' => $totalFullMembers,
+            'newFullMembersLast30' => $newFullMembersLast30,
+            'totalAssessmentPasses' => $totalAssessmentPasses,
+            'newAssessmentPassesLast30' => $newAssessmentPassesLast30,
+            'totalMembers' => $totalFullMembers,
+            'newMembersLast30' => $newFullMembersLast30,
             'totalCourses' => $totalCourses,
             'publishedCourses' => $publishedCourses,
             'membershipCourse' => $membershipCourse,
@@ -155,6 +168,7 @@ class AdminAnalyticsController extends Controller
             'activityByDate' => $activityByDate,
             'provinceStats' => $provinceStats,
             'provinceLeaderboard' => $provinceLeaderboard,
+            'perCourseStats' => $this->courseAnalytics->perCourseStats(),
         ], $assessmentBlock);
     }
 

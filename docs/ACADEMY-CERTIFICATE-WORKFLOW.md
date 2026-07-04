@@ -90,7 +90,7 @@ Offices are defined in `config/academy.php` → `payment_offices`. Receipts show
 ## Finance office procedure (offline payment)
 
 1. Student presents **payment receipt** (app PDF or printed copy) showing:
-   - Receipt number (`ZP-REC-YYYY-…`)
+   - Receipt number (`ZPF-REC-YYYY-…`)
    - Payment reference code (office lookup)
    - Exact fee amount and currency
 2. Collect payment; issue official payment slip / teller reference.

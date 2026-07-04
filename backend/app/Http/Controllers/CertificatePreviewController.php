@@ -22,6 +22,7 @@ class CertificatePreviewController extends Controller
         $courseTitle = $request->query('course_title') ?? $request->query('title') ?? 'Foundational Constitutional Studies Certificate';
         $certificateTitle = $request->query('certificate_title') ?? 'Certificate of Competence';
 
+        $prefix = (string) config('certificates.certificate_number_prefix', 'ZPF-MEM');
         $cert = (object) [
             'public_id' => (string) Str::uuid(),
             'user' => (object) [
@@ -32,7 +33,7 @@ class CertificatePreviewController extends Controller
                 'title' => $courseTitle,
                 'certificate_title' => $certificateTitle !== '' ? $certificateTitle : 'Certificate of Completion',
             ],
-            'certificate_number' => 'ZP-MEM-' . date('Y') . '-00000',
+            'certificate_number' => $prefix.'-'.date('Y').'-PREVIEW01',
             'verification_code' => 'PREVIEW1',
             'verification_token' => hash_hmac('sha256', 'preview|' . date('Y-m-d'), (string) config('app.key', '')),
             'issued_at' => now(),

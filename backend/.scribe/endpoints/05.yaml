@@ -1,0 +1,662 @@
+name: Dialogue
+description: |-
+
+  Channels, threads, messages, reporting, and user blocks.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/dialogue/channels
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List dialogue channels'
+      description: 'Returns channels visible to the authenticated user (role and province scoped).'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":1,"slug":"national","name":"National dialogue","description":"Party-wide discussion"}]}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/dialogue/channels/{channel_id}/threads'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List threads in a channel'
+      description: 'Returns up to 50 most recent threads with constitution section links when present.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      channel_id:
+        custom: []
+        name: channel_id
+        description: 'The ID of the channel.'
+        required: true
+        example: 164
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      channel:
+        custom: []
+        name: channel
+        description: 'Dialogue channel ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      channel_id: 164
+      channel: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":12,"title":"Section 4 discussion","status":"open","creator":{"id":3,"name":"Tariro","surname":"Moyo"},"constitution_links":{"zanupf":{"section_id":42,"title":"Article 4"},"zimbabwe":null},"created_at":"2026-05-01T10:00:00+00:00"}]}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/dialogue/threads/{thread_id}/messages'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List messages in a thread'
+      description: 'Returns up to 200 messages (newest blocked users filtered out). Marks the thread read for the caller.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      thread_id:
+        custom: []
+        name: thread_id
+        description: 'The ID of the thread.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      thread:
+        custom: []
+        name: thread
+        description: 'Dialogue thread ID.'
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      thread_id: 17
+      thread: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":501,"body":"Welcome to the discussion.","user":{"id":3,"name":"Tariro","surname":"Moyo"},"created_at":"2026-05-01T10:05:00+00:00","attachments":[]}]}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/dialogue/channels/{channel_id}/threads'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Create a thread'
+      description: 'Opens a new discussion thread in the given channel.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      channel_id:
+        custom: []
+        name: channel_id
+        description: 'The ID of the channel.'
+        required: true
+        example: 164
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      channel:
+        custom: []
+        name: channel
+        description: 'Dialogue channel ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      channel_id: 164
+      channel: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        custom: []
+        name: title
+        description: 'Thread title.'
+        required: true
+        example: 'Clarification on Article 12'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      zanupf_section_id:
+        custom: []
+        name: zanupf_section_id
+        description: 'optional ZANU PF constitution section to link.'
+        required: false
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      zimbabwe_section_id:
+        custom: []
+        name: zimbabwe_section_id
+        description: 'optional Zimbabwe constitution section to link.'
+        required: false
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      title: 'Clarification on Article 12'
+      zanupf_section_id: 42
+      zimbabwe_section_id: 18
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"data":{"id":99}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/dialogue/threads/{thread_id}/messages'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Post a message'
+      description: 'Adds a reply to the thread. HTML tags are stripped from the body.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      thread_id:
+        custom: []
+        name: thread_id
+        description: 'The ID of the thread.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      thread:
+        custom: []
+        name: thread
+        description: 'Dialogue thread ID.'
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      thread_id: 17
+      thread: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      body:
+        custom: []
+        name: body
+        description: 'Message text (max 4000 chars).'
+        required: true
+        example: 'Thank you for the clarification.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      body: 'Thank you for the clarification.'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"data":{"id":502,"body":"Thank you for the clarification.","user":{"id":3,"name":"Tariro","surname":"Moyo"},"created_at":"2026-05-01T10:06:00+00:00","attachments":[]}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/dialogue/messages/{message_id}/report'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Report a message'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      message_id:
+        custom: []
+        name: message_id
+        description: 'The ID of the message.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      message:
+        custom: []
+        name: message
+        description: 'Message ID.'
+        required: true
+        example: 501
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      message_id: 17
+      message: 501
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      reason:
+        custom: []
+        name: reason
+        description: 'One of: spam, harassment, hate, sexual, violence, misinformation, other.'
+        required: true
+        example: spam
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      details:
+        custom: []
+        name: details
+        description: 'optional Extra context (max 1000 chars).'
+        required: false
+        example: 'Repeated promotional links'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      reason: spam
+      details: 'Repeated promotional links'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"message":"Reported."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/dialogue/threads/{thread_id}/report'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Report a thread'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      thread_id:
+        custom: []
+        name: thread_id
+        description: 'The ID of the thread.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      thread:
+        custom: []
+        name: thread
+        description: 'Thread ID.'
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      thread_id: 17
+      thread: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      reason:
+        custom: []
+        name: reason
+        description: 'One of: spam, harassment, hate, sexual, violence, misinformation, other.'
+        required: true
+        example: harassment
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      details:
+        custom: []
+        name: details
+        description: 'optional Extra context.'
+        required: false
+        example: 'Off-topic personal attacks'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      reason: harassment
+      details: 'Off-topic personal attacks'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"message":"Reported."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/users/{userId}/block'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Block a user'
+      description: "Hides the blocked user's messages in dialogue views for the caller."
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      userId:
+        custom: []
+        name: userId
+        description: 'User ID to block.'
+        required: true
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      userId: 7
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"message":"Blocked."}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: '{"message":"Cannot block yourself."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/users/{userId}/block'
+    metadata:
+      custom: []
+      groupName: Dialogue
+      groupDescription: |-
+
+        Channels, threads, messages, reporting, and user blocks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Unblock a user'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      userId:
+        custom: []
+        name: userId
+        description: 'User ID to unblock.'
+        required: true
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      userId: 7
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"message":"Unblocked."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null

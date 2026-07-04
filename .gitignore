@@ -41,3 +41,5 @@ COVER.psd
 
 # Misc
 .phpactor.json
+docker/.htpasswd-docs
+backend/storage/app/private/.htpasswd-docs

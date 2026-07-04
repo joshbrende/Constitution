@@ -28,7 +28,7 @@ class CertificateApiAuthorizationTest extends TestCase
         return Certificate::create([
             'user_id' => $recipient->id,
             'course_id' => $course->id,
-            'certificate_number' => 'ZP-MEM-2026-XYZZY123',
+            'certificate_number' => 'ZPF-MEM-2026-XYZZY123',
             'verification_code' => 'VERIFY01',
             'issued_at' => now(),
             'pdf_status' => 'pending',

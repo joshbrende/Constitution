@@ -10,12 +10,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Public content
+ *
+ * Digital library categories and documents.
+ *
+ * @unauthenticated
+ */
 class LibraryController extends Controller
 {
     private const CACHE_TTL = 600; // 10 minutes
 
     /**
-     * List published library categories (with document counts). Public categories only for guests.
+     * List library categories
+     *
+     * Published top-level categories with document counts. Public; no auth required.
+     *
+     * @response 200 {"data":[{"id":1,"name":"Party documents","slug":"party-documents","description":"Official party publications","documents_count":12}]}
      */
     public function categories(): JsonResponse
     {
@@ -41,7 +52,16 @@ class LibraryController extends Controller
     }
 
     /**
-     * List published documents. Optional filters: category_id, type, language. Access filtered by role.
+     * List library documents
+     *
+     * Paginated published documents. Role-restricted items are omitted from results.
+     * Optional bearer token unlocks member-only documents.
+     *
+     * @queryParam category_id integer Filter by category ID. Example: 1
+     * @queryParam type string Filter by document type. Example: policy
+     * @queryParam language string Filter by language code. Example: en
+     * @queryParam per_page integer Results per page (max 50). Example: 20
+     * @response 200 {"data":[{"id":5,"title":"Code of conduct","slug":"code-of-conduct","abstract":"Member conduct guidelines","document_type":"policy","language":"en","published_at":"2026-01-15T08:00:00+00:00","category":{"id":1,"name":"Party documents","slug":"party-documents"},"has_file":true}],"meta":{"current_page":1,"last_page":1,"per_page":20,"total":1}}
      */
     public function index(Request $request): JsonResponse
     {
@@ -98,7 +118,13 @@ class LibraryController extends Controller
     }
 
     /**
-     * Show a single published document. Access enforced.
+     * Show a library document
+     *
+     * Returns full body text for published documents the caller may access.
+     *
+     * @urlParam document integer required Document ID. Example: 5
+     * @response 200 {"data":{"id":5,"title":"Code of conduct","slug":"code-of-conduct","abstract":"Member conduct guidelines","body":"...","document_type":"policy","language":"en","published_at":"2026-01-15T08:00:00+00:00","category":{"id":1,"name":"Party documents","slug":"party-documents"},"has_file":true}}
+     * @response 404 {"message":"Document not found."}
      */
     public function show(LibraryDocument $document): JsonResponse
     {

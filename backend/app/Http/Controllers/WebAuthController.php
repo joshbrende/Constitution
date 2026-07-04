@@ -83,6 +83,7 @@ class WebAuthController extends Controller
             'password' => $data['password'],
             'province_id' => $data['province_id'],
             'accepted_terms_at' => now(),
+            'membership_standing' => \App\Enums\MembershipStanding::Applicant->value,
         ]);
 
         // Security: new registrations start as student only.
@@ -98,7 +99,8 @@ class WebAuthController extends Controller
             targetType: User::class,
             targetId: $user->id,
             metadata: ['email' => $user->email, 'source' => 'web'],
-            request: $request
+            request: $request,
+            actorUserId: $user->id,
         );
 
         Auth::login($user);
@@ -142,20 +144,21 @@ class WebAuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         $user = $request->user();
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
         if ($user) {
             $this->auditLogger->log(
                 action: 'auth.web.logged_out',
                 targetType: User::class,
                 targetId: $user->id,
                 metadata: ['email' => $user->email],
-                request: $request
+                request: $request,
+                actorUserId: $user->id,
             );
         }
+
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect('/');
     }

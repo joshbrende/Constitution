@@ -7,8 +7,18 @@ use App\Rules\ZimbabweNationalIdRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Profile
+ *
+ * Member profile, provinces list, and account deletion.
+ */
 class ProfileController extends Controller
 {
+    /**
+     * Get profile
+     *
+     * Returns the authenticated user with roles and province.
+     */
     public function show(Request $request): JsonResponse
     {
         $user = $request->user()->load(['roles', 'province:id,name,code']);
@@ -16,6 +26,11 @@ class ProfileController extends Controller
         return response()->json(['data' => $user]);
     }
 
+    /**
+     * Update profile
+     *
+     * Update national ID and province. National ID format is validated server-side.
+     */
     public function update(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -32,6 +47,11 @@ class ProfileController extends Controller
         return response()->json(['data' => $user->fresh(['roles', 'province:id,name,code'])]);
     }
 
+    /**
+     * Delete account
+     *
+     * Permanently deletes the authenticated user and revokes all tokens.
+     */
     public function destroy(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -52,4 +72,3 @@ class ProfileController extends Controller
         return response()->json([], 204);
     }
 }
-

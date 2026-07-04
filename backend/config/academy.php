@@ -15,7 +15,10 @@ return [
 
     'default_fee_currency' => env('ACADEMY_DEFAULT_FEE_CURRENCY', 'USD'),
 
-    'receipt_number_prefix' => 'ZP-REC',
+    'receipt_number_prefix' => 'ZPF-REC',
+
+    /** Relative to public/ — logo on payment receipt PDF. */
+    'receipt_logo_path' => env('ACADEMY_RECEIPT_LOGO_PATH', 'download.png'),
 
     'payment_reference_length' => 10,
 
@@ -46,5 +49,54 @@ return [
 
     /** When false, students cannot list/download certificates via API (government workflow). */
     'student_certificate_download_enabled' => filter_var(env('ACADEMY_STUDENT_CERTIFICATE_DOWNLOAD', false), FILTER_VALIDATE_BOOL),
+
+    /**
+     * Membership assessment question selection (per attempt).
+     */
+    'assessment_selection' => [
+        'ensure_module_coverage' => true,
+        'min_per_module' => 2,
+        'difficulty_ratios' => [
+            'easy' => 0.32,
+            'medium' => 0.48,
+            'hard' => 0.20,
+        ],
+    ],
+
+    /** Minutes to cache pre-start question set tokens (at least exam duration + buffer). */
+    'assessment_question_set_cache_minutes' => (int) env('ACADEMY_QUESTION_SET_CACHE_MINUTES', 10),
+
+    'assessment_question_set_buffer_minutes' => (int) env('ACADEMY_QUESTION_SET_BUFFER_MINUTES', 5),
+
+    /** Grace period after deadline before server rejects submit (clock skew / latency). */
+    'assessment_time_grace_seconds' => (int) env('ACADEMY_ASSESSMENT_TIME_GRACE_SECONDS', 30),
+
+    /** Maximum graded attempts per user per assessment (0 = unlimited). */
+    'assessment_max_attempts' => (int) env('ACADEMY_ASSESSMENT_MAX_ATTEMPTS', 3),
+
+    /** Hours to wait after a failed attempt before starting again (0 = no cooldown). */
+    'assessment_attempt_cooldown_hours' => (int) env('ACADEMY_ASSESSMENT_COOLDOWN_HOURS', 24),
+
+    /**
+     * Course audience restrictions (stored on courses.audience).
+     * Youth / women's / veterans audiences match users.wing.
+     */
+    'course_audiences' => [
+        'all' => 'All learners',
+        'member' => 'Ordinary members (membership completed)',
+        'youth' => 'Youth League',
+        'women' => "Women's League",
+        'veterans' => 'Veterans League',
+        'presidium' => 'Presidium',
+    ],
+
+    /** Valid values for users.wing when assigning league access. */
+    'user_wings' => ['main', 'youth', 'women', 'veterans'],
+
+    /** League courses require provincial branch admission confirmation before enrolment. */
+    'require_branch_admission_for_league_courses' => filter_var(
+        env('ACADEMY_REQUIRE_BRANCH_ADMISSION', true),
+        FILTER_VALIDATE_BOOL
+    ),
 
 ];

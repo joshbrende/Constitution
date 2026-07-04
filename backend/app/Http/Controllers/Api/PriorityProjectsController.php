@@ -8,6 +8,11 @@ use App\Models\PriorityProjectLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @group Public content
+ *
+ * Priority projects listing and likes.
+ */
 class PriorityProjectsController extends Controller
 {
     public function index(): JsonResponse

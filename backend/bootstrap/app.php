@@ -3,8 +3,11 @@
 use App\Exceptions\Handler as AppExceptionHandler;
 use App\Http\Middleware\EnsureAdminOrContentEditor;
 use App\Http\Middleware\EnsureAdminSection;
+use App\Http\Middleware\EnsureInstallComplete;
 use App\Http\Middleware\EnsurePresidiumAccess;
+use App\Http\Middleware\EnsureSetupAccess;
 use App\Http\Middleware\EnsureSetupNotCompleted;
+use App\Http\Middleware\SyncSetupProgress;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,6 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.section' => EnsureAdminSection::class,
             'presidium' => EnsurePresidiumAccess::class,
             'setup.pending' => EnsureSetupNotCompleted::class,
+            'setup.access' => EnsureSetupAccess::class,
+            'setup.sync' => SyncSetupProgress::class,
+            'install.complete' => EnsureInstallComplete::class,
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
         ]);

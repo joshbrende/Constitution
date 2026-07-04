@@ -6,6 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\PartyOrgan;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Public content
+ *
+ * Party organs (Congress, Politburo, etc.).
+ *
+ * @unauthenticated
+ */
 class PartyOrgansController extends Controller
 {
     /**

@@ -5,6 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use Illuminate\Http\Request;
 
+/**
+ * @group Constitution
+ *
+ * Chapters within a constitution document.
+ *
+ * @unauthenticated
+ */
 class ChapterController extends Controller
 {
     public function index()

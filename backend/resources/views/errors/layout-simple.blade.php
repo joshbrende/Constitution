@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') — {{ config('app.name', 'App') }}</title>
+    @include('partials.favicon')
     <style>
         :root { color-scheme: light dark; }
         body {

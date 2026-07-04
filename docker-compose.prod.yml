@@ -1,0 +1,92 @@
+# Production Compose — use baked images; application code mounted read-only (no live dev sync).
+# For air-gapped installs, bake the release tag into the image and remove the code volume entirely.
+
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: constitution-app
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      SESSION_ENCRYPT: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: constitution
+      DB_USERNAME: constitution
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ./backend:/var/www/html:ro
+      - app_storage:/var/www/html/storage
+    depends_on:
+      - db
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: constitution-nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  queue:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: constitution-queue
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3 --timeout=120 --queue=default,mail
+    env_file:
+      - ./backend/.env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: constitution
+      DB_USERNAME: constitution
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ./backend:/var/www/html:ro
+      - app_storage:/var/www/html/storage
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mysql:8.0
+    container_name: constitution-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: constitution
+      MYSQL_USER: constitution
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: constitution-redis
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  app_storage:

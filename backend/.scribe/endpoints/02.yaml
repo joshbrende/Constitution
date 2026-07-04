@@ -1,0 +1,295 @@
+name: Profile
+description: |-
+
+  Member profile, provinces list, and account deletion.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/profile
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Member profile, provinces list, and account deletion.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get profile'
+      description: 'Returns the authenticated user with roles and province.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: f0612716-554a-4c06-9582-b1643a92ce4b
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/provinces
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Provinces list for registration and profile picker.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all Zimbabwe provinces (for profile picker, etc.).'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: a3927b8e-dcef-4be7-97ca-173ec788ed71
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: api/v1/profile
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Member profile, provinces list, and account deletion.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update profile'
+      description: 'Update national ID and province. National ID format is validated server-side.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      national_id:
+        custom: []
+        name: national_id
+        description: 'Must not be greater than 32 characters.'
+        required: false
+        example: vmqeopfuudtdsufvyvddq
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      province_id:
+        custom: []
+        name: province_id
+        description: 'Must match an existing stored value.'
+        required: false
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      national_id: vmqeopfuudtdsufvyvddq
+      province_id: 17
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: api/v1/profile
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Member profile, provinces list, and account deletion.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete account'
+      description: 'Permanently deletes the authenticated user and revokes all tokens.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/profile/push-token
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Mobile push notification token registration (Expo).
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Register push token'
+      description: 'Stores an Expo push token for the authenticated user (iOS or Android).'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      expo_push_token:
+        custom: []
+        name: expo_push_token
+        description: 'Expo push token.'
+        required: true
+        example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      platform:
+        custom: []
+        name: platform
+        description: 'Device platform.'
+        required: true
+        example: android
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      device_name:
+        custom: []
+        name: device_name
+        description: 'optional Human-readable device name.'
+        required: false
+        example: 'Pixel 8'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      expo_push_token: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'
+      platform: android
+      device_name: 'Pixel 8'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: api/v1/profile/push-token
+    metadata:
+      custom: []
+      groupName: Profile
+      groupDescription: |-
+
+        Mobile push notification token registration (Expo).
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Unregister push token'
+      description: 'Removes an Expo push token on logout or when the user disables notifications.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      expo_push_token:
+        custom: []
+        name: expo_push_token
+        description: 'The token to remove.'
+        required: true
+        example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      expo_push_token: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

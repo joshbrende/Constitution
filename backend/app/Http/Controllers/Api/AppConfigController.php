@@ -7,6 +7,13 @@ use App\Models\SiteSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @group Public content
+ *
+ * Mobile app configuration (legal URLs, feature flags, store links).
+ *
+ * @unauthenticated
+ */
 class AppConfigController extends Controller
 {
     public function show(): JsonResponse
@@ -26,6 +33,10 @@ class AppConfigController extends Controller
                 'features' => [
                     'enable_dialogue' => (bool) SiteSetting::get('enable_dialogue', true),
                     'require_national_id' => (bool) SiteSetting::get('require_national_id', true),
+                ],
+                'mobile' => [
+                    'app_store_url' => (string) SiteSetting::get('mobile_app_store_url', ''),
+                    'play_store_url' => (string) SiteSetting::get('mobile_play_store_url', ''),
                 ],
                 'meta' => [
                     'updated_at' => now()->toIso8601String(),

@@ -64,7 +64,7 @@
                         <div>
                             <label for="code" class="form-label">Code <span style="color:var(--zanupf-red);">*</span></label>
                             <input id="code" type="text" name="code" value="{{ old('code', $course?->code) }}" required
-                                placeholder="e.g. ZP-CONST-101, ADV-CADRE-201"
+                                placeholder="e.g. ZPF-CONST-101, ADV-CADRE-201"
                                 class="form-input"
                                 style="font-family:ui-monospace,monospace;">
                             <p class="form-help">Short unique identifier for reports and enrolment. Letters, numbers, hyphens, underscores only.</p>
@@ -108,9 +108,54 @@
                         </label>
                         <label class="form-check">
                             <input type="hidden" name="grants_membership" value="0">
-                            <input type="checkbox" name="grants_membership" value="1" {{ old('grants_membership', $course?->grants_membership) ? 'checked' : '' }}>
-                            <span><strong>Grants membership on pass</strong> – Successful completion of the assessment confers membership.</span>
+                            <input type="checkbox" name="grants_membership" value="1" id="grants_membership" {{ old('grants_membership', $course?->grants_membership) ? 'checked' : '' }}>
+                            <span><strong>Grants membership on pass</strong> – Successful completion of the assessment confers membership (only one course system-wide).</span>
                         </label>
+                    </div>
+                </div>
+
+                {{-- Section: Access control --}}
+                <div style="margin-bottom:1.5rem;" id="access-control-section">
+                    <h3 style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--zanupf-gold);margin-bottom:1rem;padding-bottom:0.35rem;border-bottom:1px solid var(--border-subtle);">
+                        Access control
+                    </h3>
+                    <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:36rem;">
+                        <label class="form-check" id="requires_membership_row">
+                            <input type="hidden" name="requires_membership" value="0">
+                            <input type="checkbox" name="requires_membership" value="1" id="requires_membership" {{ old('requires_membership', $course?->requires_membership ?? true) ? 'checked' : '' }}>
+                            <span><strong>Requires membership course</strong> – Learners must complete the membership course before they can enrol.</span>
+                        </label>
+                        <div>
+                            <label for="audience" class="form-label">Target audience</label>
+                            <select id="audience" name="audience" class="form-input" style="max-width:20rem;">
+                                @foreach (config('academy.course_audiences', []) as $value => $label)
+                                    <option value="{{ $value }}" {{ old('audience', $course?->audience ?? 'all') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="form-help">Youth and Women's League audiences match the learner's <strong>wing</strong> on their profile. Presidium matches the presidium role.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Section: Certificate settings --}}
+                <div style="margin-bottom:1.5rem;">
+                    <h3 style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--zanupf-gold);margin-bottom:1rem;padding-bottom:0.35rem;border-bottom:1px solid var(--border-subtle);">
+                        Certificate &amp; payment
+                    </h3>
+                    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                        <label class="form-check" id="issues_certificate_row">
+                            <input type="hidden" name="issues_certificate" value="0">
+                            <input type="checkbox" name="issues_certificate" value="1" id="issues_certificate" {{ old('issues_certificate', $course?->issues_certificate || $course?->grants_membership) ? 'checked' : '' }}>
+                            <span><strong>Issues certificate on pass</strong> – Triggers the government payment and Presidium approval workflow.</span>
+                        </label>
+                        <div style="max-width:28rem;" id="certificate_prefix_row">
+                            <label for="certificate_number_prefix" class="form-label">Certificate number prefix</label>
+                            <input id="certificate_number_prefix" type="text" name="certificate_number_prefix" maxlength="24"
+                                value="{{ old('certificate_number_prefix', $course?->certificate_number_prefix ?? ($course?->grants_membership ? config('certificates.certificate_number_prefix') : '')) }}"
+                                placeholder="e.g. ZPF-MEM, ZPF-YOUTH"
+                                class="form-input" style="font-family:ui-monospace,monospace;text-transform:uppercase;">
+                            <p class="form-help">Issued numbers use <code>{prefix}-{year}-{code}</code>. Each course should have its own prefix.</p>
+                        </div>
                         <div style="max-width:28rem;">
                             <label for="certificate_title" class="form-label">Certificate title</label>
                             <input id="certificate_title" type="text" name="certificate_title" value="{{ old('certificate_title', $course?->certificate_title) }}"
@@ -184,6 +229,40 @@
             .form-btn-primary:hover { filter:brightness(1.1); }
         </style>
         <script>
+            (function () {
+                var grantsMembership = document.getElementById('grants_membership');
+                var issuesCertificate = document.getElementById('issues_certificate');
+                var requiresMembership = document.getElementById('requires_membership');
+                var audience = document.getElementById('audience');
+                var prefixRow = document.getElementById('certificate_prefix_row');
+                var issuesRow = document.getElementById('issues_certificate_row');
+                var requiresRow = document.getElementById('requires_membership_row');
+
+                function syncMembershipCourseFields() {
+                    var isMembership = grantsMembership && grantsMembership.checked;
+                    if (isMembership) {
+                        if (issuesCertificate) { issuesCertificate.checked = true; issuesCertificate.disabled = true; }
+                        if (requiresMembership) { requiresMembership.checked = false; requiresMembership.disabled = true; }
+                        if (audience) { audience.value = 'all'; audience.disabled = true; }
+                        if (issuesRow) issuesRow.style.opacity = '0.7';
+                        if (requiresRow) requiresRow.style.opacity = '0.5';
+                    } else {
+                        if (issuesCertificate) issuesCertificate.disabled = false;
+                        if (requiresMembership) requiresMembership.disabled = false;
+                        if (audience) audience.disabled = false;
+                        if (issuesRow) issuesRow.style.opacity = '1';
+                        if (requiresRow) requiresRow.style.opacity = '1';
+                    }
+                    if (prefixRow) {
+                        prefixRow.style.display = (issuesCertificate && issuesCertificate.checked) || isMembership ? 'block' : 'none';
+                    }
+                }
+
+                grantsMembership?.addEventListener('change', syncMembershipCourseFields);
+                issuesCertificate?.addEventListener('change', syncMembershipCourseFields);
+                syncMembershipCourseFields();
+            })();
+
             document.getElementById('preview-certificate-btn')?.addEventListener('click', function () {
                 var base = '{{ route('certificate.preview') }}';
                 var courseTitle = (document.getElementById('title')?.value || '').trim() || 'Foundational Constitutional Studies Certificate';

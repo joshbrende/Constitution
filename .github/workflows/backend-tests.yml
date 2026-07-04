@@ -53,3 +53,8 @@ jobs:
 
       - name: Run PHPUnit
         run: php artisan test
+
+      - name: Generate API documentation (Scribe)
+        run: |
+          php artisan migrate --force --no-interaction
+          php artisan scribe:generate --force --no-interaction

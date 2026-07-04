@@ -13,6 +13,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @group Academy
+ *
+ * Badges and achievement progress.
+ */
 class AcademyAchievementsController extends Controller
 {
     /**

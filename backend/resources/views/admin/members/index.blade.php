@@ -9,7 +9,7 @@
             <div class="dash-panel-header">
                 <div>
                     <div class="dash-panel-title">Members</div>
-                    <div class="dash-panel-subtitle">Users who have completed membership requirements and hold at least one certificate.</div>
+                    <div class="dash-panel-subtitle">Full members — certificate issued and registered for provincial oversight.</div>
                 </div>
                 <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
             </div>
@@ -40,7 +40,10 @@
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Roles / membership</th>
+                            <th>Standing</th>
+                            <th>Wing</th>
+                            <th>Province</th>
+                            <th>Roles</th>
                             <th>Created</th>
                         </tr>
                     </thead>
@@ -51,13 +54,12 @@
                                     <strong>{{ $m->name }} {{ $m->surname }}</strong>
                                 </td>
                                 <td>{{ $m->email }}</td>
+                                <td>{{ $m->membershipStandingLabel() }}</td>
+                                <td>{{ $m->wing ? ucfirst($m->wing) : '—' }}</td>
+                                <td>{{ $m->province?->name ?? '—' }}</td>
                                 <td>
                                     @php
                                         $roles = collect($m->roles ?? []);
-                                        // Only surface "member" once the user has at least one certificate
-                                        if (($m->certificates->count() ?? 0) === 0) {
-                                            $roles = $roles->reject(fn($r) => ($r->slug ?? null) === 'member');
-                                        }
                                     @endphp
                                     {{ $roles->map(fn($r)=>$r->slug ?? $r->name ?? '')->filter()->implode(', ') ?: '—' }}
                                 </td>

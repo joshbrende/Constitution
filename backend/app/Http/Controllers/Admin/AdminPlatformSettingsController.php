@@ -8,6 +8,7 @@ use App\Services\AdminAccessService;
 use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AdminPlatformSettingsController extends Controller
@@ -34,6 +35,8 @@ class AdminPlatformSettingsController extends Controller
                 'legal_cookies_url' => (string) SiteSetting::get('legal_cookies_url', url('/cookies')),
                 'enable_dialogue' => (bool) SiteSetting::get('enable_dialogue', true),
                 'require_national_id' => (bool) SiteSetting::get('require_national_id', true),
+                'mobile_app_store_url' => (string) SiteSetting::get('mobile_app_store_url', ''),
+                'mobile_play_store_url' => (string) SiteSetting::get('mobile_play_store_url', ''),
             ],
         ]);
     }
@@ -51,6 +54,8 @@ class AdminPlatformSettingsController extends Controller
             'public_site_url' => (string) SiteSetting::get('public_site_url', ''),
             'enable_dialogue' => (bool) SiteSetting::get('enable_dialogue', true),
             'require_national_id' => (bool) SiteSetting::get('require_national_id', true),
+            'mobile_app_store_url' => (string) SiteSetting::get('mobile_app_store_url', ''),
+            'mobile_play_store_url' => (string) SiteSetting::get('mobile_play_store_url', ''),
         ];
 
         $data = $request->validate([
@@ -62,6 +67,8 @@ class AdminPlatformSettingsController extends Controller
             'legal_cookies_url' => ['required', 'string', 'max:255'],
             'enable_dialogue' => ['nullable', 'boolean'],
             'require_national_id' => ['nullable', 'boolean'],
+            'mobile_app_store_url' => ['nullable', 'url', 'max:255'],
+            'mobile_play_store_url' => ['nullable', 'url', 'max:255'],
         ]);
 
         SiteSetting::set('org_name', $data['org_name']);
@@ -72,6 +79,10 @@ class AdminPlatformSettingsController extends Controller
         SiteSetting::set('legal_cookies_url', $data['legal_cookies_url']);
         SiteSetting::set('enable_dialogue', $request->boolean('enable_dialogue', true));
         SiteSetting::set('require_national_id', $request->boolean('require_national_id', true));
+        SiteSetting::set('mobile_app_store_url', $data['mobile_app_store_url'] ?? '');
+        SiteSetting::set('mobile_play_store_url', $data['mobile_play_store_url'] ?? '');
+
+        Cache::forget('app_config_v1');
 
         $this->auditLogger->log(
             action: 'admin.platform_settings.updated',
@@ -85,6 +96,8 @@ class AdminPlatformSettingsController extends Controller
                     'public_site_url' => $data['public_site_url'] ?? '',
                     'enable_dialogue' => $request->boolean('enable_dialogue', true),
                     'require_national_id' => $request->boolean('require_national_id', true),
+                    'mobile_app_store_url' => $data['mobile_app_store_url'] ?? '',
+                    'mobile_play_store_url' => $data['mobile_play_store_url'] ?? '',
                 ],
             ],
             request: $request

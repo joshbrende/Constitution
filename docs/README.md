@@ -25,6 +25,10 @@ Start here for orientation. **Disaster recovery:** read [RECONSTRUCTION.md](./RE
 | [**INPUT-SANITIZATION.md**](./INPUT-SANITIZATION.md) | User content sanitization. |
 | [**LOAD-BALANCER.md**](./LOAD-BALANCER.md) | Proxy / LB configuration. |
 | [**INTEGRATIONS.md**](./INTEGRATIONS.md) | External systems and integration notes. |
+| [**politburo/**](./politburo/README.md) | **Politburo briefing pack** — executive summary, rollout plan, presentation outline |
+| [**INSTALL-SECURITY.md**](./INSTALL-SECURITY.md) | Setup wizard token lock and install hardening |
+| [**INCIDENT-RESPONSE.md**](./INCIDENT-RESPONSE.md) | Security incident playbooks |
+| [**SOC2-READINESS-CHECKLIST.md**](./SOC2-READINESS-CHECKLIST.md) | SOC 2 readiness by TSC control (Done / Partial / Missing) |
 | [**LMS-PERFORMANCE-TRACKING.md**](./LMS-PERFORMANCE-TRACKING.md) | Academy metrics and analytics model. |
 | [**membership-course-plan.md**](./membership-course-plan.md) | Membership course product plan. |
 | [**SYSTEM-DESIGN-SUPPLY-DEMAND-REALTIME.md**](./SYSTEM-DESIGN-SUPPLY-DEMAND-REALTIME.md) | Load, queues, and UX under pressure (conceptual). |

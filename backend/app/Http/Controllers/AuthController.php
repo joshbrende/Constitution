@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 
+/**
+ * @group Authentication
+ *
+ * Register, login, token refresh, and password recovery for mobile and API clients.
+ */
 class AuthController extends Controller
 {
     public function __construct(
@@ -50,15 +55,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Register a new user.
+     * Register a new member account
      *
-     * Expected payload:
-     * - name
-     * - surname
-     * - email
-     * - password
-     * - password_confirmation
-     * - accept_terms (boolean)
+     * Creates a student-role user and returns Sanctum access and refresh tokens.
+     *
+     * @unauthenticated
      */
     public function register(Request $request): JsonResponse
     {
@@ -68,7 +69,7 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
             'accept_terms' => ['required', 'accepted'],
-            'province_id' => ['required', 'integer', 'exists:provinces,id'],
+            'province_id' => ['nullable', 'integer', 'exists:provinces,id'],
         ]);
 
         $user = User::create([
@@ -76,8 +77,9 @@ class AuthController extends Controller
             'surname' => $data['surname'],
             'email' => $data['email'],
             'password' => $data['password'],
-            'province_id' => $data['province_id'],
+            'province_id' => $data['province_id'] ?? null,
             'accepted_terms_at' => now(),
+            'membership_standing' => \App\Enums\MembershipStanding::Applicant->value,
         ]);
 
         // Assign default role: student only. Member role is granted after passing the membership course.
@@ -96,7 +98,8 @@ class AuthController extends Controller
             targetType: User::class,
             targetId: $user->id,
             metadata: ['email' => $user->email, 'source' => 'api'],
-            request: $request
+            request: $request,
+            actorUserId: $user->id,
         );
 
         return response()->json([
@@ -107,11 +110,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Login an existing user.
+     * Login
      *
-     * Expected payload:
-     * - email
-     * - password
+     * Returns access and refresh tokens. Previous tokens for this user are revoked.
+     *
+     * @unauthenticated
      */
     public function login(Request $request): JsonResponse
     {
@@ -150,7 +153,8 @@ class AuthController extends Controller
             targetType: User::class,
             targetId: $user->id,
             metadata: ['email' => $user->email],
-            request: $request
+            request: $request,
+            actorUserId: $user->id,
         );
 
         return response()->json([
@@ -161,7 +165,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout (revoke current token).
+     * Logout
+     *
+     * Revokes the current access token and all refresh tokens for the user.
      */
     public function logout(Request $request): JsonResponse
     {
@@ -181,7 +187,8 @@ class AuthController extends Controller
                 targetType: User::class,
                 targetId: $user->id,
                 metadata: ['email' => $user->email],
-                request: $request
+                request: $request,
+                actorUserId: $user->id,
             );
         }
 
@@ -191,11 +198,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Refresh access token using refresh token (rotation).
+     * Refresh tokens
      *
-     * - Validates refresh token + expiry
-     * - Revokes old refresh token
-     * - Issues a new access token and a new refresh token
+     * Rotates the refresh token and issues a new access token. Rate limited.
+     *
+     * @unauthenticated
      */
     public function refresh(Request $request): JsonResponse
     {
@@ -239,7 +246,8 @@ class AuthController extends Controller
                 targetType: User::class,
                 targetId: $user->id,
                 metadata: ['refresh_token_id' => $rt->id],
-                request: request()
+                request: request(),
+                actorUserId: $user->id,
             );
 
             return response()->json([
@@ -251,9 +259,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Request a password reset link (mobile).
+     * Forgot password
      *
-     * Rate limited to 3 requests per email per hour.
+     * Sends a password reset link when the email exists. Rate limited to 3 requests per hour per email.
+     *
+     * @unauthenticated
      */
     public function forgotPassword(Request $request): JsonResponse
     {

@@ -15,6 +15,9 @@ class CertificatePdfService
     private const TEMPLATE_PRIMARY = 'certificate-template.pdf';
     private const TEMPLATE_FALLBACK = 'certificate.pdf';
 
+    /** Party name as shown on certificates (title case — all-caps script is hard to read). */
+    public const PARTY_DISPLAY_NAME = 'Zanu Pf';
+
     private string $fontPath;
     private string $fontCachePath;
 
@@ -167,9 +170,11 @@ class CertificatePdfService
         $certificateTitle = isset($certificate->course)
             ? ($certificate->course->certificate_title ?? 'Certificate of Completion')
             : 'Certificate of Completion';
-        $courseTitle = isset($certificate->course)
-            ? ($certificate->course->title ?? 'Membership')
-            : 'Membership';
+        $courseTitle = self::formatCourseTitleForCertificate(
+            isset($certificate->course)
+                ? ($certificate->course->title ?? 'Membership')
+                : 'Membership'
+        );
 
         $name = trim(($certificate->user->name ?? '') . ' ' . ($certificate->user->surname ?? ''));
         if ($name === '') {
@@ -229,6 +234,11 @@ class CertificatePdfService
         }
 
         return $verifyUrl;
+    }
+
+    public static function formatCourseTitleForCertificate(string $title): string
+    {
+        return preg_replace('/\bZANU\s*PF\b/iu', self::PARTY_DISPLAY_NAME, trim($title)) ?? trim($title);
     }
 
     /**

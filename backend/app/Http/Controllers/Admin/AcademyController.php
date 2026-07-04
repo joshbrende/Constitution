@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\Course;
 use App\Models\Question;
+use App\Services\CourseAnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,6 +14,10 @@ use Illuminate\View\View;
 
 class AcademyController extends Controller
 {
+    public function __construct(
+        protected CourseAnalyticsService $courseAnalytics,
+    ) {}
+
     public function index(): View
     {
         return $this->indexWithSearch();
@@ -34,8 +39,9 @@ class AcademyController extends Controller
         $courses = $query->paginate(20)->withQueryString();
 
         $membershipCourse = Course::where('grants_membership', true)->where('status', 'published')->first();
+        $courseStats = $this->courseAnalytics->perCourseStats();
 
-        return view('admin.academy.index', compact('courses', 'membershipCourse'));
+        return view('admin.academy.index', compact('courses', 'membershipCourse', 'courseStats'));
     }
 
     public function courseCreate(): View
@@ -257,6 +263,8 @@ class AcademyController extends Controller
     private function validateCourseData(Request $request, ?Course $course = null): array
     {
         $grantsMembership = $request->boolean('grants_membership');
+        $issuesCertificate = $grantsMembership || $request->boolean('issues_certificate');
+        $audiences = array_keys(config('academy.course_audiences', ['all' => 'All learners']));
 
         $data = $request->validate([
             'code' => ['required', 'string', 'max:50', 'unique:courses,code'.($course ? ','.$course->id : ''), 'regex:/^[A-Z0-9\-_]+$/i'],
@@ -265,9 +273,19 @@ class AcademyController extends Controller
             'level' => ['required', 'in:basic,intermediate,advanced'],
             'is_mandatory' => ['boolean'],
             'grants_membership' => ['boolean'],
+            'requires_membership' => ['boolean'],
+            'audience' => ['required', 'string', Rule::in($audiences)],
             'certificate_title' => ['nullable', 'string', 'max:120'],
+            'issues_certificate' => ['boolean'],
+            'certificate_number_prefix' => [
+                Rule::requiredIf($issuesCertificate),
+                'nullable',
+                'string',
+                'max:24',
+                'regex:/^[A-Z0-9\-]+$/i',
+            ],
             'certificate_fee_amount' => [
-                Rule::requiredIf($grantsMembership),
+                Rule::requiredIf($issuesCertificate),
                 'nullable',
                 'numeric',
                 'min:0.01',
@@ -280,10 +298,37 @@ class AcademyController extends Controller
 
         $data['is_mandatory'] = (bool) ($data['is_mandatory'] ?? false);
         $data['grants_membership'] = (bool) ($data['grants_membership'] ?? false);
+        $data['requires_membership'] = (bool) ($data['requires_membership'] ?? true);
+        $data['issues_certificate'] = (bool) ($data['issues_certificate'] ?? false);
         $data['certificate_fee_currency'] = strtoupper((string) ($data['certificate_fee_currency'] ?? config('academy.default_fee_currency', 'USD')));
 
-        if (! $data['grants_membership']) {
-            $data['certificate_fee_amount'] = $data['certificate_fee_amount'] ?? null;
+        if ($data['grants_membership']) {
+            $data['requires_membership'] = false;
+            $data['audience'] = 'all';
+            $data['issues_certificate'] = true;
+            if (empty($data['certificate_number_prefix'])) {
+                $data['certificate_number_prefix'] = config('certificates.certificate_number_prefix', 'ZPF-MEM');
+            }
+
+            $duplicateMembership = Course::query()
+                ->where('grants_membership', true)
+                ->when($course, fn ($q) => $q->where('id', '!=', $course->id))
+                ->exists();
+
+            if ($duplicateMembership) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'grants_membership' => 'Only one course may grant membership. Edit the existing membership course instead.',
+                ]);
+            }
+        } else {
+            if (! $data['issues_certificate']) {
+                $data['certificate_fee_amount'] = null;
+                $data['certificate_number_prefix'] = null;
+            }
+        }
+
+        if (! empty($data['certificate_number_prefix'])) {
+            $data['certificate_number_prefix'] = strtoupper((string) $data['certificate_number_prefix']);
         }
 
         return $data;

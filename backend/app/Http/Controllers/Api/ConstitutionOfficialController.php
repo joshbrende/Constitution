@@ -7,6 +7,13 @@ use App\Services\AmendmentOfficialPdfService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Constitution
+ *
+ * Official amendment PDF metadata and download links.
+ *
+ * @unauthenticated
+ */
 class ConstitutionOfficialController extends Controller
 {
     /**

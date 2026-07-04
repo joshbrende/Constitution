@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MembershipStanding;
 use App\Models\Permission;
 use App\Models\User;
 
@@ -14,6 +15,10 @@ class TokenAbilityService
      */
     public function abilitiesForUser(User $user): array
     {
+        if ($this->isSuspended($user)) {
+            return config('permissions.suspended_api_abilities', ['profile:read']);
+        }
+
         $user->loadMissing('roles.permissions');
 
         $fromRoles = [];
@@ -53,5 +58,16 @@ class TokenAbilityService
         }
 
         return array_values(array_unique($abilities));
+    }
+
+    private function isSuspended(User $user): bool
+    {
+        $standing = $user->membership_standing;
+
+        if ($standing instanceof MembershipStanding) {
+            return $standing === MembershipStanding::Suspended;
+        }
+
+        return (string) $standing === MembershipStanding::Suspended->value;
     }
 }

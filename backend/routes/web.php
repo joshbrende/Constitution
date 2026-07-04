@@ -34,21 +34,25 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\BackendUserInvitationController;
 use App\Http\Controllers\CertificatePreviewController;
 use App\Http\Controllers\CertificateVerificationController;
+use App\Http\Controllers\ReceiptVerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalPagesController;
 use App\Http\Controllers\SetupWizardController;
 use App\Http\Controllers\WebAcademyController;
 use App\Http\Controllers\WebLibraryController;
 use App\Http\Controllers\WebPartyOrgansController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomeController::class)->name('home');
 
 // Public certificate verification (no auth)
 Route::get('/verify-certificate', [CertificateVerificationController::class, 'show'])
     ->middleware('throttle:certificate-verify')
     ->name('certificate.verify');
+
+Route::get('/verify-receipt/{publicId?}', [ReceiptVerificationController::class, 'show'])
+    ->middleware('throttle:certificate-verify')
+    ->name('receipt.verify');
 
 // Public health endpoint for load balancers / uptime checks
 Route::get('/health', [HealthController::class, 'show'])->name('health');
@@ -83,13 +87,23 @@ Route::post('/logout', [WebAuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-Route::middleware('auth')->group(function () {
-    // One-time setup wizard (system_admin only)
-    Route::middleware('setup.pending')->group(function () {
-        Route::get('/setup', [SetupWizardController::class, 'show'])->name('setup');
-        Route::post('/setup', [SetupWizardController::class, 'store'])->name('setup.store');
-    });
+// One-time installation wizard (public while setup is pending)
+Route::middleware(['setup.pending', 'setup.access', 'setup.sync'])->prefix('setup')->name('setup.')->group(function () {
+    Route::get('/', [SetupWizardController::class, 'welcome'])->name('index');
+    Route::get('/checks', [SetupWizardController::class, 'checks'])->name('checks');
+    Route::post('/migrate', [SetupWizardController::class, 'runMigrate'])->name('migrate');
+    Route::post('/continue', [SetupWizardController::class, 'continueFromChecks'])->name('continue');
+    Route::get('/admin', [SetupWizardController::class, 'showAdmin'])->name('admin');
+    Route::post('/admin', [SetupWizardController::class, 'storeAdmin'])->name('admin.store');
+    Route::get('/platform', [SetupWizardController::class, 'showPlatform'])->name('platform');
+    Route::post('/platform', [SetupWizardController::class, 'storePlatform'])->name('platform.store');
+    Route::get('/seed', [SetupWizardController::class, 'showSeed'])->name('seed');
+    Route::post('/seed', [SetupWizardController::class, 'runSeed'])->name('seed.run');
+    Route::get('/finish', [SetupWizardController::class, 'finish'])->name('finish');
+    Route::post('/finish', [SetupWizardController::class, 'complete'])->name('complete');
+});
 
+Route::middleware(['auth', 'install.complete'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // Constitution reader (doc: zanupf | zimbabwe | amendment3)

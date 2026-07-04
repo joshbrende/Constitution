@@ -105,7 +105,7 @@ class PresidiumSeeder extends Seeder
                 'title' => "Mnangagwa’s ‘A Life of Sacrifice",
                 'author' => 'Eddie Graham Cross',
                 'summary' => 'An authorised biography covering the life history of President Emmerson Mnangagwa, from childhood to presidency.',
-                'cover_url' => '/icon-1.png',
+                'cover_url' => '/biography.png',
                 'article_url' => 'https://www.thezimbabwean.co/2021/08/mnangagwas-a-life-of-sacrifice/',
                 'purchase_url' => null,
                 'online_copy_url' => null,

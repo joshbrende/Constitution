@@ -20,6 +20,8 @@ use App\Http\Controllers\Api\CertificateApplicationController;
 use App\Http\Controllers\Api\HomeBannersController as ApiHomeBannersController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\StaticPagesController as ApiStaticPagesController;
+use App\Http\Controllers\Api\AcademyPortalNotificationController;
+use App\Http\Controllers\Api\PushTokenController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\Api\ProvinceController as ApiProvinceController;
 use App\Http\Controllers\Api\ConstitutionOfficialController;
@@ -44,6 +46,8 @@ Route::prefix('v1')->group(function () {
         Route::middleware('abilities:profile:write')->group(function () {
             Route::put('profile', [ApiProfileController::class, 'update']);
             Route::delete('profile', [ApiProfileController::class, 'destroy']);
+            Route::post('profile/push-token', [PushTokenController::class, 'store']);
+            Route::delete('profile/push-token', [PushTokenController::class, 'destroy']);
         });
 
         Route::middleware('abilities:academy:read')->group(function () {
@@ -53,10 +57,13 @@ Route::prefix('v1')->group(function () {
             Route::get('academy/courses/{course}', [AcademyCourseController::class, 'show']);
             Route::get('academy/courses/{course}/enrolment', [AcademyCourseController::class, 'enrolment']);
             Route::get('academy/assessments/{assessment}', [AcademyAssessmentController::class, 'assessment']);
+            Route::get('academy/assessments/{assessment}/attempt-eligibility', [AcademyAssessmentController::class, 'attemptEligibility']);
             Route::get('academy/badges', [AcademyAchievementsController::class, 'index']);
             Route::get('academy/applications', [CertificateApplicationController::class, 'index']);
             Route::get('academy/applications/{application}', [CertificateApplicationController::class, 'show']);
             Route::get('academy/applications/{application}/receipt.pdf', [CertificateApplicationController::class, 'receiptPdf']);
+            Route::post('academy/notifications/read-all', [AcademyPortalNotificationController::class, 'markAllRead']);
+            Route::post('academy/notifications/{notification}/read', [AcademyPortalNotificationController::class, 'markRead']);
         });
 
         Route::middleware('abilities:academy:write')->group(function () {

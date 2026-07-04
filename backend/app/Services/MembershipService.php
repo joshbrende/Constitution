@@ -27,8 +27,7 @@ class MembershipService
     }
 
     /**
-     * When a user passes an assessment for a course that grants membership,
-     * complete their enrolment and start certificate processing.
+     * When a user passes an assessment, complete enrolment and start certificate processing.
      */
     public function grantMembershipIfPassed(AssessmentAttempt $attempt): void
     {
@@ -36,10 +35,6 @@ class MembershipService
 
         $course = $attempt->assessment->course;
         $user = $attempt->user;
-
-        if (! $course->grants_membership) {
-            return;
-        }
 
         $passMark = $attempt->assessment->pass_mark ?? 70;
         if ($attempt->score === null || $attempt->score < $passMark) {
@@ -59,7 +54,11 @@ class MembershipService
             'completed_at' => now(),
         ]);
 
-        if (config('academy.grant_member_role_on') === 'exam_pass') {
+        if (! $course->issuesCertificate()) {
+            return;
+        }
+
+        if ($course->grants_membership && config('academy.grant_member_role_on') === 'exam_pass') {
             $this->grantLegacyImmediateMembership($user, $course, $attempt);
 
             return;
@@ -106,12 +105,14 @@ class MembershipService
         $certificate = Certificate::firstOrCreate(
             ['user_id' => $user->id, 'course_id' => $course->id],
             [
-                'certificate_number' => Certificate::nextCertificateNumber(),
+                'certificate_number' => Certificate::nextCertificateNumber($course),
                 'issued_at' => now(),
                 'expires_at' => $this->defaultCertificateExpiry(),
                 'pdf_status' => 'pending',
             ]
         );
+
+        app(MembershipStandingService::class)->markFullMember($user, 'exam_pass_legacy');
 
         $this->auditLogger->log(
             action: 'membership.granted',

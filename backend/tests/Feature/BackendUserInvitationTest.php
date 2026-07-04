@@ -32,11 +32,11 @@ class BackendUserInvitationTest extends TestCase
         Notification::fake();
         $r = $this->seedAdminRoles();
 
-        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin@example.com']);
+        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin@example.org.zw']);
         $admin->roles()->attach($r['system']->id);
 
         $response = $this->actingAs($admin)->post(route('admin.users.invite.store'), [
-            'email' => 'invitee@example.com',
+            'email' => 'invitee@example.org.zw',
             'roles' => [$r['academy']->id],
         ]);
 
@@ -44,7 +44,7 @@ class BackendUserInvitationTest extends TestCase
         Notification::assertSentOnDemand(BackendUserInvitationNotification::class, function ($notification) {
             return count($notification->dutyBriefs) === 1
                 && $notification->dutyBriefs[0]['slug'] === 'academy_manager'
-                && str_contains($notification->email, 'invitee@example.com');
+                && str_contains($notification->email, 'invitee@example.org.zw');
         });
     }
 
@@ -53,11 +53,11 @@ class BackendUserInvitationTest extends TestCase
         Notification::fake();
         $r = $this->seedAdminRoles();
 
-        $manager = User::factory()->create(['surname' => 'Mgr', 'email' => 'mgr@example.com']);
+        $manager = User::factory()->create(['surname' => 'Mgr', 'email' => 'mgr@example.org.zw']);
         $manager->roles()->attach($r['userManager']->id);
 
         $this->actingAs($manager)->post(route('admin.users.invite.store'), [
-            'email' => 'bad@example.com',
+            'email' => 'bad@example.org.zw',
             'roles' => [$r['editor']->id],
         ])->assertForbidden();
 
@@ -69,18 +69,18 @@ class BackendUserInvitationTest extends TestCase
         Notification::fake();
         $r = $this->seedAdminRoles();
 
-        $admin = User::factory()->create(['email' => 'admin@example.com']);
+        $admin = User::factory()->create(['email' => 'admin@example.org.zw']);
         $admin->roles()->attach($r['system']->id);
 
         $response = $this->actingAs($admin)->post(route('admin.users.store-backend'), [
             'name' => 'Academy',
             'surname' => 'Lead',
-            'email' => 'academy.lead@example.com',
+            'email' => 'academy.lead@example.org.zw',
             'roles' => [$r['academy']->id],
         ]);
 
         $response->assertRedirect(route('admin.users.index'));
-        $user = User::where('email', 'academy.lead@example.com')->firstOrFail();
+        $user = User::where('email', 'academy.lead@example.org.zw')->firstOrFail();
         $this->assertTrue($user->roles->contains('slug', 'academy_manager'));
 
         Notification::assertSentTo($user, BackendUserWelcomeNotification::class);
@@ -94,12 +94,12 @@ class BackendUserInvitationTest extends TestCase
     {
         $r = $this->seedAdminRoles();
 
-        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin2@example.com']);
+        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin2@example.org.zw']);
         $admin->roles()->attach($r['system']->id);
 
         $plainToken = 'accepttokenaccepttokenaccepttokenaccepttoken12';
         BackendUserInvitation::create([
-            'email' => 'newuser@example.com',
+            'email' => 'newuser@example.org.zw',
             'token_hash' => BackendUserInvitation::hashToken($plainToken),
             'role_ids' => [$r['editor']->id],
             'invited_by_user_id' => $admin->id,
@@ -116,9 +116,9 @@ class BackendUserInvitationTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
         $this->assertAuthenticated();
-        $user = User::where('email', 'newuser@example.com')->firstOrFail();
+        $user = User::where('email', 'newuser@example.org.zw')->firstOrFail();
         $this->assertTrue($user->roles->contains('id', $r['editor']->id));
         $this->assertNotNull($user->accepted_terms_at);
-        $this->assertNotNull(BackendUserInvitation::where('email', 'newuser@example.com')->whereNotNull('accepted_at')->first());
+        $this->assertNotNull(BackendUserInvitation::where('email', 'newuser@example.org.zw')->whereNotNull('accepted_at')->first());
     }
 }

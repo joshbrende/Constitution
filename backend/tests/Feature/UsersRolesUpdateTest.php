@@ -27,10 +27,10 @@ class UsersRolesUpdateTest extends TestCase
             ['name' => 'Student']
         );
 
-        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin@example.com']);
+        $admin = User::factory()->create(['surname' => 'Admin', 'email' => 'admin@example.org.zw']);
         $admin->roles()->attach($systemAdminRole->id);
 
-        $target = User::factory()->create(['surname' => 'Target', 'email' => 'target@example.com']);
+        $target = User::factory()->create(['surname' => 'Target', 'email' => 'target@example.org.zw']);
         $target->roles()->attach($studentRole->id);
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', ['user' => $target->id]), [

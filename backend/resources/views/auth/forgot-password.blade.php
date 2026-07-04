@@ -32,6 +32,7 @@
                 value="{{ old('email') }}"
                 required
                 autocomplete="email"
+                placeholder="you@example.org.zw"
             >
         </div>
 

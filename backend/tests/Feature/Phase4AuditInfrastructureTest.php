@@ -103,7 +103,7 @@ class Phase4AuditInfrastructureTest extends TestCase
     public function test_audit_export_from_admin_writes_meta_audit(): void
     {
         $role = Role::firstOrCreate(['slug' => 'audit_viewer'], ['name' => 'Audit Viewer']);
-        $viewer = User::factory()->create(['email' => 'audit-export@example.com']);
+        $viewer = User::factory()->create(['email' => 'audit-export@example.org.zw']);
         $viewer->roles()->attach($role->id);
 
         app(AuditLogger::class)->log(action: 'test.exportable');

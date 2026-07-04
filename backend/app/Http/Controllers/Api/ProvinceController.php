@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Province;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Profile
+ *
+ * Provinces list for registration and profile picker.
+ */
 class ProvinceController extends Controller
 {
     /**

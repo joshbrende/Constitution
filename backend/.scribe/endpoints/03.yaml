@@ -1,0 +1,851 @@
+name: Academy
+description: |-
+
+  Courses, enrolment, summary, and portal messages.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/academy/courses
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List published courses (cached to smooth read demand).'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: a457f156-ce96-4a73-82b0-485030978876
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/academy/courses/membership
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get the membership course (cached for quick access).'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: f0b2fef9-4e0f-46b9-9dfb-467baa7f46ca
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/academy/summary
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Academy summary'
+      description: 'Dashboard stats, latest application status, `portal_messages`, and `unread_portal_messages_count`.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 27399fba-9978-48a3-8788-8636484dc672
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/courses/{course_id}'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Show a course with modules and lessons (cached per course).'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      course_id:
+        custom: []
+        name: course_id
+        description: 'The ID of the course.'
+        required: true
+        example: 343
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      course_id: 343
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 8f7e45b3-e014-47a6-be31-b7d407d14edf
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/courses/{course_id}/enrolment'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: "Show user's enrolment status for a course."
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      course_id:
+        custom: []
+        name: course_id
+        description: 'The ID of the course.'
+        required: true
+        example: 343
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      course_id: 343
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 74ec43b6-092d-464e-8f41-7a8224fe0e55
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/assessments/{assessment_id}'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Assessments, attempts, and eligibility checks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Show assessment with questions and options (for taking).'
+      description: |-
+        Anti-cheat:
+        1) Random subset + order randomisation
+        2) Subset is bound to an in-progress attempt via `question_set_token` + persisted `question_ids`
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      assessment_id:
+        custom: []
+        name: assessment_id
+        description: 'The ID of the assessment.'
+        required: true
+        example: 198
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      assessment_id: 198
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 7d86f45e-2447-4557-bf61-dd003a702b8c
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/assessments/{assessment_id}/attempt-eligibility'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Assessments, attempts, and eligibility checks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Attempt limits and cooldown status (no question set issued).'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      assessment_id:
+        custom: []
+        name: assessment_id
+        description: 'The ID of the assessment.'
+        required: true
+        example: 198
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      assessment_id: 198
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: c1236e43-4dac-4a1a-b587-c1d93ded36e0
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/academy/badges
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Badges and achievement progress.
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        Returns badges for the specified course (or current membership course),
+        along with locked/unlocked state and progress.
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 4430c481-f220-41e3-abee-59c5436dc163
+          vary: Origin
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/academy/applications
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Certificate applications, payment receipts, and workflow status.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List my certificate applications'
+      description: 'Returns payment and workflow status for each application after passing the exam.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":1,"public_id":"9b7c8f2e-1a3b-4c5d-9e0f-123456789abc","receipt_number":"RCP-2026-00042","payment_reference_code":"PAY-2026-ABC123","fee_amount":25,"fee_currency":"USD","status":"payment_pending","status_label":"Payment pending","exam_passed_at":"2026-04-10T09:00:00+00:00","course":{"id":2,"title":"Foundational Constitutional Studies","code":"FCS-101"}}]}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/applications/{application_id}'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Certificate applications, payment receipts, and workflow status.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Show certificate application detail'
+      description: 'Includes payment instructions, office locations, timeline, and portal messaging.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      application_id:
+        custom: []
+        name: application_id
+        description: 'The ID of the application.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      application:
+        custom: []
+        name: application
+        description: 'Application ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      application_id: 17
+      application: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":1,"status":"payment_pending","payment_instructions":"Pay at your provincial office...","payment_offices":[],"timeline":[],"portal_message":"You passed the exam. Download your payment receipt..."}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/academy/applications/{application_id}/receipt.pdf'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Certificate applications, payment receipts, and workflow status.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Download payment receipt PDF'
+      description: 'Available after the member passes the exam and a receipt number is assigned.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_ACCESS_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      application_id:
+        custom: []
+        name: application_id
+        description: 'The ID of the application.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      application:
+        custom: []
+        name: application
+        description: 'Application ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      application_id: 17
+      application: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"error":"unauthenticated","message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          x-request-id: 9f7df6a3-9aac-4b42-9c47-3e836e6a025f
+          vary: Origin
+        description: null
+      -
+        custom: []
+        status: 503
+        content: '{"message":"Receipt PDF generation is not available."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 3V5EgbkvZcDPa166h8fd4ae'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/academy/notifications/read-all
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        In-app portal notification read state (paired with `portal_messages` on academy summary).
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mark all notifications read'
+      description: 'Marks every unread academy portal notification as read.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/academy/notifications/{notification}/read'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        In-app portal notification read state (paired with `portal_messages` on academy summary).
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mark notification read'
+      description: 'Marks one academy portal notification as read and returns the updated unread count.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      notification:
+        custom: []
+        name: notification
+        description: 'The notification.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      notificationId:
+        custom: []
+        name: notificationId
+        description: 'The Laravel notification UUID.'
+        required: true
+        example: 9b7c8f2e-1a3b-4c5d-9e0f-123456789abc
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      notification: consequatur
+      notificationId: 9b7c8f2e-1a3b-4c5d-9e0f-123456789abc
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/academy/courses/{course_id}/enrol'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Courses, enrolment, summary, and portal messages.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Enrol the authenticated user in a course.'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      course_id:
+        custom: []
+        name: course_id
+        description: 'The ID of the course.'
+        required: true
+        example: 343
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      course_id: 343
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/academy/assessments/{assessment_id}/attempts'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Assessments, attempts, and eligibility checks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Start an assessment attempt.'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      assessment_id:
+        custom: []
+        name: assessment_id
+        description: 'The ID of the assessment.'
+        required: true
+        example: 198
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      assessment_id: 198
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/v1/academy/attempts/{attempt_id}/submit'
+    metadata:
+      custom: []
+      groupName: Academy
+      groupDescription: |-
+
+        Assessments, attempts, and eligibility checks.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Submit an assessment attempt with answers.'
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      attempt_id:
+        custom: []
+        name: attempt_id
+        description: 'The ID of the attempt.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      attempt_id: 17
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      answers:
+        custom: []
+        name: answers
+        description: 'Must have at least 1 items.'
+        required: true
+        example:
+          - []
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'answers[].question_id':
+        custom: []
+        name: 'answers[].question_id'
+        description: 'Must match an existing stored value.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'answers[].option_id':
+        custom: []
+        name: 'answers[].option_id'
+        description: 'Must match an existing stored value.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      answers:
+        -
+          question_id: consequatur
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

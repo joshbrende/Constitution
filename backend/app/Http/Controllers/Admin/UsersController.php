@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\MembershipStanding;
 use App\Http\Controllers\Controller;
 use App\Models\BackendUserInvitation;
+use App\Models\Province;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\BackendUserInvitationNotification;
@@ -12,6 +14,7 @@ use App\Services\AdminAccessService;
 use App\Services\AdminScopeService;
 use App\Services\AuditLogger;
 use App\Services\BackendRoleDutiesService;
+use App\Services\MembershipStandingService;
 use App\Services\RoleAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +30,8 @@ class UsersController extends Controller
         protected AdminAccessService $adminAccess,
         protected AdminScopeService $adminScope,
         protected BackendRoleDutiesService $roleDuties,
-        protected AuditLogger $auditLogger
+        protected AuditLogger $auditLogger,
+        protected MembershipStandingService $membershipStanding,
     ) {}
 
     public function index(Request $request): View
@@ -204,13 +208,16 @@ class UsersController extends Controller
         abort_unless($admin instanceof User, 403);
         $this->adminScope->assertCanAccessUser($admin, $user);
 
-        $user->load('roles');
+        $user->load(['roles', 'province:id,name', 'branchAdmittedBy:id,name,surname', 'cadreDesignatedBy:id,name,surname']);
         $roles = Role::orderBy('name')->get();
         $assignableRoleIds = collect($this->roleAssignment->assignableRoleIds(auth()->user()));
         $roleDutyBriefs = $this->roleDuties->dutyBriefsForRoleIds(
             $roles->pluck('id')->map(fn ($id) => (int) $id)->all()
         );
         $roleDutyMap = collect($roleDutyBriefs)->keyBy('slug');
+        $provinces = Province::orderBy('name')->get(['id', 'name']);
+        $membershipStandings = MembershipStanding::cases();
+        $wings = config('academy.user_wings', []);
 
         $this->auditLogger->log(
             action: 'admin.users.pii_viewed',
@@ -220,7 +227,15 @@ class UsersController extends Controller
             request: request()
         );
 
-        return view('admin.users.edit', compact('user', 'roles', 'assignableRoleIds', 'roleDutyMap'));
+        return view('admin.users.edit', compact(
+            'user',
+            'roles',
+            'assignableRoleIds',
+            'roleDutyMap',
+            'provinces',
+            'membershipStandings',
+            'wings',
+        ));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -233,11 +248,142 @@ class UsersController extends Controller
 
         $assignable = collect($this->roleAssignment->assignableRoleIds($admin));
 
-        $request->validate([
+        $validated = $request->validate([
             'roles' => ['nullable', 'array'],
             'roles.*' => ['integer', 'distinct', Rule::in($assignable->all())],
+            'wing' => ['nullable', 'string', Rule::in(config('academy.user_wings', []))],
+            'province_id' => ['nullable', 'integer', 'exists:provinces,id'],
+            'membership_standing' => ['nullable', Rule::enum(MembershipStanding::class)],
+            'suspension_reason' => ['nullable', 'string', 'max:500'],
+            'branch_admitted' => ['nullable', 'boolean'],
+            'branch_admission_note' => ['nullable', 'string', 'max:500'],
+            'cadre_designated' => ['nullable', 'boolean'],
         ]);
 
+        $profileBefore = [
+            'wing' => $user->wing,
+            'province_id' => $user->province_id,
+            'membership_standing' => $user->membership_standing instanceof MembershipStanding
+                ? $user->membership_standing->value
+                : (string) $user->membership_standing,
+        ];
+
+        $user->forceFill([
+            'wing' => $validated['wing'] ?? null,
+            'province_id' => $validated['province_id'] ?? null,
+        ]);
+
+        if (! empty($validated['membership_standing'])) {
+            $newStanding = MembershipStanding::from($validated['membership_standing']);
+            $current = $this->membershipStanding->standing($user);
+
+            if ($newStanding === MembershipStanding::Suspended && $current !== MembershipStanding::Suspended) {
+                $user->save();
+                $this->membershipStanding->markSuspended($user, $admin, $validated['suspension_reason'] ?? null);
+            } elseif ($current === MembershipStanding::Suspended && $newStanding !== MembershipStanding::Suspended) {
+                $user->save();
+                $this->membershipStanding->reinstate($user, $admin, $newStanding);
+            } elseif ($newStanding !== $current) {
+                $user->forceFill(['membership_standing' => $newStanding->value])->save();
+                $this->auditLogger->log(
+                    action: 'admin.users.membership_standing_updated',
+                    targetType: User::class,
+                    targetId: $user->id,
+                    metadata: [
+                        'from' => $current->value,
+                        'to' => $newStanding->value,
+                        'admin_user_id' => $admin->id,
+                    ],
+                    request: $request
+                );
+            } else {
+                $user->save();
+            }
+        } else {
+            $user->save();
+        }
+
+        $wantsBranchAdmission = $request->boolean('branch_admitted');
+        if ($wantsBranchAdmission && ! $user->hasBranchAdmission()) {
+            $user->forceFill([
+                'branch_admitted_at' => now(),
+                'branch_admitted_by_user_id' => $admin->id,
+                'branch_admission_note' => $validated['branch_admission_note'] ?? null,
+            ])->save();
+            $this->auditLogger->log(
+                action: 'admin.users.branch_admission_confirmed',
+                targetType: User::class,
+                targetId: $user->id,
+                metadata: ['admin_user_id' => $admin->id],
+                request: $request
+            );
+        } elseif (! $wantsBranchAdmission && $user->hasBranchAdmission()) {
+            $user->forceFill([
+                'branch_admitted_at' => null,
+                'branch_admitted_by_user_id' => null,
+                'branch_admission_note' => null,
+            ])->save();
+            $this->auditLogger->log(
+                action: 'admin.users.branch_admission_revoked',
+                targetType: User::class,
+                targetId: $user->id,
+                metadata: ['admin_user_id' => $admin->id],
+                request: $request
+            );
+        } elseif ($wantsBranchAdmission && $user->hasBranchAdmission()) {
+            $user->forceFill([
+                'branch_admission_note' => $validated['branch_admission_note'] ?? null,
+            ])->save();
+        }
+
+        $wantsCadre = $request->boolean('cadre_designated');
+        if ($wantsCadre && ! $user->isCadreDesignee()) {
+            $user->forceFill([
+                'cadre_designated_at' => now(),
+                'cadre_designated_by_user_id' => $admin->id,
+            ])->save();
+            $this->auditLogger->log(
+                action: 'admin.users.cadre_designated',
+                targetType: User::class,
+                targetId: $user->id,
+                metadata: ['admin_user_id' => $admin->id],
+                request: $request
+            );
+        } elseif (! $wantsCadre && $user->isCadreDesignee()) {
+            $user->forceFill([
+                'cadre_designated_at' => null,
+                'cadre_designated_by_user_id' => null,
+            ])->save();
+            $this->auditLogger->log(
+                action: 'admin.users.cadre_designation_revoked',
+                targetType: User::class,
+                targetId: $user->id,
+                metadata: ['admin_user_id' => $admin->id],
+                request: $request
+            );
+        }
+
+        $user->refresh();
+
+        $profileAfter = [
+            'wing' => $user->wing,
+            'province_id' => $user->province_id,
+            'membership_standing' => $user->membership_standing instanceof MembershipStanding
+                ? $user->membership_standing->value
+                : (string) $user->membership_standing,
+        ];
+
+        if ($profileBefore !== $profileAfter && ($profileBefore['wing'] !== $profileAfter['wing'] || $profileBefore['province_id'] !== $profileAfter['province_id'])) {
+            $this->auditLogger->log(
+                action: 'admin.users.profile_updated',
+                targetType: User::class,
+                targetId: $user->id,
+                metadata: ['before' => $profileBefore, 'after' => $profileAfter, 'admin_user_id' => $admin->id],
+                request: $request
+            );
+        }
+
+        $user->refresh();
         $user->load('roles');
         $beforeRoleIds = $user->roles->pluck('id')->map(fn ($id) => (int) $id)->sort()->values()->all();
 
@@ -264,7 +410,7 @@ class UsersController extends Controller
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User roles updated.');
+            ->with('success', 'User updated.');
     }
 
     private function assertCanProvisionBackendUsers(): void

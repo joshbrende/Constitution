@@ -69,6 +69,9 @@ class LibraryApiAccessTest extends TestCase
         $docs = $this->seedDocuments($cat);
 
         $user = User::factory()->create(['surname' => 'Member']);
+        $memberRole = Role::firstOrCreate(['slug' => 'member'], ['name' => 'Member']);
+        $user->roles()->attach($memberRole->id);
+        $user->load('roles');
         $this->sanctumAs($user);
 
         $response = $this->getJson('/api/v1/library/documents?per_page=50');
@@ -97,11 +100,30 @@ class LibraryApiAccessTest extends TestCase
         $docs = $this->seedDocuments($cat);
 
         $user = User::factory()->create(['surname' => 'Member']);
+        $memberRole = Role::firstOrCreate(['slug' => 'member'], ['name' => 'Member']);
+        $user->roles()->attach($memberRole->id);
+        $user->load('roles');
         $this->sanctumAs($user);
 
         $this->getJson("/api/v1/library/documents/{$docs['member']->id}")
             ->assertOk()
             ->assertJsonPath('data.title', 'Members only');
+    }
+
+    public function test_cadre_designee_can_show_leadership_document(): void
+    {
+        $cat = LibraryCategory::create(['name' => 'Main', 'slug' => 'main-cadre']);
+        $docs = $this->seedDocuments($cat);
+
+        $user = User::factory()->create([
+            'surname' => 'Cadre',
+            'cadre_designated_at' => now(),
+        ]);
+        $this->sanctumAs($user);
+
+        $this->getJson("/api/v1/library/documents/{$docs['leadership']->id}")
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Leadership brief');
     }
 
     public function test_presidium_user_can_show_leadership_document(): void

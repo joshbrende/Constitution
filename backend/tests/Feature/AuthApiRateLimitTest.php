@@ -26,7 +26,7 @@ class AuthApiRateLimitTest extends TestCase
             $response = $this->postJson('/api/v1/auth/register', [
                 'name' => 'N',
                 'surname' => 'U',
-                'email' => "user{$i}@example.com",
+                'email' => "user{$i}@example.org.zw",
                 'password' => self::REGISTER_PASSWORD,
                 'password_confirmation' => self::REGISTER_PASSWORD,
                 'accept_terms' => true,
@@ -38,7 +38,7 @@ class AuthApiRateLimitTest extends TestCase
         $blocked = $this->postJson('/api/v1/auth/register', [
             'name' => 'N',
             'surname' => 'U',
-            'email' => 'sixth@example.com',
+            'email' => 'sixth@example.org.zw',
             'password' => self::REGISTER_PASSWORD,
             'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => true,

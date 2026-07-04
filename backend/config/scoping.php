@@ -17,4 +17,10 @@ return [
         'presidium',
     ],
 
+    /**
+     * When a provincial admin also has district_id set, user/member lists are
+     * further limited to that district within their province.
+     */
+    'enable_district_scoping' => env('ADMIN_DISTRICT_SCOPING', true),
+
 ];

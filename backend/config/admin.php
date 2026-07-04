@@ -23,9 +23,10 @@ return [
         'certificates' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'academy_manager', 'provincial_admin'],
         'users' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'provincial_admin'],
         'members' => ['system_admin', 'content_editor', 'approver', 'presidium', 'user_manager', 'provincial_admin'],
-        'analytics' => ['system_admin', 'content_editor', 'approver', 'presidium', 'analytics_viewer', 'stakeholder'],
+        'analytics' => ['system_admin', 'content_editor', 'approver', 'presidium', 'analytics_viewer', 'stakeholder', 'academy_manager'],
         'audit_logs' => ['system_admin', 'presidium', 'audit_viewer'],
         'roles' => ['system_admin'], // Role CRUD - system admin only
+        'platform_settings' => ['system_admin'],
     ],
 
     /*

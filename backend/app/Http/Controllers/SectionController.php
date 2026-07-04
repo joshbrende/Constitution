@@ -5,6 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Section;
 use Illuminate\Http\Request;
 
+/**
+ * @group Constitution
+ *
+ * Section detail and full-text search.
+ *
+ * @unauthenticated
+ */
 class SectionController extends Controller
 {
     public function search(Request $request)

@@ -46,7 +46,7 @@ stateDiagram-v2
 | Transition | Service / job | Notes |
 |------------|---------------|-------|
 | Exam pass → application | `CertificateApplicationService` | Creates application, receipt number, payment reference |
-| Receipt PDF | `ReceiptPdfService` | Format `ZP-REC-YYYY-…` |
+| Receipt PDF | `ReceiptPdfService` | Format `ZPF-REC-YYYY-…` |
 | Payment confirmed | `confirmPayment()` | May grant `member` role per `config/academy.php` |
 | Presidium approve | `presidiumApprove()` | Creates `Certificate` record |
 | Print ready | `GenerateCertificatePdfJob` | TCPDF via `CertificatePdfService` |

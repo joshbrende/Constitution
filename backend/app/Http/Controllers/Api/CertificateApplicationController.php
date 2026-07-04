@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * @group Academy
+ *
+ * Certificate applications, payment receipts, and workflow status.
+ */
 class CertificateApplicationController extends Controller
 {
     public function __construct(
@@ -18,6 +23,14 @@ class CertificateApplicationController extends Controller
         protected ReceiptPdfService $receiptPdfService
     ) {}
 
+    /**
+     * List my certificate applications
+     *
+     * Returns payment and workflow status for each application after passing the exam.
+     *
+     * @authenticated
+     * @response 200 {"data":[{"id":1,"public_id":"9b7c8f2e-1a3b-4c5d-9e0f-123456789abc","receipt_number":"RCP-2026-00042","payment_reference_code":"PAY-2026-ABC123","fee_amount":25,"fee_currency":"USD","status":"payment_pending","status_label":"Payment pending","exam_passed_at":"2026-04-10T09:00:00+00:00","course":{"id":2,"title":"Foundational Constitutional Studies","code":"FCS-101"}}]}
+     */
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', CertificateApplication::class);
@@ -32,6 +45,15 @@ class CertificateApplicationController extends Controller
         return response()->json(['data' => $applications]);
     }
 
+    /**
+     * Show certificate application detail
+     *
+     * Includes payment instructions, office locations, timeline, and portal messaging.
+     *
+     * @authenticated
+     * @urlParam application integer required Application ID. Example: 1
+     * @response 200 {"data":{"id":1,"status":"payment_pending","payment_instructions":"Pay at your provincial office...","payment_offices":[],"timeline":[],"portal_message":"You passed the exam. Download your payment receipt..."}}
+     */
     public function show(Request $request, CertificateApplication $application): JsonResponse
     {
         $this->authorize('view', $application);
@@ -43,6 +65,15 @@ class CertificateApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Download payment receipt PDF
+     *
+     * Available after the member passes the exam and a receipt number is assigned.
+     *
+     * @authenticated
+     * @urlParam application integer required Application ID. Example: 1
+     * @response 503 {"message":"Receipt PDF generation is not available."}
+     */
     public function receiptPdf(CertificateApplication $application): StreamedResponse|JsonResponse|Response
     {
         $this->authorize('downloadReceipt', $application);

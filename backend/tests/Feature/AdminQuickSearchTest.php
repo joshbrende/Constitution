@@ -25,13 +25,13 @@ class AdminQuickSearchTest extends TestCase
         User::factory()->create([
             'name' => 'Unique',
             'surname' => 'SearchTarget',
-            'email' => 'unique-search-target@example.com',
+            'email' => 'unique-search-target@example.org.zw',
         ]);
 
-        $moderator = User::factory()->create(['surname' => 'Mod', 'email' => 'mod@example.com']);
+        $moderator = User::factory()->create(['surname' => 'Mod', 'email' => 'mod@example.org.zw']);
         $moderator->roles()->attach($dialogueRole->id);
 
-        $editor = User::factory()->create(['surname' => 'Ed', 'email' => 'editor@example.com']);
+        $editor = User::factory()->create(['surname' => 'Ed', 'email' => 'editor@example.org.zw']);
         $editor->roles()->attach($editorRole->id);
 
         $modResponse = $this->actingAs($moderator)->getJson(route('admin.quick-search', ['q' => 'Unique']));

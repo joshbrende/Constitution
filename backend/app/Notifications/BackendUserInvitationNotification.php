@@ -2,11 +2,14 @@
 
 namespace App\Notifications;
 
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Bus\Queueable;
 
-class BackendUserInvitationNotification extends Notification
+class BackendUserInvitationNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
     /**
      * @param  list<array{slug: string, name: string, title: string, summary: string, steps: list<string>, sections: list<string>}>  $dutyBriefs
      */
@@ -17,7 +20,9 @@ class BackendUserInvitationNotification extends Notification
         public string $roleSummary,
         public array $dutyBriefs,
         public string $dutyText,
-    ) {}
+    ) {
+        $this->onQueue('mail');
+    }
 
     /**
      * @return array<int, string>

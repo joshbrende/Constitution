@@ -9,7 +9,7 @@ This folder is the **canonical backend documentation** for administrators, devel
 ## How to read
 
 1. **Foundation** (01–03) — architecture, environments, authentication  
-2. **Administration** (04–17) — RBAC, roles, dashboard, every admin module  
+2. **Administration** (04–19) — RBAC, roles, dashboard, every admin module, provincial pilot  
 3. **API** (20–26) — mobile/integrator HTTP reference  
 4. **Services & ops** (30, 40) — shared services, operations, testing  
 5. **Appendices** — route map, config & glossary  
@@ -39,6 +39,7 @@ This folder is the **canonical backend documentation** for administrators, devel
 | 16 | [16-analytics.md](./16-analytics.md) | Analytics & exports |
 | 17 | [17-audit-logs.md](./17-audit-logs.md) | Audit log UI and events |
 | 18 | [18-web-reader-features.md](./18-web-reader-features.md) | Web constitution, library, party, verify (non-admin) |
+| 19 | [19-provincial-pilot-rollout.md](./19-provincial-pilot-rollout.md) | Phase 1 pilot (Harare & Bulawayo), seeders, in-app docs |
 | 20 | [20-api-overview.md](./20-api-overview.md) | API conventions |
 | 21 | [21-api-authentication.md](./21-api-authentication.md) | API auth endpoints |
 | 22 | [22-api-profile-provinces.md](./22-api-profile-provinces.md) | Profile & provinces |
@@ -66,6 +67,7 @@ This folder is the **canonical backend documentation** for administrators, devel
 | [`../DATA-MODEL.md`](../DATA-MODEL.md) | Table catalog |
 | [`../MOBILE-APP.md`](../MOBILE-APP.md) | Expo mobile client |
 | [`../OPS-RUNBOOK.md`](../OPS-RUNBOOK.md) | Operations |
+| [`../politburo/PILOT-PHASE-1-HARARE-BULAWAYO.md`](../politburo/PILOT-PHASE-1-HARARE-BULAWAYO.md) | Phase 1 pilot runbook |
 | [`../../backend/docs/role-workflows.md`](../../backend/docs/role-workflows.md) | Amendment workflow |
 
 ---

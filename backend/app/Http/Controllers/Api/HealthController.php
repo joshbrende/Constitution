@@ -8,8 +8,20 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
+/**
+ * @group System
+ *
+ * Load balancer and uptime monitoring endpoint.
+ *
+ * @unauthenticated
+ */
 class HealthController extends Controller
 {
+    /**
+     * Health check
+     *
+     * Returns database and Redis connectivity for load balancers.
+     */
     public function show(): JsonResponse
     {
         $checks = [

@@ -22,7 +22,7 @@ class RegistrationRolesTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Jane',
             'surname' => 'Doe',
-            'email' => 'jane@example.com',
+            'email' => 'jane@example.org.zw',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
             'accept_terms' => '1',
@@ -31,7 +31,7 @@ class RegistrationRolesTest extends TestCase
 
         $response->assertRedirect('/dashboard');
 
-        $user = User::where('email', 'jane@example.com')->firstOrFail();
+        $user = User::where('email', 'jane@example.org.zw')->firstOrFail();
         $this->assertTrue($user->roles()->where('slug', 'student')->exists());
         $this->assertFalse($user->roles()->where('slug', 'member')->exists());
         $this->assertNotNull($user->accepted_terms_at);

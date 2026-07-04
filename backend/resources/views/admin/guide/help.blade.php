@@ -51,6 +51,21 @@
         <p>If you forgot your password, sign out and use the reset flow from the login page, or ask an administrator to verify your account.</p>
         <p><a href="{{ route('password.request') }}">Forgot password (web)</a></p>
     </div>
+    @if (in_array('certificates', $accessibleSections, true))
+    <div class="help-card">
+        <h2>Provincial administrator</h2>
+        <p>Phase 1 pilot: <strong>Harare</strong> and <strong>Bulawayo</strong>. You see Users, Members, and Cert. applications for your province only.</p>
+        <ul>
+            <li>Confirm offline Academy course payment in <a href="{{ route('admin.certificate-applications.index') }}">Cert. applications</a>.</li>
+            <li>Do not Presidium-approve — national Presidium handles that step.</li>
+            <li>Contact national ICT if your province filter looks wrong.</li>
+        </ul>
+    </div>
+    <div class="help-card">
+        <h2>Presidium (certificates)</h2>
+        <p>After a provincial admin confirms payment, open <a href="{{ route('admin.certificate-applications.index') }}">Cert. applications</a> and approve eligible applications. Constitution amendments use a separate flow under Manage Constitution.</p>
+    </div>
+    @endif
 </div>
 
 <div class="help-steps">
@@ -61,7 +76,9 @@
         <li><strong style="color:var(--text-main)">Publish a course</strong> — Administration → Manage Academy → edit course status and content, then verify assessments in the academy admin guides.</li>
         <li><strong style="color:var(--text-main)">Moderate dialogue</strong> — Administration → Dialogue → pick a channel, open threads, pin official guidance or remove messages that breach policy.</li>
         <li><strong style="color:var(--text-main)">Export analytics</strong> — Administration → Analytics &amp; reports → use CSV exports where your role allows.</li>
-        <li><strong style="color:var(--text-main)">Certificate issue</strong> — Use Academy completion flows; to revoke or reinstate, Administration → Certificates (audit entries are recorded).</li>
+        <li><strong style="color:var(--text-main)">Confirm certificate payment (provincial)</strong> — Administration → Cert. applications → open application → confirm payment after member pays at provincial office.</li>
+        <li><strong style="color:var(--text-main)">Approve certificate (Presidium)</strong> — Administration → Cert. applications → approve after payment is confirmed; then track print and collection.</li>
+        <li><strong style="color:var(--text-main)">Revoke issued certificate</strong> — Administration → Certificates (issued) — audit entries are recorded.</li>
     </ol>
 </div>
 

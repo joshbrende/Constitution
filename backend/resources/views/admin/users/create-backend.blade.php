@@ -43,7 +43,7 @@
 
                     <div>
                         <label for="email" class="form-label">Email <span style="color:var(--zanupf-red);">*</span></label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required class="form-input" autocomplete="off">
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" required class="form-input" autocomplete="off" placeholder="staff@example.org.zw">
                         @error('email')
                             <p class="form-help" style="color:#fecaca;">{{ $message }}</p>
                         @enderror

@@ -16,7 +16,7 @@
             <div class="dash-panel-header">
                 <div>
                     <div class="dash-panel-title">{{ $user->name }} {{ $user->surname }}</div>
-                    <div class="dash-panel-subtitle">{{ $user->email }} · Assign roles for backend administration.</div>
+                    <div class="dash-panel-subtitle">{{ $user->email }} · Party profile, membership standing, and admin roles.</div>
                 </div>
                 <a href="{{ route('admin.users.index') }}" class="dash-btn-ghost" style="text-decoration:none;">← Users</a>
             </div>
@@ -36,6 +36,111 @@
             <form method="POST" action="{{ route('admin.users.update', $user) }}">
                 @csrf
                 @method('PUT')
+
+                <div style="margin-bottom:1.5rem;padding:1rem;border-radius:0.5rem;border:1px solid var(--border-subtle);">
+                    <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.75rem;color:var(--zanupf-gold);">Party profile</div>
+                    <div style="display:grid;gap:1rem;max-width:40rem;">
+                        <div>
+                            <label for="membership_standing" class="form-label">Membership standing</label>
+                            <select id="membership_standing" name="membership_standing" class="form-input" style="max-width:20rem;">
+                                @foreach ($membershipStandings as $standing)
+                                    <option value="{{ $standing->value }}" {{ old('membership_standing', $user->membership_standing?->value ?? 'applicant') === $standing->value ? 'selected' : '' }}>
+                                        {{ $standing->label() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="form-help">Applicant → Provisional (exam pass) → Full member (certificate issued). Suspended blocks academy and dialogue.</p>
+                        </div>
+                        <div>
+                            <label for="wing" class="form-label">League / wing</label>
+                            <select id="wing" name="wing" class="form-input" style="max-width:20rem;">
+                                <option value="">— Main structure —</option>
+                                @foreach ($wings as $wing)
+                                    @if ($wing !== 'main')
+                                        <option value="{{ $wing }}" {{ old('wing', $user->wing) === $wing ? 'selected' : '' }}>{{ ucfirst($wing) }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                            <p class="form-help">Assign after branch verification. Drives Youth / Women's / Veterans academy access.</p>
+                        </div>
+                        <div>
+                            <label for="province_id" class="form-label">Province</label>
+                            <select id="province_id" name="province_id" class="form-input" style="max-width:20rem;">
+                                <option value="">— Not set —</option>
+                                @foreach ($provinces as $province)
+                                    <option value="{{ $province->id }}" {{ (string) old('province_id', $user->province_id) === (string) $province->id ? 'selected' : '' }}>{{ $province->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="suspension_reason" class="form-label">Suspension reason (if setting Suspended)</label>
+                            <input id="suspension_reason" type="text" name="suspension_reason" value="{{ old('suspension_reason') }}" class="form-input" maxlength="500" placeholder="Optional note for audit log">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1.5rem;padding:1rem;border-radius:0.5rem;border:1px solid var(--border-subtle);">
+                    <div style="font-weight:700;font-size:0.9rem;margin-bottom:0.75rem;color:var(--zanupf-gold);">Branch admission &amp; cadre</div>
+                    <div style="display:grid;gap:1rem;max-width:40rem;">
+                        <div>
+                            <input type="hidden" name="branch_admitted" value="0">
+                            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;">
+                                <input
+                                    type="checkbox"
+                                    name="branch_admitted"
+                                    value="1"
+                                    {{ old('branch_admitted', $user->hasBranchAdmission() ? '1' : '0') ? 'checked' : '' }}
+                                    style="margin-top:0.2rem;"
+                                >
+                                <span>
+                                    <span style="font-weight:600;">Branch admission confirmed</span>
+                                    <span style="display:block;font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+                                        Required before enrolling in Youth / Women's / Veterans league courses. Confirm after provincial branch register verification.
+                                    </span>
+                                    @if ($user->hasBranchAdmission())
+                                        <span style="display:block;font-size:0.72rem;color:var(--zanupf-gold);margin-top:0.35rem;">
+                                            Confirmed {{ $user->branch_admitted_at?->format('d M Y H:i') }}
+                                            @if ($user->branchAdmittedBy)
+                                                by {{ $user->branchAdmittedBy->name }} {{ $user->branchAdmittedBy->surname }}
+                                            @endif
+                                        </span>
+                                    @endif
+                                </span>
+                            </label>
+                        </div>
+                        <div>
+                            <label for="branch_admission_note" class="form-label">Branch admission note</label>
+                            <input id="branch_admission_note" type="text" name="branch_admission_note" value="{{ old('branch_admission_note', $user->branch_admission_note) }}" class="form-input" maxlength="500" placeholder="Optional reference to branch register or provincial office">
+                        </div>
+                        <div>
+                            <input type="hidden" name="cadre_designated" value="0">
+                            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;">
+                                <input
+                                    type="checkbox"
+                                    name="cadre_designated"
+                                    value="1"
+                                    {{ old('cadre_designated', $user->isCadreDesignee() ? '1' : '0') ? 'checked' : '' }}
+                                    style="margin-top:0.2rem;"
+                                >
+                                <span>
+                                    <span style="font-weight:600;">Cadre designee</span>
+                                    <span style="display:block;font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+                                        Unlocks leadership library documents. Admin-assigned only — not granted by academy exams.
+                                    </span>
+                                    @if ($user->isCadreDesignee())
+                                        <span style="display:block;font-size:0.72rem;color:var(--zanupf-gold);margin-top:0.35rem;">
+                                            Designated {{ $user->cadre_designated_at?->format('d M Y H:i') }}
+                                            @if ($user->cadreDesignatedBy)
+                                                by {{ $user->cadreDesignatedBy->name }} {{ $user->cadreDesignatedBy->surname }}
+                                            @endif
+                                        </span>
+                                    @endif
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display:grid;gap:1rem;max-width:40rem;">
                     <fieldset style="border:none;padding:0;margin:0;">
                         <legend class="form-label" style="padding:0;">Roles</legend>
@@ -70,7 +175,7 @@
                         <p class="form-help">See the instruction box above for the complete flow.</p>
                     </fieldset>
                     <div style="display:flex;gap:0.75rem;">
-                        <button type="submit" class="form-btn-primary">Update roles</button>
+                        <button type="submit" class="form-btn-primary">Save user</button>
                         <a href="{{ route('admin.users.index') }}" class="dash-btn-ghost" style="text-decoration:none;padding:0.5rem 1rem;">Cancel</a>
                     </div>
                 </div>

@@ -13,7 +13,7 @@ class HomeBannersSeeder extends Seeder
             [
                 'title' => 'Constitution Amendment No. 3',
                 'subtitle' => 'Stay informed on the proposed constitutional reforms. Read the Constitution of Zimbabwe and track amendments.',
-                'image_url' => 'https://zanupf.org.zw/assets/banners/constitution.jpg',
+                'image_url' => '/cab3.jpg',
                 'cta_label' => 'Read Constitution',
                 'cta_type' => 'internal',
                 'cta_tab' => 'ConstitutionTab',
@@ -25,7 +25,7 @@ class HomeBannersSeeder extends Seeder
             [
                 'title' => 'Vision 2030 in action',
                 'subtitle' => 'Track strategic projects that move Zimbabwe towards an upper middle-income economy.',
-                'image_url' => 'https://zanupf.org.zw/assets/banners/vision-2030.jpg',
+                'image_url' => '/vision-2030.jpg',
                 'cta_label' => 'View priority projects',
                 'cta_type' => 'internal',
                 'cta_tab' => 'HomeTab',
@@ -36,7 +36,7 @@ class HomeBannersSeeder extends Seeder
             [
                 'title' => 'Become a ZANU PF member',
                 'subtitle' => 'Complete the membership course and assessment in the Academy to earn your certificate.',
-                'image_url' => 'https://zanupf.org.zw/assets/banners/membership.jpg',
+                'image_url' => '/campaign.jpg',
                 'cta_label' => 'Open Academy',
                 'cta_type' => 'internal',
                 'cta_tab' => 'HomeTab',

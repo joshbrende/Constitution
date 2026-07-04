@@ -47,7 +47,7 @@ See [ENVIRONMENTS.md § Setup Wizard](./ENVIRONMENTS.md#setup-wizard-one-time).
 
 | Item | Requirement |
 |------|-------------|
-| Value | Full base including `/api/v1`, e.g. `https://api.example.com/api/v1` |
+| Value | Full base including `/api/v1`, e.g. `https://www.zanupf.org.zw/api/v1` |
 | Per environment | EAS secrets or env-specific `.env` — never point production at a dev machine |
 
 ## Operational
@@ -59,6 +59,7 @@ See [ENVIRONMENTS.md § Setup Wizard](./ENVIRONMENTS.md#setup-wizard-one-time).
 | Backups | Database and `storage/app/public` |
 | Audit logs | Retention via `ops:cleanup-security-data` / `config/operations.php` |
 | Tests | `php artisan test` in CI (PHP 8.2+) |
+| API docs | Regenerate with `composer docs:api` on deploy; restrict `/docs/` with `bash backend/scripts/setup-docs-auth.sh <user>` |
 | Post-install admins | Invite team via **Admin → Users → Invite backend user** |
 
 ## Store submission (Google Play + Apple App Store)

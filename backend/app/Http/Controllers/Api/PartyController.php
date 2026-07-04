@@ -9,6 +9,13 @@ use App\Models\PartyProfileRelatedSection;
 use App\Models\Section;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Public content
+ *
+ * Party profile, vision, mission, and league summaries.
+ *
+ * @unauthenticated
+ */
 class PartyController extends Controller
 {
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MembershipStanding;
 use Database\Factories\UserFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +27,12 @@ class User extends Authenticatable
         'surname',
         'email',
         'wing',
+        'membership_standing',
+        'branch_admitted_at',
+        'branch_admitted_by_user_id',
+        'branch_admission_note',
+        'cadre_designated_at',
+        'cadre_designated_by_user_id',
         'province_id',
         'district_id',
         'branch_id',
@@ -57,7 +64,39 @@ class User extends Authenticatable
             'password' => 'hashed',
             'accepted_terms_at' => 'datetime',
             'national_id_verified_at' => 'datetime',
+            'membership_standing' => MembershipStanding::class,
+            'branch_admitted_at' => 'datetime',
+            'cadre_designated_at' => 'datetime',
         ];
+    }
+
+    public function hasBranchAdmission(): bool
+    {
+        return $this->branch_admitted_at !== null;
+    }
+
+    public function isCadreDesignee(): bool
+    {
+        return $this->cadre_designated_at !== null;
+    }
+
+    public function branchAdmittedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'branch_admitted_by_user_id');
+    }
+
+    public function cadreDesignatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cadre_designated_by_user_id');
+    }
+
+    public function membershipStandingLabel(): string
+    {
+        $standing = $this->membership_standing;
+
+        return $standing instanceof MembershipStanding
+            ? $standing->label()
+            : MembershipStanding::Applicant->label();
     }
 
     public function hasVerifiedNationalId(): bool
@@ -129,5 +168,17 @@ class User extends Authenticatable
     public function certificateApplications(): HasMany
     {
         return $this->hasMany(\App\Models\CertificateApplication::class);
+    }
+
+    public function pushTokens(): HasMany
+    {
+        return $this->hasMany(UserPushToken::class);
+    }
+
+    public function unreadAcademyPortalMessagesCount(): int
+    {
+        return (int) $this->unreadNotifications()
+            ->where('data->type', 'like', 'academy.%')
+            ->count();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\MembershipStanding;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AdminScopeService;
@@ -19,10 +20,10 @@ class MembersController extends Controller
         $admin = $request->user();
         abort_unless($admin instanceof User, 403);
 
-        // "Members" = users who have at least one certificate (completed membership path)
+        // Full members — certificate issued (party register).
         $query = User::query()
-            ->whereHas('certificates')
-            ->with(['roles', 'certificates'])
+            ->where('membership_standing', MembershipStanding::Member->value)
+            ->with(['roles', 'certificates', 'province:id,name'])
             ->orderByDesc('id');
 
         $this->adminScope->applyToUserQuery($query, $admin);

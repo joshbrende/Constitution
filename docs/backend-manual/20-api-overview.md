@@ -42,6 +42,33 @@ Route-level: e.g. `auth/forgot-password` `throttle:3,60`, `auth/refresh` `thrott
 | [25](./25-api-dialogue.md) | Dialogue |
 | [26](./26-api-public-content.md) | Library, party, organs, presidium, banners, pages, health, constitution |
 
----
+## 20.5 Interactive docs (Scribe)
 
-*Last reviewed: documentation generation pass.*
+Browseable HTML, Postman collection, and OpenAPI spec are generated with [Laravel Scribe](https://scribe.knuckles.wtf):
+
+```bash
+cd backend
+composer docs:api
+```
+
+| Output | URL / path (local Docker nginx) |
+|--------|----------------------------------|
+| HTML | `http://localhost:8081/docs/index.html` |
+| OpenAPI | `http://localhost:8081/docs/openapi.yaml` |
+| Postman | `http://localhost:8081/docs/collection.json` |
+
+Set `SCRIBE_AUTH_KEY` in `.env` when generating so Scribe can call authenticated GET endpoints for live response samples.
+
+### Deploy / regenerate
+
+| Step | Command |
+|------|---------|
+| Local / Docker | `docker compose exec app bash scripts/generate-api-docs.sh` |
+| Composer | `cd backend && composer docs:api` |
+| CI | GitHub Actions `backend-tests` job runs `scribe:generate` after PHPUnit |
+
+Output is written to `backend/public/docs/` (gitignored). Regenerate on every release after API route changes.
+
+**Production:** protect `/docs/` via nginx basic auth (see commented block in `nginx.conf`) or host docs on staging only.
+
+---

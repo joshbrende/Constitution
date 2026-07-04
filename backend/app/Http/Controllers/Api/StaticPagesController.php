@@ -6,6 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\StaticPage;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Public content
+ *
+ * CMS static pages by slug.
+ *
+ * @unauthenticated
+ */
 class StaticPagesController extends Controller
 {
     public function show(string $slug): JsonResponse

@@ -15,18 +15,18 @@ class AuthApiTest extends TestCase
 
     private const REGISTER_PASSWORD = 'Password123!';
 
-    private const NEW_USER_EMAIL = 'newuser@example.com';
+    private const NEW_USER_EMAIL = 'newuser@example.org.zw';
 
     public function test_login_rejects_invalid_credentials_with_422(): void
     {
         User::factory()->create([
-            'email' => 'member@example.com',
+            'email' => 'member@example.org.zw',
             'password' => Hash::make('correct-password'),
             'surname' => 'Member',
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'member@example.com',
+            'email' => 'member@example.org.zw',
             'password' => 'wrong-password',
         ]);
 
@@ -37,13 +37,13 @@ class AuthApiTest extends TestCase
     public function test_login_returns_tokens_for_valid_credentials(): void
     {
         User::factory()->create([
-            'email' => 'ok@example.com',
+            'email' => 'ok@example.org.zw',
             'password' => Hash::make('SecretPass123!'),
             'surname' => 'Ok',
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'ok@example.com',
+            'email' => 'ok@example.org.zw',
             'password' => 'SecretPass123!',
         ]);
 
@@ -82,12 +82,35 @@ class AuthApiTest extends TestCase
         $this->assertNotNull($user->accepted_terms_at);
     }
 
+    public function test_register_succeeds_without_province(): void
+    {
+        Role::firstOrCreate(
+            ['slug' => 'student'],
+            ['name' => 'Student', 'description' => 'Learner']
+        );
+
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'No',
+            'surname' => 'Province',
+            'email' => 'noprovince@example.org.zw',
+            'password' => self::REGISTER_PASSWORD,
+            'password_confirmation' => self::REGISTER_PASSWORD,
+            'accept_terms' => true,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('user.email', 'noprovince@example.org.zw');
+
+        $user = User::where('email', 'noprovince@example.org.zw')->firstOrFail();
+        $this->assertNull($user->province_id);
+    }
+
     public function test_register_validation_requires_accepted_terms(): void
     {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'A',
             'surname' => 'B',
-            'email' => 'ab@example.com',
+            'email' => 'ab@example.org.zw',
             'password' => self::REGISTER_PASSWORD,
             'password_confirmation' => self::REGISTER_PASSWORD,
             'accept_terms' => false,

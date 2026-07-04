@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Services\AuditArchiveService;
 use App\Services\AuditLogger;
+use App\Services\AuditLogDisplayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +17,8 @@ class AuditLogsController extends Controller
 {
     public function __construct(
         protected AuditLogger $auditLogger,
-        protected AuditArchiveService $archiveService
+        protected AuditArchiveService $archiveService,
+        protected AuditLogDisplayService $display,
     ) {}
 
     public function index(Request $request): View
@@ -31,8 +33,11 @@ class AuditLogsController extends Controller
             targetId: null,
             metadata: [
                 'filters' => [
+                    'category' => $request->input('category'),
                     'action' => $request->input('action'),
-                    'actor_id' => $request->input('actor_id'),
+                    'q' => $request->input('q'),
+                    'from' => $request->input('from'),
+                    'to' => $request->input('to'),
                 ],
             ],
             request: $request
@@ -40,7 +45,11 @@ class AuditLogsController extends Controller
 
         $logs = $query->paginate(50)->withQueryString();
 
-        return view('admin.audit-logs.index', compact('logs'));
+        return view('admin.audit-logs.index', [
+            'logs' => $logs,
+            'categories' => config('audit.category_labels', []),
+            'present' => fn (AuditLog $log) => $this->display->present($log),
+        ]);
     }
 
     public function export(Request $request): StreamedResponse
@@ -55,8 +64,9 @@ class AuditLogsController extends Controller
             targetType: AuditLog::class,
             metadata: [
                 'filters' => [
+                    'category' => $request->input('category'),
                     'action' => $request->input('action'),
-                    'actor_id' => $request->input('actor_id'),
+                    'q' => $request->input('q'),
                     'from' => $request->input('from'),
                     'to' => $request->input('to'),
                 ],
@@ -78,14 +88,28 @@ class AuditLogsController extends Controller
      */
     private function filteredQuery(Request $request)
     {
-        $query = AuditLog::with('actor:id,name,email')->latest();
+        $query = AuditLog::with('actor:id,name,surname,email')->latest();
+
+        if ($request->filled('category')) {
+            $prefix = config('audit.categories.'.$request->input('category'));
+            if (is_string($prefix) && $prefix !== '') {
+                $query->where('action', 'like', $prefix.'%');
+            }
+        }
 
         if ($request->filled('action')) {
             $query->where('action', 'like', '%'.$request->input('action').'%');
         }
 
-        if ($request->filled('actor_id')) {
-            $query->where('actor_user_id', $request->input('actor_id'));
+        if ($request->filled('q')) {
+            $needle = '%'.$request->input('q').'%';
+            $query->where(function ($inner) use ($needle) {
+                $inner->whereHas('actor', function ($actorQuery) use ($needle) {
+                    $actorQuery->where('email', 'like', $needle)
+                        ->orWhere('name', 'like', $needle)
+                        ->orWhere('surname', 'like', $needle);
+                })->orWhere('metadata->email', 'like', $needle);
+            });
         }
 
         if ($request->filled('from')) {

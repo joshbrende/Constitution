@@ -56,6 +56,7 @@
                 value="{{ old('email') }}"
                 required
                 autocomplete="email"
+                placeholder="you@example.org.zw"
             >
             @error('email')
                 <div class="error-text">{{ $message }}</div>

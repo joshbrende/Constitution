@@ -68,7 +68,6 @@ return [
             'certificates:read',
             'certificates:write',
             'dialogue:read',
-            'dialogue:write',
             'projects:read',
             'projects:write',
             'comments:write',
@@ -100,6 +99,10 @@ return [
     'default_api_abilities' => [
         'profile:read',
         'profile:write',
+    ],
+
+    'suspended_api_abilities' => [
+        'profile:read',
     ],
 
 ];

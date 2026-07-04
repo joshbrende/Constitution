@@ -8,7 +8,8 @@ use App\Models\User;
 class ReceiptPdfService
 {
     public function __construct(
-        protected AcademyPaymentOfficeService $paymentOfficeService
+        protected AcademyPaymentOfficeService $paymentOfficeService,
+        protected ReceiptNumberService $receiptNumbers,
     ) {}
 
     public function canGenerate(): bool
@@ -45,6 +46,8 @@ class ReceiptPdfService
             'offices' => $offices,
             'instructions' => $instructions,
             'verifyUrl' => $this->verifyUrl($application),
+            'logoPath' => $this->receiptNumbers->receiptLogoPath(),
+            'orgName' => app(PlatformBrandingService::class)->orgName('ZANU PF Academy'),
         ])->render();
 
         $pdf->writeHTML($html, true, false, true, false, '');

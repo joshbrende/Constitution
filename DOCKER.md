@@ -81,12 +81,34 @@ docker compose exec app php artisan queue:restart
 
 See [`docs/OPS-RUNBOOK.md`](docs/OPS-RUNBOOK.md) § Queue worker.
 
-### 6. Production notes
+### 6. API documentation (Scribe)
+
+Regenerate after changing `routes/api.php` or API controller annotations:
+
+```bash
+docker compose exec app bash scripts/generate-api-docs.sh
+```
+
+Or: `docker compose exec app composer docs:api`
+
+| Output | URL |
+|--------|-----|
+| HTML | `http://localhost:8081/docs/index.html` |
+| OpenAPI | `http://localhost:8081/docs/openapi.yaml` |
+| Postman | `http://localhost:8081/docs/collection.json` |
+
+Optional: set `SCRIBE_AUTH_KEY` in `backend/.env` to a valid bearer token before generating — Scribe will call authenticated GET endpoints for live response samples.
+
+Generated files live in `backend/public/docs/` (gitignored; regenerate on each deploy).
+
+### 7. Production notes
 
 - Use strong secrets in root `.env` and `backend/.env`; never commit them.
 - Terminate TLS at a reverse proxy; set `APP_URL` to HTTPS.
 - Complete the wizard **Production checklist** (mail, CORS, cron, mobile API URL).
 - Back up MySQL volume `db_data` and `storage/app/public`.
+- Regenerate API docs: `composer docs:api` (or `bash scripts/generate-api-docs.sh` in the container).
+- Restrict `/docs/` in production — run `bash backend/scripts/setup-docs-auth.sh <username>` (enables nginx basic auth via `nginx.docs-auth.conf`), or omit `public/docs/` from the production artifact.
 
 ---
 

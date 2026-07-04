@@ -20,7 +20,7 @@ What `php artisan db:seed` and the **setup wizard** (step 5) load into the datab
 |--------|----------|
 | `RoleSeeder` | Roles (`system_admin`, `student`, `member`, `content_editor`, …) |
 | `PermissionSeeder` | Permissions + role attachments |
-| `AdminUserSeeder` | Optional `admin@zanupf.org` if `ADMIN_SEED_PASSWORD` set |
+| `AdminUserSeeder` | Optional `admin@zanupf.org.zw` if `ADMIN_SEED_PASSWORD` set |
 | `ConstitutionSeeder` | ZANU PF constitution structure + section text |
 | `ZimbabweConstitutionSeeder` | Zimbabwe 2013 constitution structure |
 | `AmendmentBill2026Seeder` | Amendment Bill 2026 content |
@@ -36,7 +36,7 @@ What `php artisan db:seed` and the **setup wizard** (step 5) load into the datab
 | `HomeBannersSeeder` | Mobile home carousel (`cab3.jpg`, `vision-2030.jpg`, … in `public/`) |
 | `LibrarySeeder` | Library categories and documents |
 | `StaticPagesSeeder` | Help, terms, privacy, cookies (`static_pages`) |
-| `MobileTestUserSeeder` | `mobile.test@zanupf.org` (wizard optional; skip production) |
+| `MobileTestUserSeeder` | `mobile.test@zanupf.org.zw` (wizard optional; skip production) |
 
 ---
 

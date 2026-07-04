@@ -7,6 +7,11 @@ use App\Models\SectionComment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Constitution
+ *
+ * Section comments (read public; write requires authentication).
+ */
 class CommentController extends Controller
 {
     public function index(Section $section): JsonResponse

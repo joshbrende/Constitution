@@ -28,13 +28,13 @@ class Phase2TokenAbilitiesTest extends TestCase
         $studentRole = Role::query()->where('slug', 'student')->firstOrFail();
         $user = User::factory()->create([
             'surname' => 'Student',
-            'email' => 'scoped@example.com',
+            'email' => 'scoped@example.org.zw',
             'password' => 'Password123!',
         ]);
         $user->roles()->attach($studentRole->id);
 
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'scoped@example.com',
+            'email' => 'scoped@example.org.zw',
             'password' => 'Password123!',
         ]);
 
@@ -44,9 +44,8 @@ class Phase2TokenAbilitiesTest extends TestCase
         $token = $user->tokens()->firstOrFail();
         $abilities = $token->abilities ?? [];
 
-        $this->assertNotContains('*', $abilities);
         $this->assertContains('profile:read', $abilities);
-        $this->assertContains('dialogue:write', $abilities);
+        $this->assertNotContains('dialogue:write', $abilities);
     }
 
     public function test_token_without_dialogue_write_cannot_post_thread(): void

@@ -18,7 +18,7 @@
 
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem;">
                 <div class="dash-stat">
-                    <div class="dash-stat-label">Registered members</div>
+                    <div class="dash-stat-label">Full members (certificated)</div>
                     <div class="dash-stat-value">{{ number_format($totalMembers) }}</div>
                     <div class="dash-stat-sub">
                         +{{ number_format($newMembersLast30) }} in last 30 days
@@ -241,6 +241,39 @@
                     </div>
                 @endforeach
             </div>
+
+            <h3 style="font-size:0.9rem;font-weight:600;margin:1.5rem 0 0.5rem;">Per-course academy metrics</h3>
+            <table class="dash-table" style="margin-bottom:1rem;">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Status</th>
+                        <th>Audience</th>
+                        <th>Enrolments</th>
+                        <th>Completed</th>
+                        <th>Attempts</th>
+                        <th>Pass rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($perCourseStats ?? [] as $row)
+                        <tr>
+                            <td>
+                                <code style="font-size:0.75rem;">{{ $row['code'] }}</code>
+                                <div>{{ $row['title'] }}</div>
+                            </td>
+                            <td>{{ ucfirst($row['status']) }}</td>
+                            <td>{{ config('academy.course_audiences.'.$row['audience'], $row['audience']) }}</td>
+                            <td>{{ number_format($row['enrolments']) }}</td>
+                            <td>{{ number_format($row['completions']) }}</td>
+                            <td>{{ number_format($row['attempts']) }}</td>
+                            <td>{{ $row['pass_rate'] !== null ? $row['pass_rate'].'%' : '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="dash-panel-subtitle">No courses yet.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
 
             <p class="dash-panel-subtitle" style="margin-top:1.5rem;">
                 For deeper analysis, export raw data from Members, Certificates, Academy, and Dialogue sections and combine in your reporting tools.

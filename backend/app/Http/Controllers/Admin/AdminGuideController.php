@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\LibraryDocument;
 use App\Models\Section;
+use App\Models\SiteSetting;
 use App\Models\User;
 use App\Services\AdminAccessService;
 use Illuminate\Http\Request;
@@ -31,11 +32,13 @@ class AdminGuideController extends Controller
         ['section' => 'home_banners', 'label' => 'Home banners', 'route' => 'admin.home-banners.index', 'summary' => 'Rotating or static banners on the home experience.'],
         ['section' => 'static_pages', 'label' => 'Help & legal pages', 'route' => 'admin.static-pages.index', 'summary' => 'Static HTML pages (help, legal, policies) editable by authorised roles.'],
         ['section' => 'dialogue', 'label' => 'Dialogue', 'route' => 'admin.dialogue.index', 'summary' => 'Channels, threads, messages: moderate discussion, pin or remove content, lock threads.'],
-        ['section' => 'certificates', 'label' => 'Certificates', 'route' => 'admin.certificates.index', 'summary' => 'Issued academy certificates; revoke or reinstate with audit trail. Public verification uses /verify-certificate.'],
-        ['section' => 'users', 'label' => 'Users', 'route' => 'admin.users.index', 'summary' => 'Accounts, roles, and profile fields for back-office and app users.'],
-        ['section' => 'members', 'label' => 'Members', 'route' => 'admin.members.index', 'summary' => 'Membership-oriented views and workflows alongside user records.'],
+        ['section' => 'certificates', 'label' => 'Cert. applications', 'route' => 'admin.certificate-applications.index', 'summary' => 'Membership certificate queue: provincial admins confirm offline payment; Presidium approves; print and collection tracking. Filtered by province for provincial admins.'],
+        ['section' => 'certificates', 'label' => 'Certificates (issued)', 'route' => 'admin.certificates.index', 'summary' => 'Issued academy certificates; revoke or reinstate with audit trail. Public verification uses /verify-certificate.'],
+        ['section' => 'users', 'label' => 'Users', 'route' => 'admin.users.index', 'summary' => 'Accounts, roles, and profile fields for back-office and app users. Provincial admins see their province only.'],
+        ['section' => 'members', 'label' => 'Members', 'route' => 'admin.members.index', 'summary' => 'Membership-oriented views and workflows alongside user records. Provincial admins see their province only.'],
         ['section' => 'analytics', 'label' => 'Analytics & reports', 'route' => 'admin.analytics.index', 'summary' => 'Enrolments and assessment activity; CSV exports where enabled.'],
         ['section' => 'audit_logs', 'label' => 'Audit logs', 'route' => 'admin.audit-logs.index', 'summary' => 'Immutable-style log of sensitive actions (e.g. certificate changes) for oversight.'],
+        ['section' => 'platform_settings', 'label' => 'Platform settings', 'route' => 'admin.platform-settings.edit', 'summary' => 'Organisation name, public site URL, mobile store links, and branding (system administrator only).'],
         ['section' => 'roles', 'label' => 'Roles', 'route' => 'admin.roles.index', 'summary' => 'Role definitions and permissions mapping (system administrator only).'],
     ];
 
@@ -63,6 +66,9 @@ class AdminGuideController extends Controller
             'accessibleSections' => $accessible,
             'modules' => self::ADMIN_MODULES,
             'stats' => $stats,
+            'pilotPhase' => SiteSetting::get('pilot_phase'),
+            'pilotProvinces' => SiteSetting::get('pilot_provinces', []),
+            'pilotStartedAt' => SiteSetting::get('pilot_started_at'),
         ]);
     }
 

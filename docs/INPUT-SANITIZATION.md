@@ -73,7 +73,26 @@ Location: `app/Rules/ZimbabweNationalIdRule.php`
 ## Other Validation
 
 - **Static Pages**: `body` max length 50,000 characters.
+- **Dialogue messages** (`DialogueController::storeMessage`): `body` max 4000 chars; HTML stripped with `strip_tags()` before storage (plain-text UGC).
 - **All user inputs**: Laravel validation rules (type, max, exists, regex, etc.) are applied across controllers.
+
+---
+
+## Mobile app (Expo) — client validation
+
+Defence in depth: the API remains authoritative; the mobile app validates for UX and early rejection.
+
+| Module | Location | Schemas |
+|--------|----------|---------|
+| Validation | `mobile/src/lib/validation.js` | Zod schemas aligned with Laravel API rules |
+| Normalization | `mobile/src/lib/sanitize.js` | Trim, email lowercase, national ID input format |
+| Screens | Register, Login, Forgot password, Profile, Chat | `validateForm()` before API calls |
+
+**Dependency:** `zod` (see `mobile/package.json`).
+
+**Not duplicated on mobile:** CORS (handled by Laravel `config/cors.php`); rich HTML Purifier (admin/library only); UK-specific patterns from generic web templates.
+
+**Zimbabwe National ID:** Client mirrors `ZimbabweNationalIdRule` regex; server re-validates on `PUT /api/v1/profile`.
 
 ---
 

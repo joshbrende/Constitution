@@ -9,12 +9,18 @@ use App\Models\Course;
 use App\Models\Enrolment;
 use App\Enums\CertificateApplicationStatus;
 use App\Services\AuditLogger;
+use App\Services\CourseAccessService;
 use App\Services\GovIdVerification\GovIdVerificationClient;
 use App\Services\ProvinceStatsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @group Academy
+ *
+ * Courses, enrolment, summary, and portal messages.
+ */
 class AcademyCourseController extends Controller
 {
     private const CACHE_TTL_MINUTES = 10;
@@ -23,12 +29,13 @@ class AcademyCourseController extends Controller
         protected ProvinceStatsService $provinceStatsService,
         protected GovIdVerificationClient $govIdClient,
         protected AuditLogger $auditLogger,
+        protected CourseAccessService $courseAccess,
     ) {}
 
     /**
      * List published courses (cached to smooth read demand).
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $courses = Cache::remember('academy.courses', self::CACHE_TTL_MINUTES * 60, function () {
             return Course::where('status', 'published')
@@ -38,16 +45,38 @@ class AcademyCourseController extends Controller
                 ->get();
         });
 
-        return response()->json(['data' => $courses]);
+        $user = $request->user();
+        $data = $courses->map(function (Course $course) use ($user) {
+            $row = $course->toArray();
+            $row['access'] = $user
+                ? $this->courseAccess->evaluateAccess($user, $course)
+                : ['allowed' => true, 'code' => null, 'message' => null];
+
+            return $row;
+        });
+
+        return response()->json(['data' => $data]);
     }
 
     /**
      * Show a course with modules and lessons (cached per course).
      */
-    public function show(Course $course): JsonResponse
+    public function show(Request $request, Course $course): JsonResponse
     {
         if ($course->status !== 'published') {
             return response()->json(['message' => 'Course not found.'], 404);
+        }
+
+        $user = $request->user();
+        if ($user) {
+            $access = $this->courseAccess->evaluateAccess($user, $course);
+            if (! $access['allowed']) {
+                return response()->json([
+                    'error' => 'forbidden',
+                    'code' => $access['code'],
+                    'message' => $access['message'],
+                ], 403);
+            }
         }
 
         $course = Cache::remember('academy.course.' . $course->id, self::CACHE_TTL_MINUTES * 60, function () use ($course) {
@@ -59,7 +88,12 @@ class AcademyCourseController extends Controller
                 ->first();
         });
 
-        return response()->json(['data' => $course]);
+        $payload = $course->toArray();
+        if ($user) {
+            $payload['access'] = $this->courseAccess->evaluateAccess($user, $course);
+        }
+
+        return response()->json(['data' => $payload]);
     }
 
     /**
@@ -72,7 +106,21 @@ class AcademyCourseController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $this->authorize('enrol', $course);
+        if ($course->status !== 'published') {
+            return response()->json([
+                'error' => 'not_found',
+                'message' => 'Course not found.',
+            ], 404);
+        }
+
+        $access = $this->courseAccess->evaluateAccess($user, $course);
+        if (! $access['allowed']) {
+            return response()->json([
+                'error' => 'forbidden',
+                'code' => $access['code'],
+                'message' => $access['message'],
+            ], 403);
+        }
 
         if (! $user->national_id) {
             return response()->json([
@@ -166,6 +214,11 @@ class AcademyCourseController extends Controller
     /**
      * Lightweight summary for the Overview screen.
      */
+    /**
+     * Academy summary
+     *
+     * Dashboard stats, latest application status, `portal_messages`, and `unread_portal_messages_count`.
+     */
     public function summary(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -190,9 +243,11 @@ class AcademyCourseController extends Controller
         $enrolledCount = $enrolments->count();
         $completedCount = $enrolments->where('status', 'completed')->count();
 
-        // Membership: certificate record or active application in government workflow
-        $hasMembership = $user->certificates()->exists()
-            || $user->hasRole('member');
+        // Membership: standing + privileges for mobile UI
+        $standingService = app(\App\Services\MembershipStandingService::class);
+        $hasMembership = $standingService->hasMemberPrivileges($user);
+        $membershipStanding = $standingService->standing($user)->value;
+        $isFullMember = $standingService->isFullMember($user);
         $applications = CertificateApplication::where('user_id', $user->id)->get(['status']);
         $pendingPaymentApplications = $applications->where('status', CertificateApplicationStatus::PaymentPending)->count();
         $latestApplication = CertificateApplication::where('user_id', $user->id)
@@ -250,6 +305,13 @@ class AcademyCourseController extends Controller
                 'enrolled_courses' => $enrolledCount,
                 'completed_courses' => $completedCount,
                 'has_membership' => $hasMembership,
+                'membership_standing' => $membershipStanding,
+                'is_full_member' => $isFullMember,
+                'has_branch_admission' => $user->hasBranchAdmission(),
+                'branch_admitted_at' => optional($user->branch_admitted_at)->toIso8601String(),
+                'is_cadre_designee' => $user->isCadreDesignee(),
+                'cadre_designated_at' => optional($user->cadre_designated_at)->toIso8601String(),
+                'wing' => $user->wing,
                 'assessment_attempts_count' => $attemptsCount,
                 'passed_attempts' => $passedCount,
                 'average_score' => $avgScore,
@@ -263,6 +325,7 @@ class AcademyCourseController extends Controller
                 'latest_application_status_label' => $latestApplication?->status?->label(),
                 'latest_receipt_number' => $latestApplication?->receipt_number,
                 'portal_messages' => $portalMessages,
+                'unread_portal_messages_count' => $user->unreadAcademyPortalMessagesCount(),
             ],
         ]);
     }

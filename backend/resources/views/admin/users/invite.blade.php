@@ -29,7 +29,7 @@
                 <div style="display:grid;gap:1rem;">
                     <div>
                         <label for="invite_email" class="form-label">Email <span style="color:var(--zanupf-red);">*</span></label>
-                        <input id="invite_email" type="email" name="email" value="{{ old('email') }}" required class="form-input" autocomplete="off">
+                        <input id="invite_email" type="email" name="email" value="{{ old('email') }}" required class="form-input" autocomplete="off" placeholder="staff@example.org.zw">
                         @error('email')
                             <p class="form-help" style="color:#fecaca;">{{ $message }}</p>
                         @enderror

@@ -25,13 +25,18 @@ class DatabaseSeeder extends Seeder
             AmendmentBill2026Seeder::class,
             AmendmentBill2026MetaSyncSeeder::class,
             MembershipCourseSeeder::class,
+            LeagueCoursesSeeder::class,
             DialogueSeeder::class,
+            PartyProfileSeeder::class,
             PartyOrgansSeeder::class,
+            PartyLeaguesSeeder::class,
             PresidiumSeeder::class,
             PriorityProjectsSeeder::class,
             \Database\Seeders\AcademyBadgesSeeder::class,
             HomeBannersSeeder::class,
+            LibrarySeeder::class,
             StaticPagesSeeder::class,
+            MobileTestUserSeeder::class,
         ]);
 
         if (file_exists(storage_path('app/zimbabwe-constitution-source.txt'))) {

@@ -62,7 +62,7 @@ class CertificateApplicationAdminWorkflowTest extends TestCase
             'user_id' => $user->id,
             'course_id' => $course->id,
             'assessment_attempt_id' => $attempt->id,
-            'receipt_number' => 'ZP-REC-2026-'.strtoupper(substr($province->code, 0, 4)),
+            'receipt_number' => 'ZPF-REC-2026-'.strtoupper(substr($province->code, 0, 4)),
             'payment_reference_code' => strtoupper(substr($province->code, 0, 4)).'REF001',
             'fee_amount' => 25.00,
             'fee_currency' => 'USD',
@@ -175,7 +175,7 @@ class CertificateApplicationAdminWorkflowTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($harareApp->receipt_number);
-        $response->assertDontSee('ZP-REC-2026-BULA');
+        $response->assertDontSee('ZPF-REC-2026-BULA');
     }
 
     public function test_provincial_admin_cannot_presidium_approve(): void

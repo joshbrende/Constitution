@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Role;
+use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -10,6 +11,12 @@ use Tests\TestCase;
 class AdminSectionAccessTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        SiteSetting::set('installed_at', now()->toIso8601String());
+    }
 
     private function role(string $slug, string $name): Role
     {
@@ -72,7 +79,7 @@ class AdminSectionAccessTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('admin.guide.faq.questions.store'), [
             'name' => 'Admin User',
-            'email' => 'admin@example.com',
+            'email' => 'admin@example.org.zw',
             'subject' => 'Access',
             'message' => 'How do roles work?',
         ]);

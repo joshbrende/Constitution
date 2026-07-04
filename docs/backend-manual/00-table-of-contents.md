@@ -18,6 +18,7 @@
 16. [Analytics](./16-analytics.md)  
 17. [Audit logs](./17-audit-logs.md)  
 18. [Web reader features](./18-web-reader-features.md)  
+19. [Provincial pilot rollout](./19-provincial-pilot-rollout.md)  
 20. [API overview](./20-api-overview.md)  
 21. [API authentication](./21-api-authentication.md)  
 22. [API profile & provinces](./22-api-profile-provinces.md)  

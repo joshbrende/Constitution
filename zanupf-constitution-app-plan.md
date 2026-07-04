@@ -426,7 +426,7 @@
     - `created_at`, `updated_at`
   - **`academy_courses`**
     - `id` (PK)
-    - `code` (short unique identifier, e.g. `ZP-CONST-101`)
+    - `code` (short unique identifier, e.g. `ZPF-CONST-101`)
     - `title`
     - `slug`
     - `description` (longText)

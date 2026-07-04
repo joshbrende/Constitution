@@ -139,6 +139,7 @@
             <li><a href="#modules">Administration modules</a></li>
             <li><a href="#rbac">Roles and access</a></li>
             <li><a href="#workflows">Key workflows</a></li>
+            <li><a href="#pilot-rollout">Phase 1 pilot (Harare &amp; Bulawayo)</a></li>
             <li><a href="#mobile-api">Mobile app and API</a></li>
             <li><a href="#canonical-docs">Canonical manual (repository)</a></li>
         </ul>
@@ -200,7 +201,7 @@
         <h2>Roles and access</h2>
         <p>
             Access to each administration area is controlled in <code style="font-size:0.85em;">config/admin.php</code>, which maps <em>sections</em> to role slugs.
-            Special roles (e.g. Presidium) may gate actions such as approving constitution versions. If a menu item is missing, your account does not include a role for that section.
+            Special roles (e.g. Presidium) may gate actions such as approving constitution versions or certificate applications. If a menu item is missing, your account does not include a role for that section.
         </p>
         <p>
             Only <strong style="color:var(--text-main)">system administrators</strong> should use <strong>Roles</strong> to change who can do what.
@@ -213,24 +214,74 @@
             <li><strong style="color:var(--text-main)">Constitution publishing</strong> — Editors work on section <em>versions</em>; submitted versions move to review; Presidium approves or rejects. Approved content drives the public readers and API.</li>
             <li><strong style="color:var(--text-main)">Official Amendment PDF</strong> — Upload the gazetted or cabinet PDF from Manage Constitution so the mobile app can offer an &ldquo;official PDF&rdquo; action when the file is present.</li>
             <li><strong style="color:var(--text-main)">Academy</strong> — Build courses and assessments, then publish. Mandatory courses and badges are respected in the app and analytics.</li>
-            <li><strong style="color:var(--text-main)">Certificates</strong> — Revoking or reinstating a certificate writes to audit logs; members verify certificates on the public verification page.</li>
+            <li><strong style="color:var(--text-main)">Membership certificate applications</strong> — Member passes assessment → pays at provincial office → <strong>provincial admin confirms payment</strong> in Cert. applications → <strong>Presidium approves</strong> → print → ready for collection → member collects. Provincial admins only see applicants in their province.</li>
+            <li><strong style="color:var(--text-main)">Issued certificates</strong> — Revoking or reinstating a certificate writes to audit logs; members verify certificates on the public verification page.</li>
+            <li><strong style="color:var(--text-main)">Provincial scope</strong> — Accounts with the <em>Provincial Admin</em> role and a <code style="font-size:0.85em;">province_id</code> see Users, Members, and Cert. applications for that province only. National roles retain full visibility.</li>
             <li><strong style="color:var(--text-main)">Dialogue</strong> — Moderators manage channels and threads, pin guidance, and remove policy-violating messages.</li>
         </ul>
     </section>
+
+    @if (! empty($pilotPhase))
+    <section class="admin-doc-section" id="pilot-rollout">
+        <h2>Phase 1 pilot (Harare &amp; Bulawayo)</h2>
+        <p>
+            The platform is in <strong style="color:var(--text-main)">Phase {{ $pilotPhase }}</strong> provincial rollout
+            @if (! empty($pilotStartedAt))
+                (started {{ \Illuminate\Support\Carbon::parse($pilotStartedAt)->format('j M Y') }}).
+            @else
+                .
+            @endif
+            Pilot provinces are metropolitan centres used to validate registration, Academy completion, and the certificate queue before national expansion.
+        </p>
+        @if (is_array($pilotProvinces) && count($pilotProvinces))
+            <div class="admin-doc-table-wrap">
+                <table class="admin-doc-table">
+                    <thead>
+                        <tr>
+                            <th>Province</th>
+                            <th>Provincial admin login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($pilotProvinces as $row)
+                            <tr>
+                                <td>{{ $row['name'] ?? $row['code'] ?? '—' }}</td>
+                                <td><code style="font-size:0.8em;">{{ $row['admin_email'] ?? '—' }}</code></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+        <ul style="margin-top:0.75rem;">
+            <li><strong style="color:var(--text-main)">Provincial admins</strong> — Users, Members, and Cert. applications scoped to Harare or Bulawayo. Confirm offline course payments; do not Presidium-approve.</li>
+            <li><strong style="color:var(--text-main)">Presidium</strong> — Approves certificate applications after provincial payment confirmation. Constitution amendment approval is a separate workflow.</li>
+            <li><strong style="color:var(--text-main)">National ICT</strong> — Platform settings, user invites, and rollout metrics. Repository runbook: <code style="font-size:0.85em;">docs/politburo/PILOT-PHASE-1-HARARE-BULAWAYO.md</code>.</li>
+        </ul>
+        <div class="admin-doc-callout">
+            Members in pilot provinces should register, complete profile (province + national ID), enrol in the Academy, and follow certificate instructions at their provincial office. Home banners may advertise the pilot in the mobile app.
+        </div>
+    </section>
+    @endif
 
     <section class="admin-doc-section" id="mobile-api">
         <h2>Mobile app and API</h2>
         <p>
             The mobile apps use the JSON API under <code style="font-size:0.85em;">/api/v1</code> with Sanctum-style access and refresh tokens.
             Content you publish here (constitution, library visibility, academy, dialogue, certificates) is what authenticated app users see, subject to the same rules as the web experience.
+            Guests may browse the constitution without an account; registration can omit province until profile completion.
+        </p>
+        <p>
+            <strong style="color:var(--text-main)">Store links</strong> on the public home page come from Platform settings (system administrator). Until apps are in the stores, members can use the web portal URL from the same settings.
         </p>
     </section>
 
     <section class="admin-doc-section" id="canonical-docs">
         <h2>Canonical manual (repository)</h2>
         <p>
-            For deep chapters (API reference, ops, security), the engineering team maintains <strong style="color:var(--text-main)">docs/backend-manual/</strong> in the project repository
-            (numbered files 01–40 and appendices). This in-app page is the concise map for day-to-day admin navigation; the manual is the full reference for developers and compliance.
+            For deep chapters (API reference, ops, security, provincial rollout), the engineering team maintains <strong style="color:var(--text-main)">docs/backend-manual/</strong> in the project repository
+            (numbered files 01–40 and appendices). Chapter <strong style="color:var(--text-main)">19</strong> covers Phase 1 pilot operations. Politburo rollout packs live under <code style="font-size:0.85em;">docs/politburo/</code>.
+            This in-app page is the concise map for day-to-day admin navigation; the manual is the full reference for developers and compliance.
         </p>
         <div class="admin-doc-callout">
             Tip: Use <a href="{{ route('admin.guide.help') }}">Help</a> for shortcuts and common questions, and <a href="{{ route('admin.guide.settings') }}">Settings</a> for your account and theme.

@@ -50,6 +50,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Standing</th>
                         <th>Roles</th>
                         <th>Created</th>
                     </tr>
@@ -61,6 +62,7 @@
                                 <a href="{{ route('admin.users.edit', $u) }}" style="color:var(--zanupf-gold);font-weight:600;text-decoration:none;">{{ $u->name }} {{ $u->surname }}</a>
                             </td>
                             <td>{{ $u->email }}</td>
+                            <td>{{ $u->membershipStandingLabel() }}</td>
                             <td>
                                 @php
                                     $roles = collect($u->roles ?? []);

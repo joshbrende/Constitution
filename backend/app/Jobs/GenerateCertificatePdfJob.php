@@ -17,7 +17,9 @@ class GenerateCertificatePdfJob implements ShouldQueue
 
     public function __construct(
         public Certificate $certificate
-    ) {}
+    ) {
+        $this->onQueue('default');
+    }
 
     public function handle(CertificatePdfService $pdfService): void
     {

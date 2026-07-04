@@ -22,7 +22,7 @@
                 type="text"
                 name="number"
                 value="{{ $number }}"
-                placeholder="e.g. ZP-MEM-2026-00001"
+                placeholder="e.g. ZPF-MEM-2026-00001"
                 required
             >
         </div>

@@ -16,12 +16,13 @@ class AuditLogger
         ?string $targetType = null,
         int|string|null $targetId = null,
         array $metadata = [],
-        ?Request $request = null
+        ?Request $request = null,
+        ?int $actorUserId = null,
     ): AuditLog {
         $request ??= request();
 
         $attributes = [
-            'actor_user_id' => auth()->id(),
+            'actor_user_id' => $actorUserId ?? auth()->id(),
             'action' => $action,
             'target_type' => $targetType,
             'target_id' => $targetId !== null ? (int) $targetId : null,

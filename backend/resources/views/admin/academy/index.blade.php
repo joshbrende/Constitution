@@ -72,6 +72,12 @@
                                 @if ($c->is_mandatory)
                                     <span class="dash-tag" style="margin-left:0.5rem;">Mandatory</span>
                                 @endif
+                                @if ($c->grants_membership)
+                                    <span class="dash-tag" style="margin-left:0.5rem;">Membership</span>
+                                @endif
+                                @if ($c->audience && $c->audience !== 'all')
+                                    <span class="dash-tag" style="margin-left:0.5rem;">{{ config('academy.course_audiences.'.$c->audience, $c->audience) }}</span>
+                                @endif
                             </td>
                             <td><span class="dash-tag" style="font-size:0.75rem;">{{ ucfirst($c->level ?? 'basic') }}</span></td>
                             <td>{{ $c->modules_count ?? 0 }} modules, {{ $c->assessments_count ?? 0 }} assessments</td>
@@ -111,5 +117,48 @@
                 </div>
             @endif
         </section>
+
+        @if (isset($courseStats) && $courseStats->isNotEmpty())
+        <section class="dash-panel" style="grid-column: span 2;margin-top:1.5rem;">
+            <div class="dash-panel-header">
+                <div>
+                    <div class="dash-panel-title">Course performance</div>
+                    <div class="dash-panel-subtitle">Enrolments, completions, and assessment pass rates per course.</div>
+                </div>
+                @canAccessSection('analytics')
+                    <a href="{{ route('admin.analytics.index') }}" class="dash-btn-ghost" style="text-decoration:none;font-size:0.85rem;">Full analytics</a>
+                @endcanAccessSection
+            </div>
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Audience</th>
+                        <th>Enrolments</th>
+                        <th>Completed</th>
+                        <th>Attempts</th>
+                        <th>Pass rate</th>
+                        <th>Avg score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($courseStats as $row)
+                        <tr>
+                            <td>
+                                <code style="font-size:0.75rem;">{{ $row['code'] }}</code>
+                                <div style="font-size:0.85rem;">{{ $row['title'] }}</div>
+                            </td>
+                            <td>{{ config('academy.course_audiences.'.$row['audience'], $row['audience']) }}</td>
+                            <td>{{ number_format($row['enrolments']) }}</td>
+                            <td>{{ number_format($row['completions']) }}</td>
+                            <td>{{ number_format($row['attempts']) }}</td>
+                            <td>{{ $row['pass_rate'] !== null ? $row['pass_rate'].'%' : '—' }}</td>
+                            <td>{{ $row['avg_score'] ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </section>
+        @endif
     </div>
 @endsection

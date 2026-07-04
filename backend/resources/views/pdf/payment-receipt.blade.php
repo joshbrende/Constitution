@@ -6,6 +6,10 @@
         body { font-family: helvetica, sans-serif; font-size: 11pt; color: #111; }
         h1 { font-size: 18pt; color: #15803d; margin-bottom: 4px; }
         h2 { font-size: 12pt; color: #444; margin-top: 0; font-weight: normal; }
+        .header { display: table; width: 100%; margin-bottom: 8px; }
+        .header-logo { display: table-cell; width: 64px; vertical-align: middle; }
+        .header-logo img { height: 52px; width: auto; }
+        .header-text { display: table-cell; vertical-align: middle; padding-left: 10px; }
         .meta { margin: 16px 0; border: 1px solid #ccc; padding: 12px; }
         .meta table { width: 100%; border-collapse: collapse; }
         .meta td { padding: 4px 0; vertical-align: top; }
@@ -18,8 +22,17 @@
     </style>
 </head>
 <body>
-    <h1>ZANU PF Academy</h1>
-    <h2>Certificate Payment Receipt</h2>
+    <div class="header">
+        @if (! empty($logoPath))
+        <div class="header-logo">
+            <img src="{{ $logoPath }}" alt="Logo">
+        </div>
+        @endif
+        <div class="header-text">
+            <h1>{{ $orgName ?? 'ZANU PF Academy' }}</h1>
+            <h2>Certificate Payment Receipt</h2>
+        </div>
+    </div>
 
     <div class="meta">
         <table>

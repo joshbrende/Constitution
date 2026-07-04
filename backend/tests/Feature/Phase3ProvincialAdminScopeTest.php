@@ -49,7 +49,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $admin = User::factory()->create([
             'surname' => 'HarareAdmin',
-            'email' => 'harare-admin@example.com',
+            'email' => 'harare-admin@example.org.zw',
             'province_id' => $harare->id,
         ]);
         $admin->roles()->attach($role->id);
@@ -57,14 +57,14 @@ class Phase3ProvincialAdminScopeTest extends TestCase
         User::factory()->create([
             'name' => 'Visible',
             'surname' => 'HarareMember',
-            'email' => 'visible-harare@example.com',
+            'email' => 'visible-harare@example.org.zw',
             'province_id' => $harare->id,
         ]);
 
         User::factory()->create([
             'name' => 'Hidden',
             'surname' => 'BulawayoMember',
-            'email' => 'hidden-bulawayo@example.com',
+            'email' => 'hidden-bulawayo@example.org.zw',
             'province_id' => $bulawayo->id,
         ]);
 
@@ -83,13 +83,13 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $admin = User::factory()->create([
             'province_id' => $harare->id,
-            'email' => 'scoped-admin@example.com',
+            'email' => 'scoped-admin@example.org.zw',
         ]);
         $admin->roles()->attach($role->id);
 
         $other = User::factory()->create([
             'province_id' => $bulawayo->id,
-            'email' => 'other-province@example.com',
+            'email' => 'other-province@example.org.zw',
         ]);
 
         $this->actingAs($admin)
@@ -105,7 +105,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $manager = User::factory()->create([
             'province_id' => $harare->id,
-            'email' => 'manager@example.com',
+            'email' => 'manager@example.org.zw',
         ]);
         $manager->roles()->attach($role->id);
 
@@ -136,21 +136,21 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $admin = User::factory()->create([
             'province_id' => $harare->id,
-            'email' => 'prov-search@example.com',
+            'email' => 'prov-search@example.org.zw',
         ]);
         $admin->roles()->attach($role->id);
 
         User::factory()->create([
             'name' => 'Scoped',
             'surname' => 'Searchable',
-            'email' => 'scoped-searchable@example.com',
+            'email' => 'scoped-searchable@example.org.zw',
             'province_id' => $harare->id,
         ]);
 
         User::factory()->create([
             'name' => 'Scoped',
             'surname' => 'HiddenElsewhere',
-            'email' => 'scoped-hidden@example.com',
+            'email' => 'scoped-hidden@example.org.zw',
             'province_id' => $bulawayo->id,
         ]);
 
@@ -183,7 +183,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $admin = User::factory()->create([
             'province_id' => $harare->id,
-            'email' => 'members-admin@example.com',
+            'email' => 'members-admin@example.org.zw',
         ]);
         $admin->roles()->attach($role->id);
 
@@ -195,7 +195,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
         Certificate::create([
             'user_id' => $localMember->id,
             'course_id' => $course->id,
-            'certificate_number' => 'ZP-MEM-2026-P3LOCAL',
+            'certificate_number' => 'ZPF-MEM-2026-P3LOCAL',
             'verification_code' => 'P3LOCAL1',
             'issued_at' => now(),
             'pdf_status' => 'ready',
@@ -209,7 +209,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
         Certificate::create([
             'user_id' => $remoteMember->id,
             'course_id' => $course->id,
-            'certificate_number' => 'ZP-MEM-2026-P3REMOTE',
+            'certificate_number' => 'ZPF-MEM-2026-P3REMOTE',
             'verification_code' => 'P3REMOT1',
             'issued_at' => now(),
             'pdf_status' => 'ready',
@@ -229,7 +229,7 @@ class Phase3ProvincialAdminScopeTest extends TestCase
 
         $admin = User::factory()->create([
             'province_id' => $harare->id,
-            'email' => 'no-invite@example.com',
+            'email' => 'no-invite@example.org.zw',
         ]);
         $admin->roles()->attach($role->id);
 

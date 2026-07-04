@@ -4,24 +4,28 @@ namespace App\Services;
 
 use App\Enums\CertificateApplicationStatus;
 use App\Jobs\GenerateCertificatePdfJob;
+use App\Jobs\SendAcademyApplicationMailJob;
 use App\Models\AssessmentAttempt;
 use App\Models\Certificate;
 use App\Models\CertificateApplication;
 use App\Models\Course;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\Academy\AcademyApplicationNotification;
 use App\Notifications\Academy\CertificateCollectedNotification;
 use App\Notifications\Academy\CertificatePresidiumApprovedNotification;
 use App\Notifications\Academy\CertificateReadyForCollectionNotification;
 use App\Notifications\Academy\ExamPassedPaymentRequiredNotification;
 use App\Notifications\Academy\PaymentConfirmedNotification;
-use Illuminate\Support\Str;
+use App\Services\ExpoPushNotificationService;
 use InvalidArgumentException;
 
 class CertificateApplicationService
 {
     public function __construct(
         protected AuditLogger $auditLogger,
+        protected ReceiptNumberService $receiptNumbers,
+        protected MembershipStandingService $membershipStanding,
     ) {}
 
     /**
@@ -29,13 +33,13 @@ class CertificateApplicationService
      */
     public function createFromPassedAttempt(AssessmentAttempt $attempt): CertificateApplication
     {
-        $attempt->loadMissing(['assessment.course', 'user']);
+        $attempt->loadMissing(['assessment.course', 'user.province']);
 
         $course = $attempt->assessment->course;
         $user = $attempt->user;
 
-        if (! $course instanceof Course || ! $course->grants_membership) {
-            throw new InvalidArgumentException('Certificate applications require a membership-granting course.');
+        if (! $course instanceof Course || ! $course->issuesCertificate()) {
+            throw new InvalidArgumentException('Certificate applications require a course that issues certificates.');
         }
 
         $passMark = $attempt->assessment->pass_mark ?? 70;
@@ -57,12 +61,14 @@ class CertificateApplicationService
             throw new InvalidArgumentException('Course certificate fee is not configured.');
         }
 
+        $numbers = $this->receiptNumbers->generateForUser($user);
+
         $application = CertificateApplication::create([
             'user_id' => $user->id,
             'course_id' => $course->id,
             'assessment_attempt_id' => $attempt->id,
-            'receipt_number' => $this->generateReceiptNumber(),
-            'payment_reference_code' => $this->generatePaymentReferenceCode(),
+            'receipt_number' => $numbers['receipt_number'],
+            'payment_reference_code' => $numbers['payment_reference_code'],
             'fee_amount' => $feeAmount,
             'fee_currency' => $course->certificate_fee_currency ?: config('academy.default_fee_currency', 'USD'),
             'status' => CertificateApplicationStatus::PaymentPending,
@@ -84,6 +90,7 @@ class CertificateApplicationService
         );
 
         $application->load('course');
+        $this->membershipStanding->markProvisional($user, 'exam_passed');
         $this->notifyStudent($user, new ExamPassedPaymentRequiredNotification($application));
 
         return $application;
@@ -132,7 +139,7 @@ class CertificateApplicationService
         $certificate = Certificate::create([
             'user_id' => $application->user_id,
             'course_id' => $application->course_id,
-            'certificate_number' => Certificate::nextCertificateNumber(),
+            'certificate_number' => Certificate::nextCertificateNumber($application->course),
             'issued_at' => now(),
             'expires_at' => $this->defaultCertificateExpiry(),
             'pdf_status' => 'pending',
@@ -147,6 +154,8 @@ class CertificateApplicationService
         ]);
 
         GenerateCertificatePdfJob::dispatch($certificate);
+
+        $this->membershipStanding->markFullMember($application->user, 'certificate_issued');
 
         $this->auditLogger->log(
             action: 'academy.application.presidium_approved',
@@ -234,30 +243,6 @@ class CertificateApplicationService
         return $application->fresh();
     }
 
-    public function generateReceiptNumber(): string
-    {
-        $prefix = (string) config('academy.receipt_number_prefix', 'ZP-REC');
-        $year = date('Y');
-
-        do {
-            $suffix = strtoupper(Str::random(8));
-            $number = sprintf('%s-%s-%s', $prefix, $year, $suffix);
-        } while (CertificateApplication::where('receipt_number', $number)->exists());
-
-        return $number;
-    }
-
-    public function generatePaymentReferenceCode(): string
-    {
-        $length = (int) config('academy.payment_reference_length', 10);
-
-        do {
-            $code = strtoupper(Str::random(max(6, $length)));
-        } while (CertificateApplication::where('payment_reference_code', $code)->exists());
-
-        return $code;
-    }
-
     /**
      * @return list<string>
      */
@@ -295,9 +280,26 @@ class CertificateApplicationService
         return now()->addDays($days);
     }
 
-    private function notifyStudent(User $user, \Illuminate\Notifications\Notification $notification): void
+    private function notifyStudent(User $user, AcademyApplicationNotification $notification): void
     {
-        $user->notify($notification);
+        $notification->application->loadMissing('course');
+        $user->notifyNow($notification, ['database']);
+
+        app(ExpoPushNotificationService::class)->sendToUser(
+            $user,
+            $notification->title(),
+            $notification->body(),
+            [
+                'type' => $notification->notificationType(),
+                'application_id' => $notification->application->id,
+            ]
+        );
+
+        SendAcademyApplicationMailJob::dispatch(
+            $user->id,
+            $notification->application->id,
+            $notification::class,
+        );
     }
 
     private function attachMemberRoleIfNeeded(User $user, CertificateApplication $application): void

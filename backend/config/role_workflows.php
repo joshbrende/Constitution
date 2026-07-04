@@ -38,11 +38,12 @@ return [
     ],
     'presidium' => [
         'title' => 'Presidium',
-        'summary' => 'You approve or reject constitutional amendments submitted for review.',
+        'summary' => 'Approve constitutional amendments and membership certificate applications after provincial payment confirmation.',
         'steps' => [
-            'Open Admin → Manage Constitution; pending items are highlighted when versions await approval.',
-            'Go to a section → Amendments → approve or reject versions in “in review” status.',
-            'Approval publishes the amendment and sets effective dates; rejection returns control to editors.',
+            'Constitution: Admin → Manage Constitution → pending versions in “in review” → approve or reject.',
+            'Certificates: Admin → Cert. applications → approve only after provincial admin has confirmed offline payment.',
+            'After approval, coordinate print and collection with provincial structures; mark printed / ready / collected in the queue.',
+            'Rejection or escalation: record reasons consistently; provincial admins cannot Presidium-approve.',
         ],
     ],
     'academy_manager' => [
@@ -99,11 +100,13 @@ return [
     ],
     'provincial_admin' => [
         'title' => 'Provincial administrator',
-        'summary' => 'User and member oversight scoped to your assigned province (Users / Members admin only).',
+        'summary' => 'Users, members, and certificate applications scoped to your assigned province (Phase 1 pilot: Harare or Bulawayo).',
         'steps' => [
-            'Ensure your account has a province set (contact a User Manager if lists are empty).',
-            'Use Users / Members to manage members in your province only.',
-            'Assign student or member roles only; backend invites are handled nationally.',
+            'Ensure your account has a province set (contact a User Manager if lists are empty or show wrong province).',
+            'Users / Members: manage members in your province only — you cannot see other provinces.',
+            'Cert. applications: confirm offline course payment when the member presents proof at your provincial office.',
+            'Do not Presidium-approve applications; national Presidium approves after your payment confirmation.',
+            'Assign student or member roles only; backend staff invites are handled nationally.',
             'Follow data protection rules for provincial member data.',
         ],
     ],

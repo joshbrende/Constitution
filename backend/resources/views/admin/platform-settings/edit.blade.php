@@ -79,31 +79,31 @@
 
                 <div class="ps-row">
                     <label for="support_email">Support email</label>
-                    <input id="support_email" type="email" name="support_email" value="{{ old('support_email', $settings['support_email'] ?? '') }}" required>
+                    <input id="support_email" type="email" name="support_email" value="{{ old('support_email', $settings['support_email'] ?? '') }}" placeholder="support@zanupf.org.zw" required>
                     @error('support_email')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="ps-row ps-full">
                     <label for="public_site_url">Public site URL (optional)</label>
-                    <input id="public_site_url" type="url" name="public_site_url" value="{{ old('public_site_url', $settings['public_site_url'] ?? '') }}" placeholder="https://zanupfonline.org.zw">
+                    <input id="public_site_url" type="url" name="public_site_url" value="{{ old('public_site_url', $settings['public_site_url'] ?? '') }}" placeholder="https://www.zanupf.org.zw">
                     @error('public_site_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="ps-row ps-full">
                     <label for="legal_privacy_url">Privacy policy URL</label>
-                    <input id="legal_privacy_url" type="text" name="legal_privacy_url" value="{{ old('legal_privacy_url', $settings['legal_privacy_url'] ?? '') }}" required>
+                    <input id="legal_privacy_url" type="text" name="legal_privacy_url" value="{{ old('legal_privacy_url', $settings['legal_privacy_url'] ?? '') }}" placeholder="https://www.zanupf.org.zw/privacy" required>
                     @error('legal_privacy_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="ps-row ps-full">
                     <label for="legal_terms_url">Terms of use URL</label>
-                    <input id="legal_terms_url" type="text" name="legal_terms_url" value="{{ old('legal_terms_url', $settings['legal_terms_url'] ?? '') }}" required>
+                    <input id="legal_terms_url" type="text" name="legal_terms_url" value="{{ old('legal_terms_url', $settings['legal_terms_url'] ?? '') }}" placeholder="https://www.zanupf.org.zw/terms" required>
                     @error('legal_terms_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="ps-row ps-full">
                     <label for="legal_cookies_url">Cookies URL</label>
-                    <input id="legal_cookies_url" type="text" name="legal_cookies_url" value="{{ old('legal_cookies_url', $settings['legal_cookies_url'] ?? '') }}" required>
+                    <input id="legal_cookies_url" type="text" name="legal_cookies_url" value="{{ old('legal_cookies_url', $settings['legal_cookies_url'] ?? '') }}" placeholder="https://www.zanupf.org.zw/cookies" required>
                     @error('legal_cookies_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
 
@@ -127,6 +127,23 @@
                         <input type="hidden" name="require_national_id" value="0">
                         <input type="checkbox" name="require_national_id" value="1" {{ old('require_national_id', $settings['require_national_id'] ?? true) ? 'checked' : '' }}>
                     </div>
+                </div>
+            </div>
+
+            <h2 style="margin:1.35rem 0 0.75rem 0;font-size:0.95rem;font-weight:700;">Mobile app distribution</h2>
+            <p class="ps-note" style="margin-top:0;">Optional store links shown on the public home page. Leave blank until listings are live.</p>
+
+            <div class="ps-grid">
+                <div class="ps-row ps-full">
+                    <label for="mobile_app_store_url">Apple App Store URL</label>
+                    <input id="mobile_app_store_url" type="url" name="mobile_app_store_url" value="{{ old('mobile_app_store_url', $settings['mobile_app_store_url'] ?? '') }}" placeholder="https://apps.apple.com/app/...">
+                    @error('mobile_app_store_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="ps-row ps-full">
+                    <label for="mobile_play_store_url">Google Play Store URL</label>
+                    <input id="mobile_play_store_url" type="url" name="mobile_play_store_url" value="{{ old('mobile_play_store_url', $settings['mobile_play_store_url'] ?? '') }}" placeholder="https://play.google.com/store/apps/details?id=...">
+                    @error('mobile_play_store_url')<div style="color:#ef4444;font-size:0.8rem;margin-top:0.35rem;">{{ $message }}</div>@enderror
                 </div>
             </div>
 

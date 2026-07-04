@@ -33,10 +33,14 @@ class Course extends Model
         'level',
         'is_mandatory',
         'grants_membership',
+        'requires_membership',
+        'audience',
         'certificate_title',
         'certificate_fee_amount',
         'certificate_fee_currency',
         'payment_office_instructions',
+        'issues_certificate',
+        'certificate_number_prefix',
         'status',
         'created_by',
     ];
@@ -44,7 +48,31 @@ class Course extends Model
     protected $casts = [
         'is_mandatory' => 'boolean',
         'grants_membership' => 'boolean',
+        'requires_membership' => 'boolean',
+        'issues_certificate' => 'boolean',
     ];
+
+    public function issuesCertificate(): bool
+    {
+        return (bool) $this->grants_membership || (bool) $this->issues_certificate;
+    }
+
+    public function resolvedCertificatePrefix(): string
+    {
+        $prefix = trim((string) ($this->certificate_number_prefix ?? ''));
+
+        if ($prefix !== '') {
+            return strtoupper($prefix);
+        }
+
+        if ($this->grants_membership) {
+            return strtoupper((string) config('certificates.certificate_number_prefix', 'ZPF-MEM'));
+        }
+
+        $code = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) $this->code) ?: 'COURSE');
+
+        return 'ZPF-'.substr($code, 0, 8);
+    }
 
     public function creator(): BelongsTo
     {

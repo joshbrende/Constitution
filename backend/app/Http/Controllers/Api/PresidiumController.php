@@ -7,6 +7,13 @@ use App\Models\PresidiumMember;
 use App\Models\PresidiumPublication;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Public content
+ *
+ * Published presidium members and publications.
+ *
+ * @unauthenticated
+ */
 class PresidiumController extends Controller
 {
     public function index(): JsonResponse
