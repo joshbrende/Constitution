@@ -65,6 +65,8 @@ Fix by using database drivers (recommended) or running Redis locally and setting
 
 ## Docker (Compose) (recommended for “production-like” testing)
 
+For **free public HTTPS staging** (Cloudflare Tunnel) or a **free 24/7 VM** (Oracle Cloud), see **[STAGING-FREE.md](./STAGING-FREE.md)**.
+
 ### Use this env file
 
 - `backend/.env.docker`

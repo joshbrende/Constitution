@@ -1,6 +1,6 @@
 ## Docker deployment guide
 
-Run the Constitution **backend** with Docker Compose. See also [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) and [`docs/OPS-RUNBOOK.md`](docs/OPS-RUNBOOK.md).
+Run the Constitution **backend** with Docker Compose. See also [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md), [`docs/STAGING-FREE.md`](docs/STAGING-FREE.md) (free HTTPS staging), and [`docs/OPS-RUNBOOK.md`](docs/OPS-RUNBOOK.md).
 
 ### 1. Overview
 
