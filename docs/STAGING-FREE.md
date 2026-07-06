@@ -6,6 +6,28 @@ How to exercise the Constitution backend (Laravel + MySQL + Redis + queue worker
 
 ---
 
+## Current team decision (local Docker)
+
+**Use this until you need public HTTPS or mobile-data testing.**
+
+| Item | Choice |
+|------|--------|
+| Runtime | `docker compose up` (or `docker-compose.prod.yml` for read-only code mounts) |
+| Web + API | `http://localhost:8081` |
+| Mobile (same Wi‑Fi) | `http://<LAN-IP>:8081/api/v1` in `mobile/.env` |
+| Public / mobile data | Defer — add Cloudflare quick tunnel or cloud VM later |
+
+**Daily commands** (repository root):
+
+```powershell
+docker compose up -d
+docker compose ps
+```
+
+Health check: `http://localhost:8081/api/v1/health` → `{"status":"ok",...}`
+
+---
+
 ## What you are testing
 
 | Layer | Technology |
