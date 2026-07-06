@@ -202,6 +202,27 @@ return [
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
         ],
 
+        /*
+        | Short-lived connection for /health Redis checks only. Timeouts are applied
+        | when the client is created (phpredis, Predis, RedisCluster) so probes cannot
+        | hang indefinitely on an unavailable broker.
+        */
+        'health' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
+            'max_retries' => 0,
+            'timeout' => (float) env('REDIS_HEALTH_TIMEOUT', 2),
+            'read_timeout' => (float) env('REDIS_HEALTH_TIMEOUT', 2),
+            'read_write_timeout' => (float) env('REDIS_HEALTH_TIMEOUT', 2),
+            'options' => [
+                'timeout' => (float) env('REDIS_HEALTH_TIMEOUT', 2),
+            ],
+        ],
+
     ],
 
 ];

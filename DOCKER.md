@@ -99,14 +99,14 @@ Or: `docker compose exec app composer docs:api`
 
 Optional: set `SCRIBE_AUTH_KEY` in `backend/.env` to a valid bearer token before generating — Scribe will call authenticated GET endpoints for live response samples.
 
-**Try It Out** in the browser requires `APP_URL=http://localhost:8081` and `CORS_ALLOWED_ORIGINS=http://localhost:8081` (set automatically in Docker Compose). Authenticated endpoints need a bearer token in the docs auth field.
+**Try It Out** in the browser requires `APP_URL` and `CORS_ALLOWED_ORIGINS` to match how you open the site. Compose defaults both to `http://localhost:8081`; for staging/production set them in the **repository-root** `.env` (see `compose.env.example`). Authenticated endpoints need a bearer token in the docs auth field.
 
 Generated files live in `backend/public/docs/` (gitignored; regenerate on each deploy).
 
 ### 7. Production notes
 
 - Use strong secrets in root `.env` and `backend/.env`; never commit them.
-- Terminate TLS at a reverse proxy; set `APP_URL` to HTTPS.
+- Terminate TLS at a reverse proxy; set `APP_URL` to HTTPS in the repository-root `.env` (and matching values in `backend/.env` if you run Artisan outside Compose).
 - Complete the wizard **Production checklist** (mail, CORS, cron, mobile API URL).
 - Back up MySQL volume `db_data` and `storage/app/public`.
 - Regenerate API docs: `composer docs:api` (or `bash scripts/generate-api-docs.sh` in the container).

@@ -38,11 +38,11 @@ class HealthEndpointRedisTest extends TestCase
         config([
             'queue.default' => 'redis',
             'cache.default' => 'array',
-            'database.redis.default.host' => '127.0.0.1',
-            'database.redis.default.port' => 6399,
+            'database.redis.health.host' => '127.0.0.1',
+            'database.redis.health.port' => 6399,
         ]);
 
-        Redis::purge('default');
+        Redis::purge('health');
 
         $response = $this->getJson('/api/v1/health');
 

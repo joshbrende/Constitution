@@ -60,7 +60,9 @@ class HealthController extends Controller
     private function redisIsReachable(): bool
     {
         try {
-            Redis::connection()->ping();
+            // Use the dedicated "health" connection so connect/read timeouts are
+            // enforced for every supported client (phpredis, Predis, RedisCluster).
+            Redis::connection('health')->ping();
 
             return true;
         } catch (\Throwable) {

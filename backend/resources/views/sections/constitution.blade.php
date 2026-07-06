@@ -48,7 +48,7 @@
                         <p style="margin:0 0 0.75rem 0;">Clause text below is published through the administration console (content editors and Presidium workflow). It is the in-app reading copy, not a substitute for legal advice.</p>
                         @if(!empty($amendmentOfficialPdfUrl))
                             <p style="margin:0;">
-                                <a href="{{ $amendmentOfficialPdfUrl }}" target="_blank" rel="noopener noreferrer" style="color:var(--zanupf-gold);font-weight:600;text-decoration:none;">Download official PDF</a>
+                                <a href="{{ $amendmentOfficialPdfUrl }}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-link);font-weight:600;text-decoration:none;">Download official PDF</a>
                                 <span style="color:var(--text-muted);font-size:0.85rem;"> — same file served to the mobile app</span>
                             </p>
                         @endif
@@ -72,13 +72,13 @@
                 </div>
 
                 @if(($doc ?? '') === 'amendment3' && $activeSection->amendmentClauseRelations?->isNotEmpty())
-                    <div class="const-amends-block" style="margin-bottom:1.5rem;padding:1rem;background:rgba(15,23,42,0.6);border-radius:0.5rem;border:1px solid var(--border-subtle);">
+                    <div class="const-amends-block" style="margin-bottom:1.5rem;padding:1rem;background:var(--bg-callout);border-radius:0.5rem;border:1px solid var(--border-subtle);">
                         <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Relates to Constitution of Zimbabwe</div>
-                        <ul style="margin:0;padding-left:1.25rem;color:var(--zanupf-gold);">
+                        <ul style="margin:0;padding-left:1.25rem;color:var(--text-main);">
                             @foreach($activeSection->amendmentClauseRelations as $rel)
                                 <li>
                                     @if($rel->zimbabweSection)
-                                        <a href="{{ route('constitution.home', ['doc' => 'zimbabwe', 'section' => $rel->zimbabweSection]) }}" style="color:var(--zanupf-gold);text-decoration:none;">{{ $rel->ref_label ?? ('Section ' . $rel->zimbabweSection->logical_number) }}</a>
+                                        <a href="{{ route('constitution.home', ['doc' => 'zimbabwe', 'section' => $rel->zimbabweSection]) }}" style="color:var(--accent-link);text-decoration:none;">{{ $rel->ref_label ?? ('Section ' . $rel->zimbabweSection->logical_number) }}</a>
                                     @else
                                         {{ $rel->ref_label }}
                                     @endif

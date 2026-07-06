@@ -115,4 +115,15 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password reset acknowledgment (anti-enumeration)
+    |--------------------------------------------------------------------------
+    |
+    | Same response for known and unknown emails on forgot-password flows.
+    |
+    */
+
+    'password_reset_ack_message' => 'If an account exists for this email address, we have sent a password reset link.',
+
 ];

@@ -289,11 +289,11 @@ class AuthController extends Controller
      * Forgot password
      *
      * Sends a password reset link when the email exists. Rate limited to 3 requests per hour per email.
+     * Returns the same acknowledgment for unknown emails to prevent account enumeration.
      *
      * @unauthenticated
-     * @bodyParam email string required Registered account email. Example: mobile.test@zanupf.org.zw
-     * @response 200 scenario="Reset link sent" {"message":"We have emailed your password reset link."}
-     * @response 422 scenario="Unknown email" {"message":"We can't find a user with that email address."}
+     * @bodyParam email string required Account email. Example: mobile.test@zanupf.org.zw
+     * @response 200 scenario="Acknowledged" {"message":"If an account exists for this email address, we have sent a password reset link."}
      * @response 429 scenario="Rate limited" {"message":"Too many password reset requests for this email. Please try again in about an hour."}
      */
     public function forgotPassword(Request $request): JsonResponse
@@ -321,7 +321,12 @@ class AuthController extends Controller
 
         Cache::put($cacheKey, $attempts + 1, 3600);
 
-        $status = PasswordBroker::sendResetLink(['email' => $email]);
+        $status = null;
+        try {
+            $status = PasswordBroker::sendResetLink(['email' => $email]);
+        } catch (\Exception $e) {
+            report($e);
+        }
 
         if ($status === PasswordBroker::RESET_LINK_SENT) {
             $this->auditLogger->log(
@@ -331,14 +336,11 @@ class AuthController extends Controller
                 metadata: ['email' => $email],
                 request: $request
             );
-            return response()->json([
-                'message' => __($status),
-            ]);
         }
 
         return response()->json([
-            'message' => __($status),
-        ], 422);
+            'message' => config('auth.password_reset_ack_message'),
+        ]);
     }
 }
 

@@ -54,14 +54,14 @@ class WebAuthController extends Controller
 
         Cache::put($cacheKey, $attempts + 1, 3600);
 
-        $status = PasswordBroker::sendResetLink(['email' => $email]);
-
-        if ($status === PasswordBroker::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+        try {
+            PasswordBroker::sendResetLink(['email' => $email]);
+        } catch (\Exception $e) {
+            report($e);
         }
 
         return back()
-            ->withErrors(['email' => __($status)])
+            ->with('status', config('auth.password_reset_ack_message'))
             ->onlyInput('email');
     }
 

@@ -58,7 +58,9 @@ class AuthRefreshForgotPasswordTest extends TestCase
 
         $this->postJson('/api/v1/auth/forgot-password', [
             'email' => 'known@example.org.zw',
-        ])->assertOk();
+        ])
+            ->assertOk()
+            ->assertJsonPath('message', config('auth.password_reset_ack_message'));
 
         Notification::assertSentTo(
             User::where('email', 'known@example.org.zw')->firstOrFail(),
@@ -66,12 +68,28 @@ class AuthRefreshForgotPasswordTest extends TestCase
         );
     }
 
-    public function test_forgot_password_returns_422_for_unknown_email(): void
+    public function test_forgot_password_does_not_leak_unknown_email(): void
     {
-        $this->postJson('/api/v1/auth/forgot-password', [
+        Notification::fake();
+
+        User::factory()->create(['email' => 'known@example.org.zw']);
+
+        $ack = config('auth.password_reset_ack_message');
+
+        $unknown = $this->postJson('/api/v1/auth/forgot-password', [
             'email' => 'missing@example.org.zw',
-        ])->assertStatus(422)
-            ->assertJsonFragment(['message' => "We can't find a user with that email address."]);
+        ]);
+
+        $unknown->assertOk()->assertJsonPath('message', $ack);
+
+        $known = $this->postJson('/api/v1/auth/forgot-password', [
+            'email' => 'known@example.org.zw',
+        ]);
+
+        $known->assertOk()->assertJsonPath('message', $ack);
+        $this->assertSame($unknown->json('message'), $known->json('message'));
+
+        Notification::assertSentTimes(ResetPassword::class, 1);
     }
 
     public function test_register_requires_password_confirmation_and_accept_terms(): void

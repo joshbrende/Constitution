@@ -10,8 +10,8 @@
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @else
-            <style>
+        @endif
+        <style>
                 :root {
                     --zanupf-green: #15803d;
                     --zanupf-gold: #facc15;
@@ -19,9 +19,23 @@
                     --bg-surface: #0b1120;
                     --bg-panel: #020617;
                     --bg-sidebar: #020617;
+                    --bg-elevated: rgba(15, 23, 42, 0.9);
+                    --bg-overlay: rgba(2, 6, 23, 0.98);
+                    --bg-overlay-scrim: rgba(2, 6, 23, 0.65);
+                    --bg-muted: #111827;
+                    --bg-hover: rgba(31, 41, 55, 0.9);
+                    --bg-nav-active: rgba(15, 118, 110, 0.35);
+                    --bg-callout: rgba(15, 23, 42, 0.6);
+                    --const-active-bg: rgba(21, 128, 61, 0.22);
                     --text-main: #f9fafb;
                     --text-muted: #9ca3af;
                     --border-subtle: #1f2937;
+                    --accent-link: var(--zanupf-gold);
+                    --accent-kpi: var(--zanupf-gold);
+                    --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.45);
+                    --shadow-md: 0 14px 30px rgba(0, 0, 0, 0.45);
+                    --logo-border: #020617;
+                    --dot-inactive: #4b5563;
                 }
                 * {
                     box-sizing: border-box;
@@ -35,14 +49,28 @@
                     color: var(--text-main);
                 }
                 body.theme-light {
-                    --bg-surface: #f9fafb;
+                    --bg-surface: #f8fafc;
                     --bg-panel: #ffffff;
-                    --bg-sidebar: #0f172a;
-                    --text-main: #020617;
-                    --text-muted: #6b7280;
-                    --border-subtle: #e5e7eb;
-                    background: #f3f4f6;
-                    color: #020617;
+                    --bg-sidebar: #ffffff;
+                    --bg-elevated: #ffffff;
+                    --bg-overlay: #ffffff;
+                    --bg-overlay-scrim: rgba(15, 23, 42, 0.35);
+                    --bg-muted: #e2e8f0;
+                    --bg-hover: #f1f5f9;
+                    --bg-nav-active: #ecfdf5;
+                    --bg-callout: #f1f5f9;
+                    --const-active-bg: #dcfce7;
+                    --text-main: #0f172a;
+                    --text-muted: #64748b;
+                    --border-subtle: #e2e8f0;
+                    --accent-link: #15803d;
+                    --accent-kpi: #15803d;
+                    --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
+                    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+                    --logo-border: #e2e8f0;
+                    --dot-inactive: #94a3b8;
+                    background: #f1f5f9;
+                    color: var(--text-main);
                 }
                 .skip-to-main {
                     position: absolute;
@@ -90,7 +118,7 @@
                     height: 26px;
                     border-radius: 0.5rem;
                     background: conic-gradient(from 180deg, var(--zanupf-green), var(--zanupf-gold), var(--zanupf-red), var(--zanupf-green));
-                    border: 2px solid #020617;
+                    border: 2px solid var(--logo-border);
                 }
                 .dash-nav-group-label {
                     font-size: 0.7rem;
@@ -123,17 +151,17 @@
                     width: 8px;
                     height: 8px;
                     border-radius: 999px;
-                    background: #4b5563;
+                    background: var(--dot-inactive);
                 }
                 .dash-nav-link.is-active {
-                    background: rgba(15,118,110,0.35);
+                    background: var(--bg-nav-active);
                     color: var(--text-main);
                 }
                 .dash-nav-link.is-active span.dot {
                     background: var(--zanupf-gold);
                 }
                 .dash-nav-link:hover {
-                    background: rgba(31,41,55,0.9);
+                    background: var(--bg-hover);
                     color: var(--text-main);
                 }
                 .dash-sidebar-footer {
@@ -155,7 +183,7 @@
                     width: 26px;
                     height: 26px;
                     border-radius: 999px;
-                    background: #111827;
+                    background: var(--bg-muted);
                     border: 1px solid var(--border-subtle);
                     display: flex;
                     align-items: center;
@@ -186,7 +214,7 @@
                 .dash-footer {
                     margin-top: auto;
                     padding: 0.9rem 0;
-                    border-top: 1px solid rgba(31,41,55,0.9);
+                    border-top: 1px solid var(--border-subtle);
                     color: var(--text-muted);
                     font-size: 0.78rem;
                     display: flex;
@@ -211,8 +239,8 @@
                     padding-bottom: 2px;
                 }
                 .dash-footer a:hover {
-                    color: var(--zanupf-gold);
-                    border-bottom-color: rgba(250,204,21,0.55);
+                    color: var(--accent-link);
+                    border-bottom-color: color-mix(in srgb, var(--accent-link) 55%, transparent);
                 }
                 .dash-topbar {
                     display: flex;
@@ -230,7 +258,7 @@
                     padding: 0.45rem 0.65rem 0.45rem 1.8rem;
                     border-radius: 999px;
                     border: 1px solid var(--border-subtle);
-                    background: rgba(15,23,42,0.9);
+                    background: var(--bg-elevated);
                     color: var(--text-main);
                     font-size: 0.8rem;
                     outline: none;
@@ -253,8 +281,8 @@
                     width: min(560px, 92vw);
                     border-radius: 0.9rem;
                     border: 1px solid var(--border-subtle);
-                    background: rgba(2,6,23,0.98);
-                    box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+                    background: var(--bg-overlay);
+                    box-shadow: var(--shadow-lg);
                     padding: 0.6rem;
                     z-index: 75;
                     display: none;
@@ -279,8 +307,8 @@
                     border: 1px solid transparent;
                 }
                 .dash-search-item:hover {
-                    border-color: rgba(250,204,21,0.35);
-                    background: rgba(15,23,42,0.9);
+                    border-color: color-mix(in srgb, var(--accent-link) 35%, transparent);
+                    background: var(--bg-hover);
                 }
                 .dash-search-item small { color: var(--text-muted); display: block; margin-top: 0.1rem; }
                 .dash-search-empty {
@@ -305,7 +333,7 @@
                     height: 36px;
                     border-radius: 999px;
                     border: 1px solid var(--border-subtle);
-                    background: rgba(15,23,42,0.9);
+                    background: var(--bg-elevated);
                     color: var(--text-muted);
                     display: inline-flex;
                     align-items: center;
@@ -315,8 +343,8 @@
                     position: relative;
                 }
                 .dash-icon-btn:hover {
-                    border-color: rgba(250,204,21,0.8);
-                    color: var(--zanupf-gold);
+                    border-color: color-mix(in srgb, var(--accent-link) 80%, transparent);
+                    color: var(--accent-link);
                     transform: translateY(-1px);
                 }
                 .dash-icon-badge {
@@ -344,8 +372,8 @@
                     width: 320px;
                     border-radius: 0.9rem;
                     border: 1px solid var(--border-subtle);
-                    background: rgba(2,6,23,0.98);
-                    box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+                    background: var(--bg-overlay);
+                    box-shadow: var(--shadow-lg);
                     padding: 0.65rem;
                     z-index: 70;
                     display: none;
@@ -370,15 +398,15 @@
                     border: 1px solid transparent;
                 }
                 .dash-bell-item:hover {
-                    border-color: rgba(250,204,21,0.35);
-                    background: rgba(15,23,42,0.9);
+                    border-color: color-mix(in srgb, var(--accent-link) 35%, transparent);
+                    background: var(--bg-hover);
                 }
                 .dash-bell-item small { color: var(--text-muted); display: block; margin-top: 0.1rem; }
 
                 .dash-drawer-overlay {
                     position: fixed;
                     inset: 0;
-                    background: rgba(2,6,23,0.65);
+                    background: var(--bg-overlay-scrim);
                     backdrop-filter: blur(2px);
                     z-index: 80;
                     display: none;
@@ -390,9 +418,9 @@
                     right: 0;
                     height: 100vh;
                     width: min(420px, 92vw);
-                    background: rgba(2,6,23,0.98);
+                    background: var(--bg-overlay);
                     border-left: 1px solid var(--border-subtle);
-                    box-shadow: -18px 0 55px rgba(0,0,0,0.5);
+                    box-shadow: -18px 0 55px rgba(0, 0, 0, 0.15);
                     z-index: 90;
                     transform: translateX(105%);
                     transition: transform 0.18s ease;
@@ -406,7 +434,7 @@
                     justify-content: space-between;
                     gap: 1rem;
                     padding: 1.1rem 1rem 0.75rem 1rem;
-                    border-bottom: 1px solid rgba(31,41,55,0.9);
+                    border-bottom: 1px solid var(--border-subtle);
                 }
                 .dash-drawer-title { font-size: 1.05rem; font-weight: 700; }
                 .dash-drawer-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
@@ -418,8 +446,8 @@
                     gap: 1rem;
                 }
                 .dash-drawer-section {
-                    border: 1px solid rgba(31,41,55,0.9);
-                    background: rgba(15,23,42,0.9);
+                    border: 1px solid var(--border-subtle);
+                    background: var(--bg-elevated);
                     border-radius: 0.9rem;
                     padding: 0.8rem 0.85rem;
                 }
@@ -441,15 +469,15 @@
                     justify-content: center;
                     padding: 0.5rem 0.6rem;
                     border-radius: 0.7rem;
-                    border: 1px solid rgba(250,204,21,0.22);
-                    background: rgba(2,6,23,0.35);
+                    border: 1px solid color-mix(in srgb, var(--accent-link) 22%, transparent);
+                    background: var(--bg-hover);
                     color: var(--text-main);
                     text-decoration: none;
                     font-size: 0.82rem;
                 }
                 .dash-quick-link:hover {
-                    border-color: rgba(250,204,21,0.55);
-                    color: var(--zanupf-gold);
+                    border-color: color-mix(in srgb, var(--accent-link) 55%, transparent);
+                    color: var(--accent-link);
                 }
                 .dash-toggle-row {
                     display: flex;
@@ -466,7 +494,7 @@
                     height: 24px;
                     border-radius: 999px;
                     border: 1px solid rgba(107,114,128,0.8);
-                    background: rgba(15,23,42,0.9);
+                    background: var(--bg-elevated);
                     position: relative;
                     cursor: pointer;
                     outline: none;
@@ -496,7 +524,7 @@
                     padding: 0.35rem 0.75rem;
                     border-radius: 999px;
                     border: 1px solid var(--border-subtle);
-                    background: rgba(15,23,42,0.9);
+                    background: var(--bg-elevated);
                     font-size: 0.72rem;
                     color: var(--text-muted);
                     cursor: default;
@@ -504,7 +532,7 @@
                 .dash-mode-toggle-pill {
                     padding: 0.2rem 0.55rem;
                     border-radius: 999px;
-                    background: #0f172a;
+                    background: var(--bg-muted);
                     color: var(--text-muted);
                 }
                 .dash-mode-toggle-pill.is-active {
@@ -515,8 +543,8 @@
                     min-width: 110px;
                     padding: 0.45rem 0.75rem;
                     border-radius: 999px;
-                    border: 1px solid #1f2937;
-                    background: rgba(15,23,42,0.9);
+                    border: 1px solid var(--border-subtle);
+                    background: var(--bg-elevated);
                     font-size: 0.75rem;
                 }
                 .dash-kpi-label {
@@ -525,7 +553,7 @@
                 }
                 .dash-kpi-value {
                     font-weight: 600;
-                    color: var(--zanupf-gold);
+                    color: var(--accent-kpi);
                 }
                 .dash-content {
                     display: grid;
@@ -534,7 +562,7 @@
                     align-items: flex-start;
                 }
                 .dash-panel {
-                    background: rgba(15,23,42,0.9);
+                    background: var(--bg-elevated);
                     border-radius: 0.9rem;
                     border: 1px solid var(--border-subtle);
                     padding: 0.9rem 1rem;
@@ -557,7 +585,7 @@
                     font-size: 0.7rem;
                     padding: 0.15rem 0.5rem;
                     border-radius: 999px;
-                    border: 1px solid #4b5563;
+                    border: 1px solid var(--border-subtle);
                     color: var(--text-muted);
                 }
                 .dash-alert {
@@ -584,7 +612,7 @@
                 table.dash-table th,
                 table.dash-table td {
                     padding: 0.35rem 0.4rem;
-                    border-bottom: 1px solid rgba(31,41,55,0.9);
+                    border-bottom: 1px solid var(--border-subtle);
                 }
                 table.dash-table th {
                     text-align: left;
@@ -650,7 +678,7 @@
                     width: 100%;
                     height: 4px;
                     border-radius: 999px;
-                    background: #111827;
+                    background: var(--bg-muted);
                     overflow: hidden;
                     margin-top: 0.2rem;
                 }
@@ -703,14 +731,14 @@
                 .const-nav-link span.number {
                     font-weight: 600;
                     margin-right: 0.3rem;
-                    color: var(--zanupf-gold);
+                    color: var(--accent-link);
                 }
                 .const-nav-link.is-active {
-                    background: rgba(21,128,61,0.22);
+                    background: var(--const-active-bg);
                     color: var(--text-main);
                 }
                 .const-doc-link.is-active {
-                    color: var(--zanupf-gold);
+                    color: var(--accent-link);
                     font-weight: 600;
                 }
                 .const-reader {
@@ -771,11 +799,11 @@
                     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
                 }
                 body.theme-dark .dash-tile {
-                    background: rgba(15,23,42,0.95);
+                    background: var(--bg-elevated);
                 }
                 .dash-tile:hover {
-                    border-color: var(--zanupf-gold);
-                    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+                    border-color: var(--accent-link);
+                    box-shadow: var(--shadow-md);
                     transform: translateY(-1px);
                 }
                 .dash-tile-title {
@@ -789,12 +817,56 @@
                 .dash-tile-footer {
                     margin-top: 0.3rem;
                     font-size: 0.78rem;
-                    color: var(--zanupf-gold);
+                    color: var(--accent-link);
+                }
+
+                body.theme-light .dash-alert--success {
+                    background: #dcfce7;
+                    border-color: #86efac;
+                    color: #166534;
+                }
+                body.theme-light .dash-alert--error {
+                    background: #fee2e2;
+                    border-color: #fca5a5;
+                    color: #991b1b;
+                }
+                body.theme-light .status-pill--active {
+                    background: #dcfce7;
+                    color: #166534;
+                }
+                body.theme-light .status-pill--pending {
+                    background: #fef9c3;
+                    color: #854d0e;
+                }
+                body.theme-light .status-pill--review {
+                    background: #dbeafe;
+                    color: #1e40af;
+                }
+                body.theme-light .dash-nav-link.is-active span.dot {
+                    background: var(--zanupf-green);
+                }
+                body.theme-light .const-tool-btn {
+                    background: var(--bg-hover);
+                    color: var(--text-main);
+                }
+                body.theme-light .const-tool-btn:hover {
+                    border-color: var(--accent-link);
+                    color: var(--accent-link);
+                }
+                body.theme-light .const-reader a,
+                body.theme-light .const-nav a,
+                body.theme-light .dash-main-content a:not(.dash-nav-link):not(.dash-tile):not(.dash-search-item):not(.dash-bell-item):not(.dash-quick-link) {
+                    color: var(--accent-link);
                 }
             </style>
-        @endif
     </head>
     <body>
+        <script>
+            (function () {
+                var mode = localStorage.getItem('zanupf-theme') === 'light' ? 'light' : 'dark';
+                document.body.classList.add('theme-' + mode);
+            })();
+        </script>
         <a href="#main-content" class="skip-to-main">Skip to main content</a>
         <div class="dash-shell">
             <aside class="dash-sidebar" aria-label="Primary navigation">
@@ -1085,7 +1157,7 @@
                                 <div class="dash-bell-title">
                                     Admin updates
                                     @if (($dashBellUnreadCount ?? 0) > 0)
-                                        <span style="color:var(--zanupf-gold);margin-left:0.4rem;">({{ (int) $dashBellUnreadCount }} new)</span>
+                                        <span style="color:var(--accent-link);margin-left:0.4rem;">({{ (int) $dashBellUnreadCount }} new)</span>
                                     @endif
                                 </div>
                                 @if (!empty($dashBellActivities))
