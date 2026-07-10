@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-app-bg: #020617;
+  --color-app-surface: #0f172a;
+  --color-app-card: #15151f;
+  --color-app-border: #1f2937;
+  --color-app-muted: #6b7280;
+  --color-app-subtle: #9ca3af;
+  --color-app-text: #f9fafb;
+  --color-app-green: #15803d;
+  --color-app-green-light: #22c55e;
+  --color-app-gold: #facc15;
+  --color-app-error: #fecaca;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-app-bg);
+  color: var(--color-app-text);
+}
+
+/* Mobile shell — centered column like Expo on tablet/desktop */
+.app-shell {
+  max-width: 428px;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 100dvh;
+  position: relative;
+  background: var(--color-app-bg);
+  box-shadow: 0 0 0 1px var(--color-app-border);
+}
+
+@media (min-width: 429px) {
+  body {
+    background: #0a0a0f;
+  }
+}
+
+.reader-body h1,
+.reader-body h2,
+.reader-body h3 {
+  color: var(--color-app-text);
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.reader-body p {
+  margin-bottom: 0.75em;
+  line-height: 1.6;
+}
+
+.reader-body a {
+  color: var(--color-app-gold);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .app-shell {
+    max-width: none;
+    box-shadow: none;
+  }
+}
+
+.reader-body mark.reader-highlight,
+mark.reader-highlight {
+  background-color: rgba(250, 204, 21, 0.4);
+  color: inherit;
+}

@@ -7,6 +7,8 @@ use App\Models\DialogueChannel;
 use App\Models\DialogueMessage;
 use App\Models\DialogueMessageAttachment;
 use App\Models\DialogueThread;
+use App\Support\DialogueEditor;
+use App\Services\MemberAutoNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,6 +16,10 @@ use Illuminate\View\View;
 class DialogueController extends Controller
 {
     private const MAX_ATTACHMENT_KB = 51200; // 50MB per file
+
+    public function __construct(
+        protected MemberAutoNotificationService $memberAutoNotifications,
+    ) {}
 
     public function index(): View
     {
@@ -49,18 +55,34 @@ class DialogueController extends Controller
         $this->authorize('admin.section', 'dialogue');
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            'opening_message' => ['required', 'string', 'max:4000'],
         ]);
 
+        $editorId = DialogueEditor::userId() ?? $request->user()->id;
+
         $thread = $channel->threads()->create([
-            'created_by_user_id' => $request->user()->id,
+            'created_by_user_id' => $editorId,
             'title' => $data['title'],
             'zanupf_section_id' => $channel->zanupf_section_id,
             'zimbabwe_section_id' => $channel->zimbabwe_section_id,
             'status' => 'open',
         ]);
 
+        $thread->messages()->create([
+            'user_id' => $editorId,
+            'body' => trim($data['opening_message']),
+            'is_pinned' => false,
+            'is_deleted' => false,
+        ]);
+
+        $this->memberAutoNotifications->dialogueThreadStarted(
+            $channel,
+            $thread,
+            trim($data['opening_message']),
+        );
+
         return redirect()->route('admin.dialogue.threads.show', $thread)
-            ->with('success', 'Thread created.');
+            ->with('success', 'Chat started. Members can now reply in the thread.');
     }
 
     public function lockThread(DialogueThread $thread): RedirectResponse
@@ -117,7 +139,7 @@ class DialogueController extends Controller
         }
 
         $message = $thread->messages()->create([
-            'user_id' => $request->user()->id,
+            'user_id' => DialogueEditor::userId() ?? $request->user()->id,
             'body' => trim($data['body']),
             'is_pinned' => false,
             'is_deleted' => false,

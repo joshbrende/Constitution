@@ -9,6 +9,7 @@ UI code should use **semantic keys** (e.g. `academy.course`) and never hardcode 
 - Academy (mobile + admin)
   - Mobile: `AcademyScreen`, `CourseDetailScreen`
   - Admin: `admin/academy/*` key views now use `<x-icons.workflow-icon ...>`
+- **PWA (complete):** all member screens + shell (`AppHeader`, `SideMenu`, `InstallPrompt`, `BottomTabs`) use `PWA/src/ui/icons/WorkflowIcon` + `workflowIcons.js` (Lucide mapped to the same semantic keys as mobile). No raw `lucide-react` imports outside the icon registry.
 
 ## Next: mobile (highest visibility)
 1. Home tiles (entry points)

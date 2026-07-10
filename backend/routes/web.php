@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\PresidiumAdminController;
 use App\Http\Controllers\Admin\AcademyBadgesAdminController;
 use App\Http\Controllers\Admin\AdminAnalyticsController;
 use App\Http\Controllers\Admin\HomeBannersController;
+use App\Http\Controllers\Admin\MemberNotificationsController;
 use App\Http\Controllers\Admin\StaticPagesController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AuditLogsController;
@@ -65,13 +66,19 @@ Route::get('/cookies', fn () => app(LegalPagesController::class)->show('cookies'
 // Web authentication (Blade-based) for admins and senior members
 Route::middleware('guest')->group(function () {
     Route::get('/login', [WebAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [WebAuthController::class, 'login']);
+    Route::post('/login', [WebAuthController::class, 'login'])->middleware('throttle:auth-login');
 
     Route::get('/register', [WebAuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [WebAuthController::class, 'register']);
+    Route::post('/register', [WebAuthController::class, 'register'])->middleware('throttle:auth-register');
 
     Route::get('/password/forgot', [WebAuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/password/email', [WebAuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::post('/password/email', [WebAuthController::class, 'sendResetLinkEmail'])
+        ->middleware('throttle:auth-password-email')
+        ->name('password.email');
+    Route::get('/password/reset/{token}', [WebAuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/password/reset', [WebAuthController::class, 'resetPassword'])
+        ->middleware('throttle:auth-password-email')
+        ->name('password.update');
 
     Route::get('/invitations/backend/{token}', [BackendUserInvitationController::class, 'show'])
         ->where('token', '[A-Za-z0-9]+')
@@ -275,6 +282,14 @@ Route::middleware(['auth', 'install.complete'])->group(function () {
             Route::get('/home-banners/{home_banner}/edit', [HomeBannersController::class, 'edit'])->name('home-banners.edit');
             Route::put('/home-banners/{home_banner}', [HomeBannersController::class, 'update'])->name('home-banners.update');
             Route::delete('/home-banners/{home_banner}', [HomeBannersController::class, 'destroy'])->name('home-banners.destroy');
+
+            Route::get('/member-notifications', [MemberNotificationsController::class, 'index'])->name('member-notifications.index');
+            Route::get('/member-notifications/create', [MemberNotificationsController::class, 'create'])->name('member-notifications.create');
+            Route::post('/member-notifications', [MemberNotificationsController::class, 'store'])->name('member-notifications.store');
+            Route::get('/member-notifications/{member_notification}/edit', [MemberNotificationsController::class, 'edit'])->name('member-notifications.edit');
+            Route::put('/member-notifications/{member_notification}', [MemberNotificationsController::class, 'update'])->name('member-notifications.update');
+            Route::post('/member-notifications/{member_notification}/publish', [MemberNotificationsController::class, 'publish'])->name('member-notifications.publish');
+            Route::delete('/member-notifications/{member_notification}', [MemberNotificationsController::class, 'destroy'])->name('member-notifications.destroy');
 
             Route::get('/static-pages', [StaticPagesController::class, 'index'])->name('static-pages.index');
             Route::get('/static-pages/{page}/edit', [StaticPagesController::class, 'edit'])->name('static-pages.edit');

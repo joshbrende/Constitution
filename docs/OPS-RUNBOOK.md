@@ -192,7 +192,42 @@ Restart PHP-FPM / queue workers / `php artisan queue:restart` so workers load th
 
 ---
 
+## PWA & realtime ops
+
+### Rebuild PWA assets
+
+```bash
+cd PWA && npm ci && npm run build
+# Output: backend/public/app/ — served at /app/
+```
+
+After deploy, iOS Safari may keep a stale service worker; ask users to clear site data or open a private tab if the shell is blank.
+
+### Reverb (live dialogue)
+
+```bash
+docker compose ps reverb          # must be Up
+docker compose logs reverb --tail=50
+```
+
+- Image must include PHP **pcntl** (`backend/Dockerfile`). Without it, Reverb crashes with `Undefined constant SIGINT`.
+- `BROADCAST_CONNECTION=reverb` in `backend/.env`.
+- Clients use port `REVERB_PORT` (default 8090). For phones on LAN, ensure firewall allows inbound TCP 8090; PWA substitutes the page hostname when config says `localhost`.
+
+### Web Push VAPID
+
+```bash
+docker compose exec app php artisan webpush:vapid
+# Paste WEBPUSH_PUBLIC_KEY / WEBPUSH_PRIVATE_KEY into backend/.env and restart app
+```
+
+Full client guide: [PWA.md](./PWA.md). Security: [API-SECURITY.md](./API-SECURITY.md).
+
+---
+
 ## Related docs
 
 - [AUDIT-LOGGING.md](AUDIT-LOGGING.md) — audit events, query examples, retention guidance
 - [CERTIFICATE-SECURITY.md](CERTIFICATE-SECURITY.md) — certificate verification and admin runbook
+- [PWA.md](./PWA.md) — Progressive Web App
+- [API-SECURITY.md](./API-SECURITY.md) — IDOR / ownership

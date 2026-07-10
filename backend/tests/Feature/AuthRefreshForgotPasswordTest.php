@@ -42,6 +42,104 @@ class AuthRefreshForgotPasswordTest extends TestCase
         ])->assertUnauthorized();
     }
 
+    public function test_refresh_reuse_revokes_entire_token_family(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'reuse@example.org.zw',
+            'password' => Hash::make('SecretPass123!'),
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'email' => 'reuse@example.org.zw',
+            'password' => 'SecretPass123!',
+        ])->assertOk();
+
+        $originalRefresh = (string) $login->json('refresh_token');
+
+        $rotated = $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $originalRefresh,
+        ])->assertOk();
+
+        $currentRefresh = (string) $rotated->json('refresh_token');
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $originalRefresh,
+        ])->assertUnauthorized();
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $currentRefresh,
+        ])->assertUnauthorized();
+    }
+
+    public function test_password_reset_route_exists_and_revokes_api_tokens(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email' => 'resetme@example.org.zw',
+            'password' => Hash::make('OldPass123!'),
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'email' => 'resetme@example.org.zw',
+            'password' => 'OldPass123!',
+        ])->assertOk();
+
+        $accessToken = (string) $login->json('access_token');
+        $refreshToken = (string) $login->json('refresh_token');
+
+        $this->postJson('/api/v1/auth/forgot-password', [
+            'email' => 'resetme@example.org.zw',
+        ])->assertOk();
+
+        $resetToken = null;
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use (&$resetToken) {
+            $resetToken = $notification->token;
+
+            return true;
+        });
+
+        $this->assertNotEmpty($resetToken);
+
+        $this->get(route('password.reset', [
+            'token' => $resetToken,
+            'email' => 'resetme@example.org.zw',
+        ]))->assertOk();
+
+        $this->post(route('password.update'), [
+            'token' => $resetToken,
+            'email' => 'resetme@example.org.zw',
+            'password' => 'NewPass123!',
+            'password_confirmation' => 'NewPass123!',
+        ])->assertRedirect(route('login'));
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $refreshToken,
+        ])->assertUnauthorized();
+
+        $this->getJson('/api/v1/profile', [
+            'Authorization' => 'Bearer '.$accessToken,
+        ])->assertUnauthorized();
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'resetme@example.org.zw',
+            'password' => 'NewPass123!',
+        ])->assertOk();
+    }
+
+    public function test_register_rejects_weak_password(): void
+    {
+        $this->postJson('/api/v1/auth/register', [
+            'name' => 'Tariro',
+            'surname' => 'Moyo',
+            'email' => 'weakpass@example.org.zw',
+            'password' => 'alllowercase',
+            'password_confirmation' => 'alllowercase',
+            'accept_terms' => true,
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['password']);
+    }
+
     public function test_refresh_rejects_placeholder_token(): void
     {
         $this->postJson('/api/v1/auth/refresh', [

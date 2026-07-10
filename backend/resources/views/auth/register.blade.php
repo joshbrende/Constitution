@@ -99,7 +99,7 @@
                 <div class="error-text">{{ $message }}</div>
             @enderror
             <div class="helper-text">
-                Minimum 8 characters. Use a strong, private password.
+                Minimum 8 characters with upper and lower case letters and a number.
             </div>
         </div>
 

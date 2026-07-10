@@ -1,0 +1,1 @@
+import{n as e}from"./client-CgtZQgQZ.js";async function t(){let{data:t}=await e.get(`/party/profile`);return t.data}export{t};

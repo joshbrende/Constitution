@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class DialogueChannelService
 {
+    public function __construct(
+        protected DialogueInboxService $inbox,
+    ) {}
+
     /**
      * Get channels with unread counts and official-reply flags, using batched queries.
      */
@@ -32,38 +36,10 @@ class DialogueChannelService
             return $this->mapChannelsWithCounts($channels, [], []);
         }
 
-        $unreadByThread = $this->unreadCountsByThread($user->id, $threadIds);
+        $unreadByThread = $this->inbox->unreadCountsByThread($user->id, $threadIds);
         $hasOfficialByChannel = $this->hasOfficialReplyByChannel($user->id, $channels->pluck('id')->all());
 
         return $this->mapChannelsWithCounts($channels, $unreadByThread, $hasOfficialByChannel);
-    }
-
-    /**
-     * Batch unread counts: thread_id => count.
-     */
-    private function unreadCountsByThread(int $userId, array $threadIds): array
-    {
-        $placeholders = implode(',', array_fill(0, count($threadIds), '?'));
-        $params = array_merge([$userId], $threadIds);
-
-        $rows = DB::select(
-            "SELECT dm.dialogue_thread_id as thread_id, COUNT(*) as cnt
-             FROM dialogue_messages dm
-             LEFT JOIN dialogue_thread_reads dr
-               ON dr.dialogue_thread_id = dm.dialogue_thread_id AND dr.user_id = ?
-             WHERE dm.dialogue_thread_id IN ({$placeholders})
-               AND dm.is_deleted = 0
-               AND (dr.last_read_at IS NULL OR dm.created_at > dr.last_read_at)
-             GROUP BY dm.dialogue_thread_id",
-            $params
-        );
-
-        $result = [];
-        foreach ($rows as $row) {
-            $result[(int) $row->thread_id] = (int) $row->cnt;
-        }
-
-        return $result;
     }
 
     /**

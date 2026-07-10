@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <title>ZANUPF</title>
+  </head>
+  <body class="bg-app-bg text-app-text antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <!-- Recover from stale service-worker / hashed-asset mismatches after rebuilds -->
+    <script>
+      (function () {
+        var KEY = 'pwa_blank_recover_v1';
+        setTimeout(function () {
+          var root = document.getElementById('root');
+          if (!root || root.childNodes.length) return;
+          root.innerHTML =
+            '<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui;background:#020617;color:#f9fafb;text-align:center">' +
+            '<div><p style="font-size:16px;font-weight:600;margin:0 0 8px">Loading app…</p>' +
+            '<p style="font-size:13px;color:#9ca3af;margin:0">If this stays blank, clear Safari website data for this site.</p></div></div>';
+          if (sessionStorage.getItem(KEY) === '1') return;
+          sessionStorage.setItem(KEY, '1');
+          var done = function () {
+            location.reload();
+          };
+          if (!('serviceWorker' in navigator)) {
+            done();
+            return;
+          }
+          navigator.serviceWorker
+            .getRegistrations()
+            .then(function (regs) {
+              return Promise.all(regs.map(function (r) { return r.unregister(); }));
+            })
+            .then(function () {
+              if (!caches || !caches.keys) return;
+              return caches.keys().then(function (keys) {
+                return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+              });
+            })
+            .finally(done);
+        }, 3500);
+      })();
+    </script>
+  </body>
+</html>

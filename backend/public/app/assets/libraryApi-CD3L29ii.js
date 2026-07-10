@@ -1,0 +1,1 @@
+import{n as e}from"./client-CgtZQgQZ.js";async function t(){let{data:t}=await e.get(`/library/categories`);return t.data}async function n(t={}){let{data:n}=await e.get(`/library/documents`,{params:t});return n}async function r(t){let{data:n}=await e.get(`/library/documents/${t}`);return n.data}export{r as n,n as r,t};

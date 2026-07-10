@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\DialogueMessage;
 use App\Models\User;
+use App\Observers\DialogueMessageObserver;
 use App\Policies\AdminContentPolicy;
 use App\Services\AdminAccessService;
 use App\Models\AdminActivityRead;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,9 +44,16 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->configureRateLimiting();
+        $this->configurePasswordDefaults();
         $this->registerBladeDirectives();
         $this->registerAdminGates();
+        DialogueMessage::observe(DialogueMessageObserver::class);
         $this->registerDashboardComposers();
+    }
+
+    protected function configurePasswordDefaults(): void
+    {
+        Password::defaults(static fn () => Password::min(8)->mixedCase()->numbers());
     }
 
     protected function registerAdminGates(): void
@@ -127,6 +137,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('backend-invitation', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('auth-password-email', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
     }
 

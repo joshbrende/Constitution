@@ -175,10 +175,13 @@ class User extends Authenticatable
         return $this->hasMany(UserPushToken::class);
     }
 
+    public function webPushSubscriptions(): HasMany
+    {
+        return $this->hasMany(UserWebPushSubscription::class);
+    }
+
     public function unreadAcademyPortalMessagesCount(): int
     {
-        return (int) $this->unreadNotifications()
-            ->where('data->type', 'like', 'academy.%')
-            ->count();
+        return \App\Support\PortalNotifications::unreadCount($this);
     }
 }

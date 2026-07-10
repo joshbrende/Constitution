@@ -40,6 +40,13 @@
             </div>
         </div>
 
+        @if (session('success'))
+            <div class="dash-alert dash-alert--success">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="dash-alert dash-alert--error">{{ session('error') }}</div>
+        @endif
+
         <div id="dialogue-thread-messages"
              data-prev="{{ $messages->previousPageUrl() }}"
              data-next="{{ $messages->nextPageUrl() }}"
@@ -118,18 +125,23 @@
             </div>
         </div>
         @if ($thread->status === 'open')
-            <form method="POST" action="{{ route('admin.dialogue.messages.store', $thread) }}" enctype="multipart/form-data" style="margin-top:0.75rem;">
+            <form method="POST" action="{{ route('admin.dialogue.messages.store', $thread) }}" enctype="multipart/form-data" class="dash-subpanel" style="margin-top:0.75rem;margin-bottom:0;">
                 @csrf
-                <label class="form-label" for="admin_dialogue_message_body">Post as admin/editor</label>
-                <textarea id="admin_dialogue_message_body" name="body" rows="3" class="form-input" placeholder="Type a message into this thread…" required></textarea>
-                <div style="margin-top:0.5rem;">
-                    <label class="form-label" for="admin_dialogue_message_attachments" style="font-size:0.85rem;">Attach media (images, PDF, audio, video) — max 50MB each</label>
-                    <input id="admin_dialogue_message_attachments" type="file" name="attachments[]" multiple class="form-input" />
+                <h2 class="dash-subpanel-title" style="margin-bottom:0.75rem;">Reply as Editor</h2>
+                <div class="dash-form-field">
+                    <label class="dash-form-label" for="admin_dialogue_message_body">Message</label>
+                    <textarea id="admin_dialogue_message_body" name="body" rows="3" class="dash-form-textarea" placeholder="Type a message into this thread…" required></textarea>
+                    <span class="dash-form-hint">Your reply appears in the shared feed for all members.</span>
+                </div>
+                <div class="dash-form-field">
+                    <label class="dash-form-label" for="admin_dialogue_message_attachments">Attachments (optional)</label>
+                    <input id="admin_dialogue_message_attachments" type="file" name="attachments[]" multiple class="dash-form-input" />
+                    <span class="dash-form-hint">Images, PDF, audio, or video — max 50MB each.</span>
                     @error('attachments.*')
                         <div style="color:var(--zanupf-red);font-size:0.8rem;margin-top:0.25rem;">{{ $message }}</div>
                     @enderror
                 </div>
-                <button type="submit" class="form-btn-primary" style="margin-top:0.5rem;">Send message</button>
+                <button type="submit" class="dash-btn-primary">Send message</button>
             </form>
         @else
             <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.75rem;">

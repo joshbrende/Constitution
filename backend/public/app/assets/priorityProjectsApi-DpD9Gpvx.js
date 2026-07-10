@@ -1,0 +1,1 @@
+import{n as e}from"./client-CgtZQgQZ.js";async function t(){return(await e.get(`/priority-projects`)).data?.data??[]}async function n(t){return(await e.post(`/priority-projects/${t}/like`)).data?.data}async function r(t){return(await e.get(`/priority-projects/${t}`)).data?.data}export{t as n,n as r,r as t};

@@ -105,3 +105,13 @@ Until integration is live, continue **offline confirmation** and record external
 
 Operator runbook: [ACADEMY-CERTIFICATE-WORKFLOW.md](./ACADEMY-CERTIFICATE-WORKFLOW.md)
 
+## Member clients — push & realtime
+
+| Integration | Status | Notes |
+|-------------|--------|-------|
+| Expo push (mobile) | **Live** | `POST /api/v1/profile/push-token` |
+| Web Push / VAPID (PWA) | **Live** | `WEBPUSH_*` keys; `php artisan webpush:vapid` |
+| Laravel Reverb (dialogue) | **Live** when container healthy | Needs PHP `pcntl` in image; port `REVERB_PORT` (8090) |
+
+See [PWA.md](./PWA.md) and [API-SECURITY.md](./API-SECURITY.md) for ownership rules on push registration.
+

@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DialogueChannel;
 use App\Models\DialogueMessage;
-use App\Models\DialogueMessageAttachment;
 use App\Models\DialogueReport;
 use App\Models\DialogueThread;
 use App\Models\DialogueThreadRead;
 use App\Models\UserBlock;
 use App\Services\AuditLogger;
 use App\Services\DialogueChannelService;
+use App\Support\DialogueMessagePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 /**
@@ -59,6 +59,8 @@ class DialogueController extends Controller
 
         $threads = $channel->threads()
             ->with(['zanupfSection', 'zimbabweSection', 'creator'])
+            ->withCount(['messages as messages_count' => fn ($q) => $q->where('is_deleted', false)])
+            ->withMax(['messages' => fn ($q) => $q->where('is_deleted', false)], 'created_at')
             ->orderByDesc('created_at')
             ->take(50)
             ->get();
@@ -68,6 +70,10 @@ class DialogueController extends Controller
                 'id' => $t->id,
                 'title' => $t->title,
                 'status' => $t->status,
+                'messages_count' => (int) ($t->messages_count ?? 0),
+                'last_message_at' => $t->messages_max_created_at
+                    ? Carbon::parse($t->messages_max_created_at)->toIso8601String()
+                    : null,
                 'creator' => $t->creator?->only(['id', 'name', 'surname']),
                 'constitution_links' => [
                     'zanupf' => $t->zanupfSection ? [
@@ -141,17 +147,32 @@ class DialogueController extends Controller
             $blockedIds = UserBlock::where('blocker_user_id', $user->id)->pluck('blocked_user_id')->all();
         }
 
-        $messages = $thread->messages()
-            ->where('is_deleted', false)
+        $since = $request->query('since');
+        $sinceAt = null;
+        if (is_string($since) && $since !== '') {
+            try {
+                $sinceAt = Carbon::parse($since);
+            } catch (\Throwable) {
+                return response()->json(['message' => 'Invalid since timestamp.'], 422);
+            }
+        }
+
+        $messagesQuery = $thread->messages()
             ->when(count($blockedIds) > 0, fn ($q) => $q->whereNotIn('user_id', $blockedIds))
             ->with(['user', 'attachments'])
-            ->orderBy('created_at')
-            ->take(200)
-            ->get();
+            ->when($sinceAt, fn ($q) => $q->where('updated_at', '>', $sinceAt))
+            ->orderByDesc('is_pinned')
+            ->orderBy('created_at');
 
-        // Mark this thread as read for the current user at the latest message
-        if ($user && $messages->isNotEmpty()) {
-            $latest = $messages->last();
+        if ($sinceAt) {
+            $messages = $messagesQuery->get();
+        } else {
+            $messages = $messagesQuery->take(200)->get();
+        }
+
+        // Mark this thread as read for the current user at the latest visible message
+        if ($user && $messages->isNotEmpty() && ! $sinceAt) {
+            $latest = $messages->sortBy('created_at')->last();
             DialogueThreadRead::updateOrCreate(
                 [
                     'dialogue_thread_id' => $thread->id,
@@ -163,29 +184,7 @@ class DialogueController extends Controller
             );
         }
 
-        $data = $messages->map(function (DialogueMessage $m) {
-            return [
-                'id' => $m->id,
-                'body' => $m->body,
-                'user' => $m->user?->only(['id', 'name', 'surname']),
-                'created_at' => $m->created_at?->toIso8601String(),
-                'attachments' => $m->attachments->map(function (DialogueMessageAttachment $a) {
-                    $disk = $a->disk ?: 'public';
-                    $url = $disk === 'public'
-                        ? Storage::disk('public')->url($a->path)
-                        : null;
-
-                    return [
-                        'id' => $a->id,
-                        'type' => $a->type,
-                        'url' => $url,
-                        'name' => $a->original_name,
-                        'mime' => $a->mime,
-                        'size_bytes' => (int) $a->size_bytes,
-                    ];
-                })->values(),
-            ];
-        });
+        $data = $messages->map(fn (DialogueMessage $m) => DialogueMessagePresenter::toArray($m))->values();
 
         return response()->json(['data' => $data]);
     }
@@ -231,13 +230,7 @@ class DialogueController extends Controller
             request: $request
         );
 
-        return response()->json(['data' => [
-            'id' => $msg->id,
-            'body' => $msg->body,
-            'user' => $msg->user?->only(['id', 'name', 'surname']),
-            'created_at' => $msg->created_at?->toIso8601String(),
-            'attachments' => [],
-        ]], 201);
+        return response()->json(['data' => DialogueMessagePresenter::toArray($msg->load('user'))], 201);
     }
 
     /**
@@ -255,9 +248,8 @@ class DialogueController extends Controller
         abort_unless($user, 401);
 
         $message->loadMissing('thread.channel');
-        if ($message->thread) {
-            $this->authorize('view', $message->thread);
-        }
+        abort_unless($message->thread, 404);
+        $this->authorize('view', $message->thread);
 
         $data = $request->validate([
             'reason' => ['required', 'string', Rule::in(['spam', 'harassment', 'hate', 'sexual', 'violence', 'misinformation', 'other'])],

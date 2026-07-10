@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LibraryCategory;
 use App\Models\LibraryDocument;
+use App\Services\MemberAutoNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +14,10 @@ use Illuminate\View\View;
 
 class LibraryController extends Controller
 {
+    public function __construct(
+        protected MemberAutoNotificationService $autoNotifications,
+    ) {}
+
     public function index(): View
     {
         $categories = LibraryCategory::whereNull('parent_id')
@@ -128,7 +133,10 @@ class LibraryController extends Controller
         $this->authorize('admin.section', 'library');
         $data = $this->validateDocument($request);
         $data['created_by'] = $request->user()?->id;
-        LibraryDocument::create($data);
+        $document = LibraryDocument::create($data);
+        if ($document->published_at !== null) {
+            $this->autoNotifications->libraryDocumentPublished($document, true);
+        }
         $this->clearLibraryCache();
         return redirect()->route('admin.library.documents.index')->with('success', 'Document created.');
     }
@@ -147,8 +155,13 @@ class LibraryController extends Controller
     public function documentUpdate(Request $request, LibraryDocument $document): RedirectResponse
     {
         $this->authorize('admin.section', 'library');
+        $wasPublished = $document->published_at !== null;
         $data = $this->validateDocument($request, $document);
         $document->update($data);
+        $document->refresh();
+        if (! $wasPublished && $document->published_at !== null) {
+            $this->autoNotifications->libraryDocumentPublished($document, true);
+        }
         $this->clearLibraryCache();
         return redirect()->route('admin.library.documents.index')->with('success', 'Document updated.');
     }

@@ -57,9 +57,16 @@ Returns JSON: `available` (bool), `title` (string), and when `available` is true
 
 ## Priority projects
 
-| GET | `/api/v1/priority-projects` | No |
-| POST | `/api/v1/priority-projects/{priority_project}/like` | Sanctum |
+Authenticated (`auth:sanctum`). Abilities: `projects:read` (list/show), `projects:write` (like).
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/v1/priority-projects` | Sanctum + `projects:read` |
+| GET | `/api/v1/priority-projects/{priority_project}` | Sanctum + `projects:read` (published only; else 404) |
+| POST | `/api/v1/priority-projects/{priority_project}/like` | Sanctum + `projects:write` (unpublished → 404) |
+
+PWA and mobile treat this feature as **auth-only** (guests are sent to login).
 
 ---
 
-*Last reviewed: documentation generation pass.*
+*Last reviewed: 2026-07-10 — priority project show + auth.*

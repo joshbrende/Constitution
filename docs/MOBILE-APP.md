@@ -2,6 +2,8 @@
 
 React Native client in `mobile/`. API contract: [BACKEND-MOBILE-CONSISTENCY.md](./BACKEND-MOBILE-CONSISTENCY.md).
 
+> **Browser client:** The Progressive Web App in `PWA/` shares the same API. See [PWA.md](./PWA.md).
+
 > **Note:** `mobile/` may be a git submodule. The full app tree lives in that repository; this doc describes the intended architecture and what is visible in the monorepo checkout.
 
 ---

@@ -20,6 +20,8 @@ Start here for orientation. **Disaster recovery:** read [RECONSTRUCTION.md](./RE
 | [**ACADEMY-CERTIFICATE-WORKFLOW.md**](./ACADEMY-CERTIFICATE-WORKFLOW.md) | Operator runbook: payment → Presidium → print → collection |
 | [**CERTIFICATE-STATE-MACHINE.md**](./CERTIFICATE-STATE-MACHINE.md) | Technical status enum, transitions, side effects |
 | [**MOBILE-APP.md**](./MOBILE-APP.md) | Expo client structure, screens, API dependencies |
+| [**PWA.md**](./PWA.md) | Progressive Web App (`PWA/` → `/app/`): build, parity, Reverb, Web Push |
+| [**API-SECURITY.md**](./API-SECURITY.md) | IDOR audit, ownership controls, push/web-push hardening (no DB RLS) |
 | [**AUDIT-LOGGING.md**](./AUDIT-LOGGING.md) | Audit log retention and queries. |
 | [**CERTIFICATE-SECURITY.md**](./CERTIFICATE-SECURITY.md) | Certificate verification and abuse notes. |
 | [**INPUT-SANITIZATION.md**](./INPUT-SANITIZATION.md) | User content sanitization. |
@@ -35,6 +37,8 @@ Start here for orientation. **Disaster recovery:** read [RECONSTRUCTION.md](./RE
 | [**DOCKER.md**](../DOCKER.md) | Docker Compose services, ports, first-run install. |
 
 **Mobile:** [MOBILE-APP.md](./MOBILE-APP.md) and [BACKEND-MOBILE-CONSISTENCY.md](./BACKEND-MOBILE-CONSISTENCY.md)
+
+**PWA:** [PWA.md](./PWA.md) — same API as mobile; served from `backend/public/app` at `/app/`
 
 **CI:** `.github/workflows/backend-tests.yml`, `security-scan.yml`, `codeql.yml`, `semgrep.yml`, `dependabot.yml`
 

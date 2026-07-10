@@ -15,6 +15,7 @@ class EnsureAdminSection
         'admin.party-organs' => 'party_organs',
         'admin.priority-projects' => 'priority_projects',
         'admin.home-banners' => 'home_banners',
+        'admin.member-notifications' => 'member_notifications',
         'admin.static-pages' => 'static_pages',
         'admin.audit-logs' => 'audit_logs',
         'admin.constitution' => 'constitution',

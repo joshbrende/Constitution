@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output (also copied to backend/public/app)
+dist/
+
+# Env
+.env
+.env.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

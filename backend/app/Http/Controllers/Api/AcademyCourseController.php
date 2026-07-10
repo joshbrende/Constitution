@@ -254,23 +254,7 @@ class AcademyCourseController extends Controller
             ->orderByDesc('exam_passed_at')
             ->first(['status', 'receipt_number']);
 
-        $portalMessages = $user->notifications()
-            ->where('data->type', 'like', 'academy.%')
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(fn ($notification) => [
-                'id' => $notification->id,
-                'type' => $notification->data['type'] ?? null,
-                'title' => $notification->data['title'] ?? null,
-                'body' => $notification->data['body'] ?? null,
-                'receipt_number' => $notification->data['receipt_number'] ?? null,
-                'application_id' => $notification->data['application_id'] ?? null,
-                'read' => $notification->read_at !== null,
-                'at' => optional($notification->created_at)->toIso8601String(),
-            ])
-            ->values()
-            ->all();
+        $portalMessages = \App\Support\PortalNotifications::mapForApi($user, 10);
 
         // Learner performance (graded attempts only)
         $gradedAttempts = AssessmentAttempt::where('user_id', $user->id)

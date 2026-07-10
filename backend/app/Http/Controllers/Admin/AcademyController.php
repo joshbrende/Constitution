@@ -7,6 +7,7 @@ use App\Models\Assessment;
 use App\Models\Course;
 use App\Models\Question;
 use App\Services\CourseAnalyticsService;
+use App\Services\MemberAutoNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,7 @@ class AcademyController extends Controller
 {
     public function __construct(
         protected CourseAnalyticsService $courseAnalytics,
+        protected MemberAutoNotificationService $autoNotifications,
     ) {}
 
     public function index(): View
@@ -56,6 +58,9 @@ class AcademyController extends Controller
         $data = $this->validateCourseData($request);
         $data['created_by'] = auth()->id();
         $course = Course::create($data);
+        if ($course->status === 'published') {
+            $this->autoNotifications->coursePublished($course, true);
+        }
         return redirect()->route('admin.academy.courses.edit', $course)
             ->with('success', 'Course created. Add modules and an assessment to complete setup.')
             ->with('show_next_steps', true);
@@ -71,7 +76,20 @@ class AcademyController extends Controller
     {
         $this->authorize('admin.section', 'academy');
         $data = $this->validateCourseData($request, $course);
+        $previousStatus = $course->status;
         $course->update($data);
+        $course->refresh();
+
+        if ($course->status === 'published' && $previousStatus !== 'published') {
+            $this->autoNotifications->coursePublished($course, false);
+        } elseif (
+            $course->status === 'published'
+            && $previousStatus === 'published'
+            && ($course->wasChanged('title') || $course->wasChanged('description'))
+        ) {
+            $this->autoNotifications->courseUpdated($course);
+        }
+
         return redirect()->route('admin.academy.index')->with('success', 'Course updated.');
     }
 

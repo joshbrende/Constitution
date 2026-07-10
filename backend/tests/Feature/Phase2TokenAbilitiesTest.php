@@ -67,7 +67,7 @@ class Phase2TokenAbilitiesTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_token_with_dialogue_write_can_post_thread(): void
+    public function test_token_with_dialogue_write_cannot_create_thread_without_editor_access(): void
     {
         $channel = DialogueChannel::create([
             'name' => 'Open',
@@ -80,8 +80,8 @@ class Phase2TokenAbilitiesTest extends TestCase
         Sanctum::actingAs($user, ['dialogue:read', 'dialogue:write']);
 
         $this->postJson("/api/v1/dialogue/channels/{$channel->id}/threads", [
-            'title' => 'Allowed topic',
-        ])->assertCreated();
+            'title' => 'Should fail',
+        ])->assertForbidden();
     }
 
     public function test_token_ability_service_matches_student_role(): void

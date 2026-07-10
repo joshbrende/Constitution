@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Support\DialogueRealtimeConfig;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,7 +19,7 @@ class AppConfigController extends Controller
 {
     public function show(): JsonResponse
     {
-        $payload = Cache::remember('app_config_v1', 60, function () {
+        $payload = Cache::remember('app_config_v2', 60, function () {
             $orgName = (string) SiteSetting::get('org_name', 'ZANUPF');
 
             return [
@@ -33,6 +34,13 @@ class AppConfigController extends Controller
                 'features' => [
                     'enable_dialogue' => (bool) SiteSetting::get('enable_dialogue', true),
                     'require_national_id' => (bool) SiteSetting::get('require_national_id', true),
+                ],
+                'realtime' => DialogueRealtimeConfig::clientPayload(),
+                'webpush' => [
+                    'enabled' => (bool) config('webpush.enabled', true)
+                        && filled(config('webpush.public_key'))
+                        && filled(config('webpush.private_key')),
+                    'public_key' => (string) config('webpush.public_key', ''),
                 ],
                 'mobile' => [
                     'app_store_url' => (string) SiteSetting::get('mobile_app_store_url', ''),

@@ -6,7 +6,7 @@ RUN apk add --no-cache \
     freetype-dev libjpeg-turbo-dev libpng-dev \
     $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql intl zip gd \
+    && docker-php-ext-install pdo pdo_mysql intl zip gd pcntl \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del --no-cache $PHPIZE_DEPS

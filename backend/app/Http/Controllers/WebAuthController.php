@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Province;
+use App\Models\RefreshToken;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AuditLogger;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password as PasswordBroker;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\View\View;
 
 class WebAuthController extends Controller
 {
@@ -34,6 +38,14 @@ class WebAuthController extends Controller
     public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
+    }
+
+    public function showResetPasswordForm(Request $request, string $token): View
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => (string) $request->query('email', ''),
+        ]);
     }
 
     public function sendResetLinkEmail(Request $request): RedirectResponse
@@ -65,13 +77,59 @@ class WebAuthController extends Controller
             ->onlyInput('email');
     }
 
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
+        ]);
+
+        $status = PasswordBroker::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) use ($request) {
+                $user->forceFill([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                // Invalidate API sessions after a password change.
+                $user->tokens()->delete();
+                RefreshToken::where('user_id', $user->id)->whereNull('revoked_at')->update([
+                    'revoked_at' => now(),
+                ]);
+
+                event(new PasswordReset($user));
+
+                $this->auditLogger->log(
+                    action: 'auth.web.password_reset',
+                    targetType: User::class,
+                    targetId: $user->id,
+                    metadata: ['email' => $user->email],
+                    request: $request,
+                    actorUserId: $user->id,
+                );
+            }
+        );
+
+        if ($status === PasswordBroker::PASSWORD_RESET) {
+            return redirect()
+                ->route('login')
+                ->with('status', __($status));
+        }
+
+        return back()
+            ->withErrors(['email' => __($status)])
+            ->onlyInput('email');
+    }
+
     public function register(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
             'accept_terms' => ['required', 'accepted'],
             'province_id' => ['required', 'integer', 'exists:provinces,id'],
         ]);

@@ -24,34 +24,30 @@ class PriorityProjectsController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $likedIds = [];
-        if ($user) {
-            $likedIds = PriorityProjectLike::where('user_id', $user->id)
-                ->whereIn('priority_project_id', $projects->pluck('id'))
-                ->pluck('priority_project_id')
-                ->all();
-        }
+        $likedIds = $this->likedProjectIdsForUser($user, $projects->pluck('id')->all());
 
-        $data = $projects->map(function (PriorityProject $p) use ($likedIds) {
-            return [
-                'id' => $p->id,
-                'title' => $p->title,
-                'summary' => $p->summary,
-                'body' => $p->body,
-                'image_url' => $p->image_url,
-                'likes_count' => $p->likes_count,
-                'liked' => in_array($p->id, $likedIds, true),
-                'published_at' => $p->published_at?->toIso8601String(),
-            ];
-        });
+        $data = $projects->map(fn (PriorityProject $p) => $this->formatProject($p, $likedIds));
 
         return response()->json(['data' => $data]);
+    }
+
+    public function show(PriorityProject $priority_project): JsonResponse
+    {
+        abort_unless($this->isPublished($priority_project), 404);
+
+        $user = Auth::user();
+        $likedIds = $this->likedProjectIdsForUser($user, [$priority_project->id]);
+
+        return response()->json([
+            'data' => $this->formatProject($priority_project, $likedIds),
+        ]);
     }
 
     public function like(PriorityProject $priority_project): JsonResponse
     {
         $user = Auth::user();
         abort_unless($user, 401);
+        abort_unless($this->isPublished($priority_project), 404);
         $this->authorize('like', $priority_project);
 
         $existing = PriorityProjectLike::where('priority_project_id', $priority_project->id)
@@ -73,6 +69,47 @@ class PriorityProjectsController extends Controller
                 'liked' => true,
             ],
         ]);
+    }
+
+    /**
+     * @param  list<int>  $projectIds
+     * @return list<int>
+     */
+    private function likedProjectIdsForUser(?\Illuminate\Contracts\Auth\Authenticatable $user, array $projectIds): array
+    {
+        if (! $user || $projectIds === []) {
+            return [];
+        }
+
+        return PriorityProjectLike::where('user_id', $user->id)
+            ->whereIn('priority_project_id', $projectIds)
+            ->pluck('priority_project_id')
+            ->all();
+    }
+
+    /**
+     * @param  list<int>  $likedIds
+     * @return array<string, mixed>
+     */
+    private function formatProject(PriorityProject $project, array $likedIds): array
+    {
+        return [
+            'id' => $project->id,
+            'title' => $project->title,
+            'summary' => $project->summary,
+            'body' => $project->body,
+            'image_url' => $project->image_url,
+            'likes_count' => $project->likes_count,
+            'liked' => in_array($project->id, $likedIds, true),
+            'published_at' => $project->published_at?->toIso8601String(),
+        ];
+    }
+
+    private function isPublished(PriorityProject $project): bool
+    {
+        return $project->is_published
+            && $project->published_at !== null
+            && $project->published_at->isPast();
     }
 }
 

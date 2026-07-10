@@ -623,6 +623,127 @@
                 table.dash-table tr:last-child td {
                     border-bottom: none;
                 }
+                table.dash-table tbody tr:hover td {
+                    background: rgba(255, 255, 255, 0.02);
+                }
+                .dash-table-wrap {
+                    overflow-x: auto;
+                    margin-top: 0.5rem;
+                    border-radius: 0.65rem;
+                    border: 1px solid var(--border-subtle);
+                }
+                .dash-table-wrap table.dash-table {
+                    margin: 0;
+                }
+                .dash-table-wrap table.dash-table th,
+                .dash-table-wrap table.dash-table td {
+                    padding: 0.65rem 0.85rem;
+                }
+                .dash-form-field {
+                    margin-bottom: 1rem;
+                }
+                .dash-form-label {
+                    display: block;
+                    font-size: 0.8rem;
+                    color: var(--text-muted);
+                    margin-bottom: 0.35rem;
+                    font-weight: 500;
+                }
+                .dash-form-hint {
+                    display: block;
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    margin-top: 0.3rem;
+                }
+                .dash-form-input,
+                .dash-form-textarea,
+                .dash-form-select {
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 0.55rem 0.65rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid var(--border-subtle);
+                    background: var(--bg-muted);
+                    color: var(--text-main);
+                    font-size: 0.85rem;
+                    line-height: 1.45;
+                    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+                }
+                .dash-form-textarea {
+                    min-height: 5.5rem;
+                    resize: vertical;
+                }
+                .dash-form-input:focus,
+                .dash-form-textarea:focus,
+                .dash-form-select:focus {
+                    outline: none;
+                    border-color: var(--zanupf-gold);
+                    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.12);
+                }
+                .dash-btn-primary {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.35rem;
+                    padding: 0.55rem 1.15rem;
+                    border-radius: 0.5rem;
+                    border: none;
+                    background: var(--zanupf-green);
+                    color: #fff;
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    text-decoration: none;
+                }
+                .dash-btn-primary:hover {
+                    filter: brightness(1.06);
+                }
+                .dash-subpanel {
+                    background: var(--bg-muted);
+                    border: 1px solid var(--border-subtle);
+                    border-radius: 0.75rem;
+                    padding: 1rem 1.15rem;
+                    margin: 1rem 0 1.25rem;
+                }
+                .dash-subpanel-title {
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    margin: 0 0 0.2rem;
+                }
+                .dash-subpanel-subtitle {
+                    font-size: 0.76rem;
+                    color: var(--text-muted);
+                    margin: 0 0 1rem;
+                    line-height: 1.45;
+                }
+                .dash-section-heading {
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    color: var(--text-main);
+                    margin: 0 0 0.65rem;
+                }
+                .dash-link-action {
+                    font-size: 0.8rem;
+                    color: var(--zanupf-gold);
+                    text-decoration: none;
+                    font-weight: 500;
+                }
+                .dash-link-action:hover {
+                    text-decoration: underline;
+                    text-underline-offset: 2px;
+                }
+                .dash-count-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 1.5rem;
+                    padding: 0.1rem 0.45rem;
+                    border-radius: 999px;
+                    background: rgba(250, 204, 21, 0.14);
+                    color: var(--zanupf-gold);
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                }
                 .status-pill {
                     display: inline-flex;
                     align-items: center;
@@ -656,6 +777,13 @@
                 }
                 .status-pill--review span.dot {
                     background: #3b82f6;
+                }
+                .status-pill--locked {
+                    background: rgba(148, 163, 184, 0.16);
+                    color: #cbd5e1;
+                }
+                .status-pill--locked span.dot {
+                    background: #94a3b8;
                 }
                 .dash-metric-row {
                     display: flex;
@@ -1031,6 +1159,14 @@
                             <a href="{{ route('admin.home-banners.index') }}" class="dash-nav-link {{ request()->routeIs('admin.home-banners.*') ? 'is-active' : '' }}">
                                 <span class="dot"></span>
                                 <span>Home banners (carousel)</span>
+                            </a>
+                        </li>
+                        @endcanAccessSection
+                        @canAccessSection('member_notifications')
+                        <li class="dash-nav-item">
+                            <a href="{{ route('admin.member-notifications.index') }}" class="dash-nav-link {{ request()->routeIs('admin.member-notifications.*') ? 'is-active' : '' }}">
+                                <span class="dot"></span>
+                                <span>Member notifications</span>
                             </a>
                         </li>
                         @endcanAccessSection

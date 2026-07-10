@@ -16,7 +16,7 @@ Table catalog derived from `backend/database/migrations/`. For **exact columns**
 | `permissions` | `Permission` | Fine-grained permissions |
 | `permission_role` | — | Role ↔ permission pivot |
 | `personal_access_tokens` | — | Sanctum API tokens |
-| `refresh_tokens` | `RefreshToken` | API refresh token rotation |
+| `refresh_tokens` | `RefreshToken` | API refresh token rotation (`family_id` for reuse detection) |
 | `password_reset_tokens` | — | Laravel password resets |
 | `sessions` | — | Web session driver |
 | `site_settings` | `SiteSetting` | Key/value platform config (JSON values) |

@@ -18,6 +18,7 @@
 | Rate limiting | Auth, assessments, certificate verify |
 | Audit trail | Export, verify, optional separate audit database |
 | Certificate anti-fraud | Verification codes, revocation, public verify page |
+| IDOR / ownership | Policies + owner-scoped binding; push reassignment blocked — [API-SECURITY.md](../API-SECURITY.md) |
 | CORS | Deny-by-default in production until origins configured |
 
 ## National ID — honest posture

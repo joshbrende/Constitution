@@ -4,7 +4,7 @@
 
 - **Admin:** `admin.priority-projects.*` — CRUD for Vision 2030–aligned projects
 - **Controller:** `Admin\PriorityProjectsController`
-- **API:** `GET /api/v1/priority-projects`, `POST priority-projects/{id}/like` (auth)
+- **API:** `GET /api/v1/priority-projects`, `GET …/{id}`, `POST …/{id}/like` (all Sanctum; see [26-api-public-content.md](./26-api-public-content.md))
 
 ## 12.2 Home banners (carousel)
 

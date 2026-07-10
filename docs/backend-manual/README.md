@@ -10,9 +10,11 @@ This folder is the **canonical backend documentation** for administrators, devel
 
 1. **Foundation** (01–03) — architecture, environments, authentication  
 2. **Administration** (04–19) — RBAC, roles, dashboard, every admin module, provincial pilot  
-3. **API** (20–26) — mobile/integrator HTTP reference  
+3. **API** (20–26) — mobile / PWA / integrator HTTP reference  
 4. **Services & ops** (30, 40) — shared services, operations, testing  
 5. **Appendices** — route map, config & glossary  
+
+Cross-cutting: [../PWA.md](../PWA.md), [../API-SECURITY.md](../API-SECURITY.md), [../BACKEND-MOBILE-CONSISTENCY.md](../BACKEND-MOBILE-CONSISTENCY.md).
 
 ---
 

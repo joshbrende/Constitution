@@ -53,7 +53,7 @@ return [
         'certificates:read' => 'List and download own certificates',
         'certificates:write' => 'Request certificate PDF generation',
         'dialogue:read' => 'Read dialogue channels, threads, messages',
-        'dialogue:write' => 'Post threads/messages, report, block users',
+        'dialogue:write' => 'Post messages, report, block users',
         'projects:read' => 'View priority projects',
         'projects:write' => 'Like priority projects',
         'comments:write' => 'Post constitution section comments',

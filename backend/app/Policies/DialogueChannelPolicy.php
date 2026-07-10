@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\DialogueChannel;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class DialogueChannelPolicy
 {
@@ -12,8 +13,15 @@ class DialogueChannelPolicy
         return $dialogueChannel->canUserAccess($user);
     }
 
+    /**
+     * Only dialogue editors (admin web) may open new topics. Members comment on existing threads.
+     */
     public function createThread(User $user, DialogueChannel $dialogueChannel): bool
     {
-        return $dialogueChannel->canUserPost($user);
+        if (! $dialogueChannel->canUserAccess($user)) {
+            return false;
+        }
+
+        return Gate::forUser($user)->allows('admin.section', 'dialogue');
     }
 }

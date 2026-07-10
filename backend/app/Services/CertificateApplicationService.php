@@ -17,7 +17,7 @@ use App\Notifications\Academy\CertificatePresidiumApprovedNotification;
 use App\Notifications\Academy\CertificateReadyForCollectionNotification;
 use App\Notifications\Academy\ExamPassedPaymentRequiredNotification;
 use App\Notifications\Academy\PaymentConfirmedNotification;
-use App\Services\ExpoPushNotificationService;
+use App\Services\UserPushNotificationService;
 use InvalidArgumentException;
 
 class CertificateApplicationService
@@ -285,7 +285,7 @@ class CertificateApplicationService
         $notification->application->loadMissing('course');
         $user->notifyNow($notification, ['database']);
 
-        app(ExpoPushNotificationService::class)->sendToUser(
+        app(UserPushNotificationService::class)->sendToUser(
             $user,
             $notification->title(),
             $notification->body(),

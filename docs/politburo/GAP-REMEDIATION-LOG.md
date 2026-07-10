@@ -19,7 +19,9 @@ This records gaps identified in the CTO adoption assessment and their remediatio
 | Penetration test | External assessment | **Planned** |
 | SOC 2 Type I / II audit | Independent CPA attestation | **Planned** — see [SOC2-READINESS-CHECKLIST.md](../SOC2-READINESS-CHECKLIST.md) |
 | Admin MFA | TOTP or WebAuthn for backend logins | **Planned** |
-| Push notifications | Device tokens + Expo push | **Planned** (Phase 2) |
+| Push notifications | Expo push + PWA Web Push (VAPID); ownership-safe register | **Done** (Phase 2) — see [PWA.md](../PWA.md), [API-SECURITY.md](../API-SECURITY.md) |
+| PWA member client | `/app/` React PWA sharing `/api/v1` | **Done** — see [PWA.md](../PWA.md) |
+| IDOR audit (member APIs) | Push ownership, dialogue report, project like oracle | **Done** — [API-SECURITY.md](../API-SECURITY.md) |
 | Branch/cell admin scoping | Extend `AdminScopeService` | **Planned** (Phase 3) |
 | SMS/USSD channel | Separate project | **Planned** |
 | Multi-language UI | i18n framework | **Planned** |

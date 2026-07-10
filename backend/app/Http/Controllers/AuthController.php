@@ -38,7 +38,7 @@ class AuthController extends Controller
         return $user->createToken('access_token', $abilities, $expiresAt)->plainTextToken;
     }
 
-    private function issueRefreshToken(User $user): string
+    private function issueRefreshToken(User $user, ?string $familyId = null): string
     {
         $days = (int) config('api_tokens.refresh_token_expiry_days');
         $token = Str::random(64);
@@ -46,6 +46,7 @@ class AuthController extends Controller
 
         RefreshToken::create([
             'user_id' => $user->id,
+            'family_id' => $familyId ?: (string) Str::uuid(),
             'token_hash' => $tokenHash,
             'expires_at' => now()->addDays($days),
             'revoked_at' => null,
@@ -63,7 +64,7 @@ class AuthController extends Controller
      * @bodyParam name string required First name. Example: Tariro
      * @bodyParam surname string required Last name. Example: Moyo
      * @bodyParam email string required Unique email address. Example: member@example.org.zw
-     * @bodyParam password string required Minimum 8 characters. Example: SecurePass123!
+     * @bodyParam password string required Min 8 chars, mixed case, and a number. Example: SecurePass123!
      * @bodyParam password_confirmation string required Must match `password`. Example: SecurePass123!
      * @bodyParam accept_terms string required Must be `true` or `1`. Example: true
      * @bodyParam province_id integer optional Province ID from `GET /api/v1/provinces` (1=Bulawayo, 2=Harare, …). Example: 2
@@ -76,7 +77,7 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
             'accept_terms' => ['required', 'accepted'],
             'province_id' => ['nullable', 'integer', 'exists:provinces,id'],
         ]);
@@ -239,41 +240,84 @@ class AuthController extends Controller
 
         $tokenHash = hash('sha256', $data['refresh_token']);
 
-        $rt = RefreshToken::with('user')
-            ->where('token_hash', $tokenHash)
-            ->whereNull('revoked_at')
-            ->first();
+        return DB::transaction(function () use ($tokenHash, $request) {
+            $rt = RefreshToken::with('user')
+                ->where('token_hash', $tokenHash)
+                ->lockForUpdate()
+                ->first();
 
-        if (! $rt || ! $rt->expires_at || $rt->expires_at->isPast() || ! $rt->user) {
-            $this->auditLogger->log(
-                action: 'auth.api.refresh_failed',
-                targetType: RefreshToken::class,
-                targetId: $rt?->id,
-                metadata: ['reason' => 'invalid_or_expired_refresh_token'],
-                request: $request
-            );
-            return response()->json([
-                'message' => 'Refresh token expired or invalid. Please sign in again.',
-            ], 401);
-        }
+            if (! $rt || ! $rt->user) {
+                $this->auditLogger->log(
+                    action: 'auth.api.refresh_failed',
+                    targetType: RefreshToken::class,
+                    targetId: $rt?->id,
+                    metadata: ['reason' => 'invalid_or_expired_refresh_token'],
+                    request: $request
+                );
 
-        return DB::transaction(function () use ($rt) {
-            // Rotate refresh token
+                return response()->json([
+                    'message' => 'Refresh token expired or invalid. Please sign in again.',
+                ], 401);
+            }
+
+            // Reuse of a rotated token: revoke the whole family and all access tokens.
+            if ($rt->revoked_at !== null) {
+                if ($rt->family_id) {
+                    RefreshToken::where('family_id', $rt->family_id)
+                        ->whereNull('revoked_at')
+                        ->update(['revoked_at' => now()]);
+                }
+                $rt->user->tokens()->delete();
+
+                $this->auditLogger->log(
+                    action: 'auth.api.refresh_reuse_detected',
+                    targetType: RefreshToken::class,
+                    targetId: $rt->id,
+                    metadata: [
+                        'family_id' => $rt->family_id,
+                        'user_id' => $rt->user_id,
+                    ],
+                    request: $request,
+                    actorUserId: $rt->user_id,
+                );
+
+                return response()->json([
+                    'message' => 'Refresh token expired or invalid. Please sign in again.',
+                ], 401);
+            }
+
+            if (! $rt->expires_at || $rt->expires_at->isPast()) {
+                $this->auditLogger->log(
+                    action: 'auth.api.refresh_failed',
+                    targetType: RefreshToken::class,
+                    targetId: $rt->id,
+                    metadata: ['reason' => 'invalid_or_expired_refresh_token'],
+                    request: $request
+                );
+
+                return response()->json([
+                    'message' => 'Refresh token expired or invalid. Please sign in again.',
+                ], 401);
+            }
+
             $rt->update(['revoked_at' => now()]);
 
-            // Hardening: revoke all existing access tokens for the user.
             $user = $rt->user;
             $user->tokens()->delete();
 
+            $familyId = $rt->family_id ?: (string) Str::uuid();
             $accessToken = $this->issueAccessToken($user);
-            $refreshToken = $this->issueRefreshToken($user);
+            $refreshToken = $this->issueRefreshToken($user, $familyId);
 
             $this->auditLogger->log(
                 action: 'auth.api.refresh_succeeded',
                 targetType: User::class,
                 targetId: $user->id,
-                metadata: ['refresh_token_id' => $rt->id],
-                request: request(),
+                metadata: [
+                    'refresh_token_id' => $rt->id,
+                    'family_id' => $familyId,
+                ],
+                request: $request,
                 actorUserId: $user->id,
             );
 

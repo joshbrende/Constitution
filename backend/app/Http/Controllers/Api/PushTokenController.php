@@ -36,6 +36,16 @@ class PushTokenController extends Controller
             'device_name' => ['nullable', 'string', 'max:120'],
         ]);
 
+        $existing = UserPushToken::query()
+            ->where('expo_push_token', $validated['expo_push_token'])
+            ->first();
+
+        if ($existing && (int) $existing->user_id !== (int) $user->id) {
+            return response()->json([
+                'message' => 'This push token is already registered to another account.',
+            ], 409);
+        }
+
         $token = UserPushToken::updateOrCreate(
             ['expo_push_token' => $validated['expo_push_token']],
             [

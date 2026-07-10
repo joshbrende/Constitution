@@ -107,9 +107,10 @@ docker-compose exec app php artisan migrate --seed
 
 ### URLs / ports
 
-- Nginx (API + web): `http://localhost:8081`
+- Nginx (API + web + **PWA**): `http://localhost:8081` — PWA at `/app/`
 - MySQL: `127.0.0.1:3308` (forwarded to container `db:3306`)
 - Redis: `127.0.0.1:6379` (forwarded)
+- Reverb (WebSockets): `REVERB_PORT` default **8090** (phone clients need LAN IP + firewall allow)
 
 ### First install (recommended)
 
@@ -138,6 +139,18 @@ Examples:
 
 - WAMP API: `http://<YOUR-LAN-IP>:8000/api/v1`
 - Docker API (phone/emulator on LAN): `http://<YOUR-LAN-IP>:8081/api/v1`
+
+---
+
+## PWA (browser / installable)
+
+- Source: `PWA/` → build to `backend/public/app/`
+- URL: `http://<YOUR-LAN-IP>:8081/app/`
+- API: same-origin `/api/v1` (`VITE_API_BASE_URL`)
+- Web Push: set `WEBPUSH_PUBLIC_KEY` / `WEBPUSH_PRIVATE_KEY` (`php artisan webpush:vapid`)
+- Live chat: `BROADCAST_CONNECTION=reverb` + healthy `constitution-reverb` container
+
+Full guide: [PWA.md](./PWA.md).
 
 ---
 

@@ -55,7 +55,7 @@ class BackendUserInvitationController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
             'accept_terms' => ['required', 'accepted'],
         ]);
 

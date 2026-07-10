@@ -13,11 +13,13 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use App\Services\AmendmentOfficialPdfService;
+use App\Services\MemberAutoNotificationService;
 
 class ConstitutionController extends Controller
 {
     public function __construct(
-        protected AuditLogger $auditLogger
+        protected AuditLogger $auditLogger,
+        protected MemberAutoNotificationService $autoNotifications,
     ) {}
 
     /** @return list<string> */
@@ -266,6 +268,7 @@ class ConstitutionController extends Controller
                 $draft,
                 'Published from section editor with Publish now (Presidium/System Admin only).'
             );
+            $this->autoNotifications->constitutionSectionPublished($section->fresh('chapter'), $draft->fresh());
 
             return back()->with('success', 'Body updated and published.');
         }
@@ -291,6 +294,7 @@ class ConstitutionController extends Controller
             $newVersion,
             'New version published immediately from section editor (Presidium/System Admin only).'
         );
+        $this->autoNotifications->constitutionSectionPublished($section->fresh('chapter'), $newVersion->fresh());
 
         return back()->with('success', 'Body updated and published.');
     }
@@ -470,6 +474,12 @@ class ConstitutionController extends Controller
                 'actor_roles' => $this->actorRoleSlugs(),
             ],
             request: request()
+        );
+
+        $sectionVersion->refresh();
+        $this->autoNotifications->constitutionSectionPublished(
+            $section->fresh('chapter'),
+            $sectionVersion
         );
 
         return back()->with('success', 'Amendment approved and published.');

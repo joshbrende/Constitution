@@ -24,5 +24,7 @@ Documentation for **Politburo**, **Central Committee ICT**, **provincial chairpe
 - [../RBAC-MATRIX.md](../RBAC-MATRIX.md)
 - [../ACADEMY-CERTIFICATE-WORKFLOW.md](../ACADEMY-CERTIFICATE-WORKFLOW.md)
 - [../INSTALL-SECURITY.md](../INSTALL-SECURITY.md)
+- [../PWA.md](../PWA.md) — member Progressive Web App
+- [../API-SECURITY.md](../API-SECURITY.md) — IDOR / ownership audit
 
-**Version:** 1.0 — prepared for provincial pilot phase (2026).
+**Version:** 1.1 — PWA + security hardening documented (2026-07).

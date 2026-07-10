@@ -4,7 +4,7 @@ This repo uses a **semantic icon mapping** so the mobile app and admin UI stay c
 
 ## Rules
 - Use **semantic keys** (e.g. `academy.course`) in UI code.
-- Do **not** sprinkle raw Ionicons names or ad-hoc SVGs across screens/views.
+- Do **not** sprinkle raw Ionicons / Lucide names or ad-hoc SVGs across screens/views.
 - If you need a new icon, add it to the repository first, then use the key everywhere.
 
 ## Icon conventions (guardrails)
@@ -12,6 +12,9 @@ This repo uses a **semantic icon mapping** so the mobile app and admin UI stay c
   - Screens/components must use `WorkflowIcon` + a semantic key from `mobile/src/ui/icons/workflowIcons.js`.
   - Do **not** import `@expo/vector-icons/Ionicons` directly in screens/components (ESLint warns on this).
   - Only `mobile/src/ui/icons/WorkflowIcon.js` may import Ionicons.
+- **PWA**:
+  - Screens/components must use `WorkflowIcon` + keys from `PWA/src/ui/icons/workflowIcons.js` (same semantic keys as mobile; Lucide components under the hood).
+  - Do **not** import `lucide-react` outside `workflowIcons.js`.
 - **Admin web UI**:
   - Blade templates should use `x-icons.workflow-icon` keys.
   - Do **not** paste emoji icons or inline SVGs into individual pages. Add/adjust icons centrally in `backend/resources/views/components/icons/workflow-icon.blade.php`.
@@ -24,5 +27,8 @@ This repo uses a **semantic icon mapping** so the mobile app and admin UI stay c
 
 ## Implementations
 - **Mobile**: `mobile/src/ui/icons/workflowIcons.js` + `mobile/src/ui/icons/WorkflowIcon.js`
+- **PWA**: `PWA/src/ui/icons/workflowIcons.js` + `PWA/src/ui/icons/WorkflowIcon.jsx` (full member UI migrated)
 - **Admin**: `backend/resources/views/components/icons/workflow-icon.blade.php`
+
+Rollout status: [ICON-ROLLOUT-PLAN.md](./ICON-ROLLOUT-PLAN.md).
 

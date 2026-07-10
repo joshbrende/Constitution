@@ -27,7 +27,7 @@ class PriorityProjectLikePolicyTest extends TestCase
 
         $response = $this->postJson("/api/v1/priority-projects/{$project->id}/like");
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     }
 
     public function test_can_like_published_project(): void

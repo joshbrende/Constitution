@@ -20,12 +20,15 @@ use App\Http\Controllers\Api\CertificateApplicationController;
 use App\Http\Controllers\Api\HomeBannersController as ApiHomeBannersController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\StaticPagesController as ApiStaticPagesController;
-use App\Http\Controllers\Api\AcademyPortalNotificationController;
+use App\Http\Controllers\Api\PortalNotificationController;
 use App\Http\Controllers\Api\PushTokenController;
+use App\Http\Controllers\Api\WebPushSubscriptionController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\Api\ProvinceController as ApiProvinceController;
 use App\Http\Controllers\Api\ConstitutionOfficialController;
 use App\Http\Controllers\Api\AppConfigController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::prefix('v1')->group(function () {
     Route::get('constitution/official/amendment3', [ConstitutionOfficialController::class, 'amendment3']);
@@ -40,6 +43,9 @@ Route::prefix('v1')->group(function () {
 
         Route::middleware('abilities:profile:read')->group(function () {
             Route::get('profile', [ApiProfileController::class, 'show']);
+            Route::get('portal-notifications', [PortalNotificationController::class, 'index']);
+            Route::post('portal-notifications/read-all', [PortalNotificationController::class, 'markAllRead']);
+            Route::post('portal-notifications/{notification}/read', [PortalNotificationController::class, 'markRead']);
         });
 
         Route::middleware('abilities:profile:write')->group(function () {
@@ -47,6 +53,8 @@ Route::prefix('v1')->group(function () {
             Route::delete('profile', [ApiProfileController::class, 'destroy']);
             Route::post('profile/push-token', [PushTokenController::class, 'store']);
             Route::delete('profile/push-token', [PushTokenController::class, 'destroy']);
+            Route::post('profile/web-push-subscription', [WebPushSubscriptionController::class, 'store']);
+            Route::delete('profile/web-push-subscription', [WebPushSubscriptionController::class, 'destroy']);
         });
 
         Route::middleware('abilities:academy:read')->group(function () {
@@ -61,8 +69,8 @@ Route::prefix('v1')->group(function () {
             Route::get('academy/applications', [CertificateApplicationController::class, 'index']);
             Route::get('academy/applications/{application}', [CertificateApplicationController::class, 'show']);
             Route::get('academy/applications/{application}/receipt.pdf', [CertificateApplicationController::class, 'receiptPdf']);
-            Route::post('academy/notifications/read-all', [AcademyPortalNotificationController::class, 'markAllRead']);
-            Route::post('academy/notifications/{notification}/read', [AcademyPortalNotificationController::class, 'markRead']);
+            Route::post('academy/notifications/read-all', [PortalNotificationController::class, 'markAllRead']);
+            Route::post('academy/notifications/{notification}/read', [PortalNotificationController::class, 'markRead']);
         });
 
         Route::middleware('abilities:academy:write')->group(function () {
@@ -89,10 +97,13 @@ Route::prefix('v1')->group(function () {
             Route::get('dialogue/channels', [DialogueController::class, 'channels']);
             Route::get('dialogue/channels/{channel}/threads', [DialogueController::class, 'threads']);
             Route::get('dialogue/threads/{thread}/messages', [DialogueController::class, 'messages']);
+            Route::post('dialogue/channels/{channel}/threads', [DialogueController::class, 'storeThread']);
+            Route::post('broadcasting/auth', function (Request $request) {
+                return Broadcast::auth($request);
+            });
         });
 
         Route::middleware('abilities:dialogue:write')->group(function () {
-            Route::post('dialogue/channels/{channel}/threads', [DialogueController::class, 'storeThread']);
             Route::post('dialogue/threads/{thread}/messages', [DialogueController::class, 'storeMessage']);
             Route::post('dialogue/messages/{message}/report', [DialogueController::class, 'reportMessage']);
             Route::post('dialogue/threads/{thread}/report', [DialogueController::class, 'reportThread']);
@@ -102,6 +113,7 @@ Route::prefix('v1')->group(function () {
 
         Route::middleware('abilities:projects:read')->group(function () {
             Route::get('priority-projects', [PriorityProjectsController::class, 'index']);
+            Route::get('priority-projects/{priority_project}', [PriorityProjectsController::class, 'show']);
         });
 
         Route::middleware('abilities:projects:write')->group(function () {

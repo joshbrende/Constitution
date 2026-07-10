@@ -168,6 +168,16 @@
                 </a>
                 @endcanAccessSection
 
+                @canAccessSection('member_notifications')
+                <a href="{{ route('admin.member-notifications.index') }}" class="dash-tile">
+                    <div class="dash-tile-title">Member notifications</div>
+                    <div class="dash-tile-text">
+                        Send announcements to the mobile app bell inbox — all members, a province, or a role.
+                    </div>
+                    <div class="dash-tile-footer">Manage notifications</div>
+                </a>
+                @endcanAccessSection
+
                 @canAccessSection('static_pages')
                 <a href="{{ route('admin.static-pages.index') }}" class="dash-tile">
                     <div class="dash-tile-title">Static pages</div>
