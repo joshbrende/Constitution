@@ -75,9 +75,23 @@ class CourseAccessService
             return $user->hasRole('presidium');
         }
 
-        $wing = strtolower(trim((string) ($user->wing ?? '')));
+        // League pathways: open to members with privileges (wing granted on certificate issue).
+        if (in_array($audience, ['youth', 'women', 'veterans'], true)) {
+            return app(MembershipStandingService::class)->hasMemberPrivileges($user);
+        }
 
-        return $wing !== '' && $wing === $audience;
+        if ($audience === 'main') {
+            $active = app(WingMembershipService::class)->activeWings($user);
+            if (in_array('main', $active, true)) {
+                return true;
+            }
+
+            $wing = strtolower(trim((string) ($user->wing ?? '')));
+
+            return $wing === 'main';
+        }
+
+        return false;
     }
 
     private function hasActiveEnrolment(User $user, Course $course): bool

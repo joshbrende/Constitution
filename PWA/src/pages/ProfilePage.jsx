@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiClient, setAuthToken } from '../api/client';
 import { clearAuthTokens } from '../api/authStorage';
 import { deleteAccount, getProfile, updateProfile } from '../api/profileApi';
@@ -125,6 +125,24 @@ export default function ProfilePage() {
           {user?.name} {user?.surname}
         </p>
         <p className="text-sm text-app-subtle">{user?.email}</p>
+        {user?.membership_number ? (
+          <p className="mt-2 text-sm text-app-text">
+            Membership no. <span className="font-mono">{user.membership_number}</span>
+          </p>
+        ) : null}
+        {Array.isArray(user?.active_wings) && user.active_wings.length > 0 ? (
+          <p className="mt-1 text-sm text-app-subtle">
+            Leagues:{' '}
+            {user.active_wings
+              .map((w) => (w === 'main' ? 'Main' : `${w.charAt(0).toUpperCase()}${w.slice(1)}`))
+              .join(', ')}
+          </p>
+        ) : null}
+        {user?.membership_standing === 'member' ? (
+          <Link to="/members" className="mt-3 inline-block text-sm text-app-gold underline">
+            Browse member directory
+          </Link>
+        ) : null}
       </div>
 
       <form onSubmit={handleSave} className="space-y-3 rounded-xl border border-app-border bg-app-card p-4">

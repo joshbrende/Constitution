@@ -11,6 +11,7 @@ const MAIN_ITEMS = [
   { to: '/constitutions/bookmarks', label: 'Bookmarks', iconKey: 'reader.bookmark' },
   { to: '/constitutions/highlights', label: 'Highlights', iconKey: 'reader.highlight' },
   { to: '/chat', label: 'Chat', iconKey: WORKFLOW_ICON_KEYS.homeChat, authOnly: true, dialogueOnly: true },
+  { to: '/members', label: 'Members', iconKey: WORKFLOW_ICON_KEYS.homeParty, authOnly: true },
   { to: '/profile', label: 'Profile', iconKey: WORKFLOW_ICON_KEYS.homeTabProfile, authOnly: true },
 ];
 

@@ -12,6 +12,7 @@ use App\Services\AuditLogger;
 use App\Services\CourseAccessService;
 use App\Services\GovIdVerification\GovIdVerificationClient;
 use App\Services\ProvinceStatsService;
+use App\Services\WingMembershipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -296,6 +297,7 @@ class AcademyCourseController extends Controller
                 'is_cadre_designee' => $user->isCadreDesignee(),
                 'cadre_designated_at' => optional($user->cadre_designated_at)->toIso8601String(),
                 'wing' => $user->wing,
+                'active_wings' => app(WingMembershipService::class)->activeWings($user),
                 'assessment_attempts_count' => $attemptsCount,
                 'passed_attempts' => $passedCount,
                 'average_score' => $avgScore,

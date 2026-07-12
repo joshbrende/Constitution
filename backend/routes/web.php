@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AcademyController as AdminAcademyController;
 use App\Http\Controllers\Admin\LibraryController as AdminLibraryController;
 use App\Http\Controllers\Admin\PartyController as AdminPartyController;
 use App\Http\Controllers\Admin\MembersController as AdminMembersController;
+use App\Http\Controllers\Admin\MemberInvitationsController as AdminMemberInvitationsController;
 use App\Http\Controllers\Admin\UsersController as AdminUsersController;
 use App\Http\Controllers\Admin\CertificatesController as AdminCertificatesController;
 use App\Http\Controllers\Admin\CertificateApplicationsController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Admin\AdminFaqController;
 use App\Http\Controllers\Admin\AdminPlatformSettingsController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\BackendUserInvitationController;
+use App\Http\Controllers\MemberInvitationAcceptController;
 use App\Http\Controllers\CertificatePreviewController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\ReceiptVerificationController;
@@ -88,6 +90,15 @@ Route::middleware('guest')->group(function () {
         ->where('token', '[A-Za-z0-9]+')
         ->middleware('throttle:backend-invitation')
         ->name('backend-invitations.accept');
+
+    Route::get('/invitations/member/{token}', [MemberInvitationAcceptController::class, 'show'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->middleware('throttle:backend-invitation')
+        ->name('member-invitations.show');
+    Route::post('/invitations/member/{token}', [MemberInvitationAcceptController::class, 'accept'])
+        ->where('token', '[A-Za-z0-9]+')
+        ->middleware('throttle:backend-invitation')
+        ->name('member-invitations.accept');
 });
 
 Route::post('/logout', [WebAuthController::class, 'logout'])
@@ -259,6 +270,14 @@ Route::middleware(['auth', 'install.complete'])->group(function () {
             Route::get('/users/{user}/edit', [AdminUsersController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}', [AdminUsersController::class, 'update'])->name('users.update');
             Route::get('/members', [AdminMembersController::class, 'index'])->name('members.index');
+            Route::get('/members/invite', [AdminMemberInvitationsController::class, 'create'])->name('members.invite.create');
+            Route::post('/members/invite', [AdminMemberInvitationsController::class, 'storeInvite'])
+                ->middleware('throttle:30,1')
+                ->name('members.invite.store');
+            Route::get('/members/create', [AdminMemberInvitationsController::class, 'createMemberForm'])->name('members.create');
+            Route::post('/members', [AdminMemberInvitationsController::class, 'storeMember'])
+                ->middleware('throttle:30,1')
+                ->name('members.store');
             Route::get('/certificates', [AdminCertificatesController::class, 'index'])->name('certificates.index');
             Route::post('/certificates/{certificate}/revoke', [AdminCertificatesController::class, 'revoke'])->name('certificates.revoke');
             Route::post('/certificates/{certificate}/unrevoke', [AdminCertificatesController::class, 'unrevoke'])->name('certificates.unrevoke');

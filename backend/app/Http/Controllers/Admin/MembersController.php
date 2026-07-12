@@ -34,13 +34,17 @@ class MembersController extends Controller
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('surname', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('membership_number', 'like', "%{$q}%");
             });
         }
 
         // Keep it lightweight for admin screens; 25 per page is responsive.
         $members = $query->paginate(25)->withQueryString();
 
-        return view('admin.members.index', compact('members'));
+        return view('admin.members.index', [
+            'members' => $members,
+            'canInviteMembers' => $admin->can('admin.action', 'membership_invite'),
+        ]);
     }
 }

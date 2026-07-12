@@ -28,6 +28,9 @@ class User extends Authenticatable
         'email',
         'wing',
         'membership_standing',
+        'membership_number',
+        'membership_admitted_at',
+        'membership_source',
         'branch_admitted_at',
         'branch_admitted_by_user_id',
         'branch_admission_note',
@@ -65,6 +68,7 @@ class User extends Authenticatable
             'accepted_terms_at' => 'datetime',
             'national_id_verified_at' => 'datetime',
             'membership_standing' => MembershipStanding::class,
+            'membership_admitted_at' => 'datetime',
             'branch_admitted_at' => 'datetime',
             'cadre_designated_at' => 'datetime',
         ];
@@ -115,6 +119,11 @@ class User extends Authenticatable
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class)->withTimestamps();
+    }
+
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(Membership::class);
     }
 
     public function hasRole(string $slug): bool

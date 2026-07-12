@@ -35,7 +35,13 @@
                     <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Course</div>
                     <div style="font-weight:600;">{{ $application->course?->title }}</div>
                     <div style="font-size:0.85rem;">Fee: {{ $application->fee_currency }} {{ number_format((float) $application->fee_amount, 2) }}</div>
-                    <div style="font-size:0.85rem;">Exam passed: {{ optional($application->exam_passed_at)->format('d M Y H:i') }}</div>
+                    <div style="font-size:0.85rem;">
+                        @if ($application->admission_source && $application->admission_source !== 'exam')
+                            Admission: {{ str_replace('_', ' ', $application->admission_source) }} (exam bypassed)
+                        @else
+                            Exam passed: {{ optional($application->exam_passed_at)->format('d M Y H:i') ?? '—' }}
+                        @endif
+                    </div>
                 </div>
                 @if ($application->certificate)
                 <div>

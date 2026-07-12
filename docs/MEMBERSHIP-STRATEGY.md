@@ -9,7 +9,8 @@ This document defines how **party membership**, **organs**, **geography**, and *
 | Dimension | Party meaning | System field(s) |
 |-----------|---------------|-----------------|
 | **Membership standing** | Legal admission status | `users.membership_standing` |
-| **Wing / league** | Youth, Women's, Veterans, main | `users.wing` |
+| **Membership number** | Party identity (full members) | `users.membership_number` |
+| **Wing / league** | Youth, Women's, Veterans, main | `users.wing` (primary) + `memberships` rows (parallel) |
 | **Geography** | Province → district → branch → cell | `province_id`, `district_id`, `branch_id`, `cell_id` |
 | **Cadre / academy** | Courses and certificates completed | `enrolments`, `certificates`, `certificate_applications` |
 
@@ -22,9 +23,13 @@ Leagues are **parallel wings**, not ranks above ordinary membership. Presidium, 
 | Standing | When set | App meaning |
 |----------|----------|-------------|
 | **applicant** | Registration | `student` role; academy + constitution access |
-| **provisional** | Membership exam passed (application created) | Awaiting provincial payment |
-| **member** | Certificate issued (Presidium approval workflow) | **Full member** — appears in Admin → Members |
-| **suspended** | Admin action | Profile read-only API; academy/dialogue blocked |
+| **provisional** | Membership exam passed **or** invite/admin admission (application created) | Awaiting provincial payment |
+| **member** | Certificate issued (Presidium approval workflow) | **Full member** — appears in Admin → Members; opaque **membership number** assigned |
+| **suspended** | Admin action | Profile read-only API; academy/dialogue blocked; membership number retained |
+
+**Membership number** (`users.membership_number`): opaque ID (e.g. `ZPF-M7K2Q9`) assigned once when standing becomes full member (exam path, invite path, admin standing edit, or backfill). Separate from academy `certificate_number`. Source: `academy` \| `invite` \| `admin_created`.
+
+**Invite-only admission** (system_admin / user_manager): email invite or admin create skips the exam; still requires certificate fee → Presidium → issue before full member + number.
 
 **Member role (`member`)** is attached when **payment is confirmed** (default `grant_member_role_on=payment_confirmed`). This unlocks member library, member dialogue posting, and league course access before the physical certificate is issued.
 
@@ -52,10 +57,12 @@ Staff roles (`academy_manager`, `provincial_admin`, etc.) are a **separate plane
 
 Constitutionally, league membership is through the **branch**. In the app:
 
-- Provincial / user managers set `wing` on **Admin → Users → Edit** after branch verification.
+- **Parallel memberships (Phase 2.1):** table `memberships` holds active/ended rows per wing. Full members always have `main`. Admins can add Youth / Women / Veterans (Step 2.2 UI; Step 2.1 syncs via Admin → Users → wing field).
+- One shared **membership number** on `users` covers all wings.
+- Provincial / user managers set primary `wing` on **Admin → Users → Edit** after branch verification (legacy field kept in sync).
 - **Branch admission** (`branch_admitted_at`) is confirmed on the same screen after the provincial register is checked offline. League courses (`youth`, `women`, `veterans` audiences) require this when `ACADEMY_REQUIRE_BRANCH_ADMISSION=true` (default).
 - Values: `main`, `youth`, `women`, `veterans` (see `config/academy.php` → `user_wings`).
-- Drives **course audience** gates (`youth`, `women`, `veterans`, `member`, `presidium`).
+- **League course `audience`** = pathway / grant target (Step 2.4): any member with privileges may enrol (after membership course + branch admission); issuing the league certificate activates that wing in `memberships`. Primary `users.wing` still follows sync rules and does not force-overwrite an active primary.
 
 ### Cadre designation
 
@@ -88,6 +95,7 @@ Constitutionally, league membership is through the **branch**. In the app:
 | Branch admission gate | `CourseAccessService`, `config/academy.php` |
 | Cadre library access | `LibraryDocumentPolicy` |
 | API summary fields | `AcademyCourseController::summary()` |
+| Member directory | `MemberDirectoryController`, ability `members:read` |
 | Student vs member abilities | `config/permissions.php` |
 
 ---
@@ -98,7 +106,12 @@ Constitutionally, league membership is through the **branch**. In the app:
 - **Phase C (done):** Youth / Women's / Veterans academy pathways seeded (`YOUTH-101`, `WOMEN-101`, `VETERANS-101`) with per-course certificates.
 - **Phase D (done):** Branch admission confirmation on Admin → Users → Edit; league enrolment gate via `CourseAccessService`.
 - **Phase E (done):** Cadre designation (admin-assigned) unlocking leadership library documents.
+- **Phase 2 Step 2.1 (done):** `memberships` table; auto `main` on full member; legacy wing sync.
+- **Phase 2 Step 2.2 (done):** Admin → Users → Edit league checkboxes (Youth/Women/Veterans) + primary wing.
+- **Phase 2 Step 2.3 (done):** Profile/API list memberships + `active_wings`; course access uses all active memberships.
+- **Phase 2 Step 2.4 (done):** League pathways open to paid members (branch admission still required); certificate issue activates matching wing.
+- **Phase 3 (done):** National full-member directory (API + PWA + mobile); minimal fields; full standing required.
 
 ---
 
-*Related: [`membership-course-plan.md`](./membership-course-plan.md), [`ACADEMY-CERTIFICATE-WORKFLOW.md`](./ACADEMY-CERTIFICATE-WORKFLOW.md), [`RBAC-MATRIX.md`](./RBAC-MATRIX.md)*
+*Related: [`membership-course-plan.md`](./membership-course-plan.md), [`ACADEMY-CERTIFICATE-WORKFLOW.md`](./ACADEMY-CERTIFICATE-WORKFLOW.md), [`RBAC-MATRIX.md`](./RBAC-MATRIX.md), [`superpowers/specs/2026-07-11-membership-number-invite-design.md`](./superpowers/specs/2026-07-11-membership-number-invite-design.md)*

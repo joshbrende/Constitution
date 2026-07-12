@@ -32,6 +32,7 @@ const BiographyPage = lazy(() =>
   import('./pages/PresidiumPage').then((m) => ({ default: m.BiographyPage }))
 );
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MembersDirectoryPage = lazy(() => import('./pages/MembersDirectoryPage'));
 const StaticPage = lazy(() => import('./pages/StaticPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'));
@@ -300,6 +301,15 @@ export const router = createBrowserRouter(
             </Lazy>
           }
           handle={{ title: 'Profile' }}
+        />
+        <Route
+          path="/members"
+          element={
+            <Lazy>
+              <MembersDirectoryPage />
+            </Lazy>
+          }
+          handle={{ title: 'Members', showBack: true }}
         />
         <Route
           path="/about"

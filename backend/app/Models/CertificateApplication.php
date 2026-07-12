@@ -14,6 +14,7 @@ class CertificateApplication extends Model
         'user_id',
         'course_id',
         'assessment_attempt_id',
+        'admission_source',
         'receipt_number',
         'payment_reference_code',
         'fee_amount',

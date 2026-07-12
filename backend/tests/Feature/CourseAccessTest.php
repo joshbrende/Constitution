@@ -65,6 +65,13 @@ class CourseAccessTest extends TestCase
             ]);
     }
 
+    private function attachMemberRole(User $user): void
+    {
+        $user->roles()->attach(
+            Role::firstOrCreate(['slug' => 'member'], ['name' => 'Member'])->id
+        );
+    }
+
     public function test_youth_course_enrol_allowed_after_membership_completion(): void
     {
         $membership = $this->membershipCourse();
@@ -75,6 +82,7 @@ class CourseAccessTest extends TestCase
             'wing' => 'youth',
             'branch_admitted_at' => now(),
         ]);
+        $this->attachMemberRole($user);
 
         Enrolment::create([
             'user_id' => $user->id,
@@ -89,14 +97,43 @@ class CourseAccessTest extends TestCase
             ->assertCreated();
     }
 
-    public function test_youth_course_blocked_for_wrong_wing_even_with_membership(): void
+    public function test_youth_course_allowed_for_member_without_matching_wing(): void
     {
         $membership = $this->membershipCourse();
         $youthCourse = $this->youthCourse();
 
         $user = User::factory()->create([
             'national_id' => '12-123456-A-12',
-            'wing' => 'women',
+            'wing' => 'main',
+            'membership_standing' => 'member',
+            'branch_admitted_at' => now(),
+        ]);
+        $this->attachMemberRole($user);
+
+        Enrolment::create([
+            'user_id' => $user->id,
+            'course_id' => $membership->id,
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        app(\App\Services\WingMembershipService::class)->ensureForFullMember($user);
+
+        $this->sanctumAs($user);
+
+        $this->postJson("/api/v1/academy/courses/{$youthCourse->id}/enrol")
+            ->assertCreated();
+    }
+
+    public function test_youth_course_blocked_without_member_privileges(): void
+    {
+        $membership = $this->membershipCourse();
+        $youthCourse = $this->youthCourse();
+
+        $user = User::factory()->create([
+            'national_id' => '12-123456-A-12',
+            'wing' => 'main',
+            'branch_admitted_at' => now(),
         ]);
 
         Enrolment::create([
@@ -168,6 +205,7 @@ class CourseAccessTest extends TestCase
             'national_id' => '12-123456-A-12',
             'wing' => 'youth',
         ]);
+        $this->attachMemberRole($user);
 
         Enrolment::create([
             'user_id' => $user->id,
@@ -196,6 +234,7 @@ class CourseAccessTest extends TestCase
             'national_id' => '12-123456-A-12',
             'wing' => 'youth',
         ]);
+        $this->attachMemberRole($user);
 
         Enrolment::create([
             'user_id' => $user->id,

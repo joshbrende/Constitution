@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\PortalNotificationController;
 use App\Http\Controllers\Api\PushTokenController;
 use App\Http\Controllers\Api\WebPushSubscriptionController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
+use App\Http\Controllers\Api\MemberDirectoryController;
 use App\Http\Controllers\Api\ProvinceController as ApiProvinceController;
 use App\Http\Controllers\Api\ConstitutionOfficialController;
 use App\Http\Controllers\Api\AppConfigController;
@@ -46,6 +47,10 @@ Route::prefix('v1')->group(function () {
             Route::get('portal-notifications', [PortalNotificationController::class, 'index']);
             Route::post('portal-notifications/read-all', [PortalNotificationController::class, 'markAllRead']);
             Route::post('portal-notifications/{notification}/read', [PortalNotificationController::class, 'markRead']);
+        });
+
+        Route::middleware('abilities:members:read')->group(function () {
+            Route::get('members', [MemberDirectoryController::class, 'index']);
         });
 
         Route::middleware('abilities:profile:write')->group(function () {

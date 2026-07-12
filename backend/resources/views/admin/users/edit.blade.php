@@ -52,16 +52,55 @@
                             <p class="form-help">Applicant → Provisional (exam pass) → Full member (certificate issued). Suspended blocks academy and dialogue.</p>
                         </div>
                         <div>
-                            <label for="wing" class="form-label">League / wing</label>
-                            <select id="wing" name="wing" class="form-input" style="max-width:20rem;">
-                                <option value="">— Main structure —</option>
+                            <label class="form-label">Membership number</label>
+                            <p style="margin:0;font-family:ui-monospace,monospace;">{{ $user->membership_number ?? '— (assigned when full member)' }}</p>
+                            @if ($user->membership_admitted_at || $user->membership_source)
+                                <p class="form-help">
+                                    @if ($user->membership_source) Source: {{ $user->membership_source }} @endif
+                                    @if ($user->membership_admitted_at) · Admitted {{ $user->membership_admitted_at->format('d M Y') }} @endif
+                                </p>
+                            @endif
+                        </div>
+                        <div>
+                            <label class="form-label">League memberships</label>
+                            @php
+                                $activeWings = old('league_wings', $activeWings ?? []);
+                                if (! is_array($activeWings)) {
+                                    $activeWings = [];
+                                }
+                            @endphp
+                            <div style="display:grid;gap:0.5rem;margin-top:0.35rem;">
+                                <label style="display:flex;align-items:center;gap:0.5rem;opacity:0.85;">
+                                    <input type="checkbox" checked disabled>
+                                    <span>Main party <span style="font-size:0.75rem;color:var(--text-muted);">(always on for full members)</span></span>
+                                </label>
                                 @foreach ($wings as $wing)
                                     @if ($wing !== 'main')
-                                        <option value="{{ $wing }}" {{ old('wing', $user->wing) === $wing ? 'selected' : '' }}>{{ ucfirst($wing) }}</option>
+                                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                                            <input
+                                                type="checkbox"
+                                                name="league_wings[]"
+                                                value="{{ $wing }}"
+                                                {{ in_array($wing, $activeWings, true) ? 'checked' : '' }}
+                                            >
+                                            <span>{{ ucfirst($wing) }} League</span>
+                                        </label>
+                                    @endif
+                                @endforeach
+                            </div>
+                            <p class="form-help">A member may hold Main plus one or more leagues. League rows are stored separately; membership number stays the same.</p>
+                        </div>
+                        <div>
+                            <label for="primary_wing" class="form-label">Primary wing (course access)</label>
+                            <select id="primary_wing" name="primary_wing" class="form-input" style="max-width:20rem;">
+                                <option value="main" {{ old('primary_wing', $user->wing ?? 'main') === 'main' ? 'selected' : '' }}>Main</option>
+                                @foreach ($wings as $wing)
+                                    @if ($wing !== 'main')
+                                        <option value="{{ $wing }}" {{ old('primary_wing', $user->wing) === $wing ? 'selected' : '' }}>{{ ucfirst($wing) }}</option>
                                     @endif
                                 @endforeach
                             </select>
-                            <p class="form-help">Assign after branch verification. Drives Youth / Women's / Veterans academy access.</p>
+                            <p class="form-help">Used for Youth / Women's / Veterans academy course gates until Step 2.3 switches gates to all active memberships.</p>
                         </div>
                         <div>
                             <label for="province_id" class="form-label">Province</label>

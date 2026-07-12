@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MembershipSource;
 use App\Enums\CertificateApplicationStatus;
 use App\Jobs\GenerateCertificatePdfJob;
 use App\Jobs\SendAcademyApplicationMailJob;
@@ -26,6 +27,7 @@ class CertificateApplicationService
         protected AuditLogger $auditLogger,
         protected ReceiptNumberService $receiptNumbers,
         protected MembershipStandingService $membershipStanding,
+        protected WingMembershipService $wingMemberships,
     ) {}
 
     /**
@@ -67,6 +69,7 @@ class CertificateApplicationService
             'user_id' => $user->id,
             'course_id' => $course->id,
             'assessment_attempt_id' => $attempt->id,
+            'admission_source' => MembershipSource::Academy->value,
             'receipt_number' => $numbers['receipt_number'],
             'payment_reference_code' => $numbers['payment_reference_code'],
             'fee_amount' => $feeAmount,
@@ -91,6 +94,78 @@ class CertificateApplicationService
 
         $application->load('course');
         $this->membershipStanding->markProvisional($user, 'exam_passed');
+        $this->notifyStudent($user, new ExamPassedPaymentRequiredNotification($application));
+
+        return $application;
+    }
+
+    /**
+     * Create payment-pending application for invite / admin-created members (no exam attempt).
+     */
+    public function createFromInviteAdmission(User $user, MembershipSource $source): CertificateApplication
+    {
+        if (! in_array($source, [MembershipSource::Invite, MembershipSource::AdminCreated], true)) {
+            throw new InvalidArgumentException('Invite admission requires invite or admin_created source.');
+        }
+
+        $course = Course::query()
+            ->where('grants_membership', true)
+            ->where('status', 'published')
+            ->first();
+
+        if (! $course instanceof Course || ! $course->issuesCertificate()) {
+            throw new InvalidArgumentException('No published membership course that issues certificates is configured.');
+        }
+
+        $feeAmount = $course->certificate_fee_amount;
+        if ($feeAmount === null || (float) $feeAmount <= 0) {
+            throw new InvalidArgumentException('Membership course certificate fee is not configured.');
+        }
+
+        $existing = CertificateApplication::query()
+            ->where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $user->forceFill([
+            'membership_source' => $source->value,
+        ])->save();
+
+        $numbers = $this->receiptNumbers->generateForUser($user);
+
+        $application = CertificateApplication::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'assessment_attempt_id' => null,
+            'admission_source' => $source->value,
+            'receipt_number' => $numbers['receipt_number'],
+            'payment_reference_code' => $numbers['payment_reference_code'],
+            'fee_amount' => $feeAmount,
+            'fee_currency' => $course->certificate_fee_currency ?: config('academy.default_fee_currency', 'USD'),
+            'status' => CertificateApplicationStatus::PaymentPending,
+            'exam_passed_at' => null,
+        ]);
+
+        $this->auditLogger->log(
+            action: 'academy.application.created',
+            targetType: CertificateApplication::class,
+            targetId: $application->id,
+            metadata: [
+                'user_id' => $user->id,
+                'course_id' => $course->id,
+                'admission_source' => $source->value,
+                'receipt_number' => $application->receipt_number,
+                'fee_amount' => (string) $application->fee_amount,
+                'fee_currency' => $application->fee_currency,
+            ]
+        );
+
+        $application->load('course');
+        $this->membershipStanding->markProvisional($user, $source->value);
         $this->notifyStudent($user, new ExamPassedPaymentRequiredNotification($application));
 
         return $application;
@@ -157,6 +232,8 @@ class CertificateApplicationService
 
         $this->membershipStanding->markFullMember($application->user, 'certificate_issued');
 
+        $this->grantLeagueWingFromCourse($application->fresh(['user', 'course']), $admin);
+
         $this->auditLogger->log(
             action: 'academy.application.presidium_approved',
             targetType: CertificateApplication::class,
@@ -172,6 +249,34 @@ class CertificateApplicationService
         $this->notifyStudent($application->user, new CertificatePresidiumApprovedNotification($application));
 
         return $application->fresh(['certificate', 'user', 'course']);
+    }
+
+    /**
+     * League pathways (youth/women/veterans): activate wing membership when certificate is issued.
+     */
+    private function grantLeagueWingFromCourse(CertificateApplication $application, User $admin): void
+    {
+        $course = $application->course;
+        if (! $course) {
+            return;
+        }
+
+        $wing = strtolower(trim((string) ($course->audience ?? '')));
+        if (! in_array($wing, ['youth', 'women', 'veterans'], true)) {
+            return;
+        }
+
+        $user = $application->user;
+        if (! $user) {
+            return;
+        }
+
+        $this->wingMemberships->ensureActive($user, $wing, $admin, [
+            'source' => 'league_certificate',
+            'course_id' => $course->id,
+            'certificate_application_id' => $application->id,
+        ]);
+        $this->wingMemberships->syncPrimaryWingColumn($user->fresh());
     }
 
     public function markPrinted(CertificateApplication $application, User $admin): CertificateApplication

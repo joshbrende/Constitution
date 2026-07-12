@@ -9,6 +9,8 @@ class MembershipStandingService
 {
     public function __construct(
         protected AuditLogger $auditLogger,
+        protected MembershipNumberService $membershipNumbers,
+        protected WingMembershipService $wingMemberships,
     ) {}
 
     public function standing(User $user): MembershipStanding
@@ -78,6 +80,9 @@ class MembershipStandingService
     public function markFullMember(User $user, ?string $source = null): void
     {
         $this->transition($user, MembershipStanding::Member, $source ?? 'certificate_issued');
+        $fresh = $user->fresh();
+        $this->membershipNumbers->ensureForFullMember($fresh);
+        $this->wingMemberships->ensureForFullMember($fresh);
     }
 
     public function markSuspended(User $user, User $admin, ?string $reason = null): void
@@ -108,6 +113,12 @@ class MembershipStandingService
         $resolved = $this->resolveStandingFromRecords($user, $to);
         $user->forceFill(['membership_standing' => $resolved->value])->save();
 
+        if ($resolved === MembershipStanding::Member) {
+            $fresh = $user->fresh();
+            $this->membershipNumbers->ensureForFullMember($fresh);
+            $this->wingMemberships->ensureForFullMember($fresh);
+        }
+
         $this->auditLogger->log(
             action: 'membership.reinstated',
             targetType: User::class,
@@ -124,10 +135,21 @@ class MembershipStandingService
     {
         $resolved = $this->resolveStandingFromRecords($user);
         if ($this->standing($user) === $resolved) {
+            if ($resolved === MembershipStanding::Member) {
+                $this->membershipNumbers->ensureForFullMember($user);
+                $this->wingMemberships->ensureForFullMember($user);
+            }
+
             return;
         }
 
         $user->forceFill(['membership_standing' => $resolved->value])->save();
+
+        if ($resolved === MembershipStanding::Member) {
+            $fresh = $user->fresh();
+            $this->membershipNumbers->ensureForFullMember($fresh);
+            $this->wingMemberships->ensureForFullMember($fresh);
+        }
     }
 
     private function resolveStandingFromRecords(User $user, ?MembershipStanding $fallback = null): MembershipStanding

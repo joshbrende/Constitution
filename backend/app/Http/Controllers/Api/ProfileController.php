@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Rules\ZimbabweNationalIdRule;
+use App\Services\WingMembershipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,9 +29,23 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['roles', 'province:id,name,code']);
+        $user = $request->user()->load([
+            'roles',
+            'province:id,name,code',
+            'memberships' => fn ($q) => $q->where('status', 'active')->orderBy('wing'),
+        ]);
 
-        return response()->json(['data' => $user]);
+        $payload = $user->toArray();
+        $payload['memberships'] = $user->memberships->map(fn ($m) => [
+            'wing' => $m->wing,
+            'status' => $m->status instanceof \App\Enums\MembershipWingStatus
+                ? $m->status->value
+                : (string) $m->status,
+            'joined_at' => optional($m->joined_at)->toIso8601String(),
+        ])->values()->all();
+        $payload['active_wings'] = app(WingMembershipService::class)->activeWings($user);
+
+        return response()->json(['data' => $payload]);
     }
 
     /**

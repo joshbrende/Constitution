@@ -11,8 +11,18 @@
                     <div class="dash-panel-title">Members</div>
                     <div class="dash-panel-subtitle">Full members — certificate issued and registered for provincial oversight.</div>
                 </div>
-                <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                    @if (!empty($canInviteMembers))
+                        <a href="{{ route('admin.members.invite.create') }}" class="dash-btn-primary" style="text-decoration:none;">Invite member</a>
+                        <a href="{{ route('admin.members.create') }}" class="dash-btn-ghost" style="text-decoration:none;">Create member</a>
+                    @endif
+                    <a href="{{ route('admin.home') }}" class="dash-btn-ghost" style="text-decoration:none;">← Admin</a>
+                </div>
             </div>
+
+            @if (session('success'))
+                <div class="dash-alert dash-alert--success" style="margin-bottom:1rem;">{{ session('success') }}</div>
+            @endif
 
             <form method="GET" action="{{ route('admin.members.index') }}" style="margin-bottom:1rem;">
                 <div style="display:flex;gap:0.5rem;max-width:28rem;">
@@ -20,7 +30,7 @@
                         type="text"
                         name="q"
                         value="{{ request('q') }}"
-                        placeholder="Search by name, surname, or email"
+                        placeholder="Search by name, email, or membership number"
                         style="flex:1;padding:0.5rem;border:1px solid var(--border-subtle);border-radius:0.4rem;background:rgba(15,23,42,0.9);color:var(--text-main);"
                     >
                     <button
@@ -38,6 +48,7 @@
                 <table class="dash-table">
                     <thead>
                         <tr>
+                            <th>Membership no.</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Standing</th>
@@ -50,6 +61,7 @@
                     <tbody>
                         @foreach ($members as $m)
                             <tr>
+                                <td><code>{{ $m->membership_number ?? '—' }}</code></td>
                                 <td>
                                     <strong>{{ $m->name }} {{ $m->surname }}</strong>
                                 </td>

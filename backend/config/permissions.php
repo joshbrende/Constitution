@@ -37,6 +37,10 @@ return [
             'name' => 'Manage certificate collection status',
             'roles' => ['academy_manager', 'system_admin', 'provincial_admin'],
         ],
+        'membership_invite' => [
+            'name' => 'Invite or create party members (bypass academy exam)',
+            'roles' => ['system_admin', 'user_manager'],
+        ],
     ],
 
     /*
@@ -57,6 +61,7 @@ return [
         'projects:read' => 'View priority projects',
         'projects:write' => 'Like priority projects',
         'comments:write' => 'Post constitution section comments',
+        'members:read' => 'Browse the national full-member directory',
     ],
 
     'role_api_abilities' => [
@@ -84,6 +89,7 @@ return [
             'projects:read',
             'projects:write',
             'comments:write',
+            'members:read',
         ],
         'instructor' => [
             'profile:read',

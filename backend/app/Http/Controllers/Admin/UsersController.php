@@ -14,7 +14,9 @@ use App\Services\AdminAccessService;
 use App\Services\AdminScopeService;
 use App\Services\AuditLogger;
 use App\Services\BackendRoleDutiesService;
+use App\Services\MembershipNumberService;
 use App\Services\MembershipStandingService;
+use App\Services\WingMembershipService;
 use App\Services\RoleAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +34,8 @@ class UsersController extends Controller
         protected BackendRoleDutiesService $roleDuties,
         protected AuditLogger $auditLogger,
         protected MembershipStandingService $membershipStanding,
+        protected MembershipNumberService $membershipNumbers,
+        protected WingMembershipService $wingMemberships,
     ) {}
 
     public function index(Request $request): View
@@ -50,7 +54,9 @@ class UsersController extends Controller
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('surname', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('membership_number', 'like', "%{$q}%")
+                    ->orWhere('national_id', 'like', "%{$q}%");
             });
         }
 
@@ -208,7 +214,13 @@ class UsersController extends Controller
         abort_unless($admin instanceof User, 403);
         $this->adminScope->assertCanAccessUser($admin, $user);
 
-        $user->load(['roles', 'province:id,name', 'branchAdmittedBy:id,name,surname', 'cadreDesignatedBy:id,name,surname']);
+        $user->load([
+            'roles',
+            'province:id,name',
+            'branchAdmittedBy:id,name,surname',
+            'cadreDesignatedBy:id,name,surname',
+            'memberships',
+        ]);
         $roles = Role::orderBy('name')->get();
         $assignableRoleIds = collect($this->roleAssignment->assignableRoleIds(auth()->user()));
         $roleDutyBriefs = $this->roleDuties->dutyBriefsForRoleIds(
@@ -218,6 +230,8 @@ class UsersController extends Controller
         $provinces = Province::orderBy('name')->get(['id', 'name']);
         $membershipStandings = MembershipStanding::cases();
         $wings = config('academy.user_wings', []);
+        $activeWings = $this->wingMemberships->activeWings($user);
+        $activeWings = array_values(array_filter($activeWings, fn (string $w) => $w !== 'main'));
 
         $this->auditLogger->log(
             action: 'admin.users.pii_viewed',
@@ -235,6 +249,7 @@ class UsersController extends Controller
             'provinces',
             'membershipStandings',
             'wings',
+            'activeWings',
         ));
     }
 
@@ -251,7 +266,12 @@ class UsersController extends Controller
         $validated = $request->validate([
             'roles' => ['nullable', 'array'],
             'roles.*' => ['integer', 'distinct', Rule::in($assignable->all())],
-            'wing' => ['nullable', 'string', Rule::in(config('academy.user_wings', []))],
+            'league_wings' => ['nullable', 'array'],
+            'league_wings.*' => ['string', Rule::in(array_values(array_filter(
+                config('academy.user_wings', []),
+                fn (string $w) => $w !== 'main'
+            )))],
+            'primary_wing' => ['nullable', 'string', Rule::in(config('academy.user_wings', []))],
             'province_id' => ['nullable', 'integer', 'exists:provinces,id'],
             'membership_standing' => ['nullable', Rule::enum(MembershipStanding::class)],
             'suspension_reason' => ['nullable', 'string', 'max:500'],
@@ -266,10 +286,10 @@ class UsersController extends Controller
             'membership_standing' => $user->membership_standing instanceof MembershipStanding
                 ? $user->membership_standing->value
                 : (string) $user->membership_standing,
+            'league_wings' => $this->wingMemberships->activeWings($user),
         ];
 
         $user->forceFill([
-            'wing' => $validated['wing'] ?? null,
             'province_id' => $validated['province_id'] ?? null,
         ]);
 
@@ -296,12 +316,29 @@ class UsersController extends Controller
                     ],
                     request: $request
                 );
+                if ($newStanding === MembershipStanding::Member) {
+                    $fresh = $user->fresh();
+                    $this->membershipNumbers->ensureForFullMember($fresh);
+                    $this->wingMemberships->ensureForFullMember($fresh, $admin);
+                }
             } else {
                 $user->save();
+                if ($newStanding === MembershipStanding::Member) {
+                    $fresh = $user->fresh();
+                    $this->membershipNumbers->ensureForFullMember($fresh);
+                    $this->wingMemberships->ensureForFullMember($fresh, $admin);
+                }
             }
         } else {
             $user->save();
         }
+
+        $this->wingMemberships->syncLeagueMemberships(
+            $user->fresh(),
+            $validated['league_wings'] ?? [],
+            $validated['primary_wing'] ?? null,
+            $admin
+        );
 
         $wantsBranchAdmission = $request->boolean('branch_admitted');
         if ($wantsBranchAdmission && ! $user->hasBranchAdmission()) {
@@ -371,9 +408,10 @@ class UsersController extends Controller
             'membership_standing' => $user->membership_standing instanceof MembershipStanding
                 ? $user->membership_standing->value
                 : (string) $user->membership_standing,
+            'league_wings' => $this->wingMemberships->activeWings($user),
         ];
 
-        if ($profileBefore !== $profileAfter && ($profileBefore['wing'] !== $profileAfter['wing'] || $profileBefore['province_id'] !== $profileAfter['province_id'])) {
+        if ($profileBefore !== $profileAfter) {
             $this->auditLogger->log(
                 action: 'admin.users.profile_updated',
                 targetType: User::class,
